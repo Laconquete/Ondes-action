@@ -48,7 +48,7 @@ export const SecureMessagingView: React.FC<SecureMessagingViewProps> = ({
   return (
     <div className="grid grid-cols-12 gap-5 h-[calc(100vh-140px)]">
       {/* Left List of Conversations */}
-      <div className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical flex flex-col transition-colors">
+      <div className="col-span-12 lg:col-span-4 border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical flex flex-col transition-colors">
         <div className="flex items-center justify-between mb-3 border-b border-slate-100 dark:border-slate-800 pb-3">
           <div className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -68,7 +68,7 @@ export const SecureMessagingView: React.FC<SecureMessagingViewProps> = ({
               <div
                 key={conv.id}
                 onClick={() => setSelectedConvId(conv.id)}
-                className={`p-3.5 rounded-xl cursor-pointer transition-colors ${
+                className={`p-3.5 cursor-pointer transition-colors ${
                   isSelected
                     ? 'bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60'
                     : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -90,7 +90,7 @@ export const SecureMessagingView: React.FC<SecureMessagingViewProps> = ({
                     Avec : {conv.practitionerName}
                   </span>
                   <span
-                    className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md ${
+                    className={`text-[9px] font-bold uppercase px-1.5 py-0.5 ${
                       conv.status === 'open'
                         ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
@@ -106,7 +106,7 @@ export const SecureMessagingView: React.FC<SecureMessagingViewProps> = ({
       </div>
 
       {/* Right Chat Thread */}
-      <div className="col-span-12 lg:col-span-8 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-clinical flex flex-col overflow-hidden transition-colors">
+      <div className="col-span-12 lg:col-span-8 border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-clinical flex flex-col overflow-hidden transition-colors">
         {activeConv ? (
           <>
             {/* Header */}
@@ -124,7 +124,7 @@ export const SecureMessagingView: React.FC<SecureMessagingViewProps> = ({
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-medium text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-md">
+                <span className="text-[11px] font-medium text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5">
                   Chiffrement de bout en bout
                 </span>
               </div>
@@ -155,10 +155,10 @@ export const SecureMessagingView: React.FC<SecureMessagingViewProps> = ({
                     </div>
 
                     <div
-                      className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-xs shadow-2xs leading-relaxed ${
+                      className={`max-w-[75%] px-4 py-2.5 text-xs shadow-2xs leading-relaxed ${
                         isDoctor
-                          ? 'bg-blue-600 text-white rounded-br-xs'
-                          : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-bl-xs'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100'
                       }`}
                     >
                       <p>{msg.body}</p>
@@ -219,12 +219,12 @@ export const SecureMessagingView: React.FC<SecureMessagingViewProps> = ({
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="Rédiger une réponse médicale sécurisée..."
-                className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                className="flex-1 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:outline-none"
               />
               <button
                 type="submit"
                 disabled={!inputText.trim()}
-                className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed shadow-xs transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed shadow-xs transition-colors cursor-pointer"
               >
                 <Send className="h-3.5 w-3.5" />
                 <span>Envoyer</span>

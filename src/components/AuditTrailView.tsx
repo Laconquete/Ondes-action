@@ -50,7 +50,7 @@ export const AuditTrailView: React.FC<AuditTrailViewProps> = ({ auditEvents }) =
   return (
     <div className="space-y-4">
       {/* Header & Controls */}
-      <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical transition-colors">
+      <div className="border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical transition-colors">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -66,7 +66,7 @@ export const AuditTrailView: React.FC<AuditTrailViewProps> = ({ auditEvents }) =
 
           <button
             onClick={handleExportJson}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shrink-0 cursor-pointer"
+            className="flex items-center gap-1.5 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shrink-0 cursor-pointer"
           >
             <Download className="h-4 w-4" />
             <span>Exporter le journal (JSON)</span>
@@ -81,7 +81,7 @@ export const AuditTrailView: React.FC<AuditTrailViewProps> = ({ auditEvents }) =
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Rechercher par acteur, patient, action ou hash SHA-256..."
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 pl-8 pr-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 pl-8 pr-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500"
             />
           </div>
 
@@ -90,7 +90,7 @@ export const AuditTrailView: React.FC<AuditTrailViewProps> = ({ auditEvents }) =
             <select
               value={filterAction}
               onChange={(e) => setFilterAction(e.target.value)}
-              className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 focus:outline-none"
+              className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 focus:outline-none"
             >
               <option value="all">Toutes les actions</option>
               <option value="USER_LOGIN">Connexion</option>
@@ -105,7 +105,7 @@ export const AuditTrailView: React.FC<AuditTrailViewProps> = ({ auditEvents }) =
       </div>
 
       {/* Events Table */}
-      <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-clinical overflow-hidden transition-colors">
+      <div className="border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-clinical overflow-hidden transition-colors">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-semibold">
@@ -131,7 +131,7 @@ export const AuditTrailView: React.FC<AuditTrailViewProps> = ({ auditEvents }) =
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    <span className="font-mono text-[11px] font-bold text-blue-900 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-800">
+                    <span className="font-mono text-[11px] font-bold text-blue-900 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 border border-blue-200 dark:border-blue-800">
                       {ev.action}
                     </span>
                   </td>

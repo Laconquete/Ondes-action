@@ -71,7 +71,7 @@ export const FollowUpManager: React.FC<FollowUpManagerProps> = ({
   return (
     <div className="space-y-4">
       {/* Top Header & Filters */}
-      <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
+      <div className="border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
         <div>
           <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <UserCheck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -88,7 +88,7 @@ export const FollowUpManager: React.FC<FollowUpManagerProps> = ({
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 focus:outline-none"
+              className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 focus:outline-none"
             >
               <option value="all">Tous les états</option>
               <option value="pending">En attente</option>
@@ -100,7 +100,7 @@ export const FollowUpManager: React.FC<FollowUpManagerProps> = ({
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-blue-700 shadow-xs transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 bg-blue-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-blue-700 shadow-xs transition-colors cursor-pointer"
           >
             <Plus className="h-4 w-4" />
             <span>Nouveau rappel de suivi</span>
@@ -111,7 +111,7 @@ export const FollowUpManager: React.FC<FollowUpManagerProps> = ({
       {/* Task List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredTasks.length === 0 ? (
-          <div className="col-span-full py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-clinical">
+          <div className="col-span-full py-12 text-center text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-clinical">
             Aucune tâche de suivi correspondant à ce filtre.
           </div>
         ) : (
@@ -122,7 +122,7 @@ export const FollowUpManager: React.FC<FollowUpManagerProps> = ({
             return (
               <div
                 key={t.id}
-                className={`rounded-2xl border p-4 shadow-clinical transition-all flex flex-col justify-between ${
+                className={` border p-4 shadow-clinical transition-all flex flex-col justify-between ${
                   isOverdue
                     ? 'border-red-300 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/30'
                     : isDone
@@ -133,7 +133,7 @@ export const FollowUpManager: React.FC<FollowUpManagerProps> = ({
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span
-                      className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md ${
+                      className={`text-[10px] font-bold uppercase px-2 py-0.5 ${
                         t.priority === 'urgent'
                           ? 'bg-red-100 dark:bg-red-950/70 text-red-800 dark:text-red-300'
                           : t.priority === 'important'
@@ -167,7 +167,7 @@ export const FollowUpManager: React.FC<FollowUpManagerProps> = ({
                   {!isDone ? (
                     <button
                       onClick={() => onUpdateTaskStatus(t.id, 'done')}
-                      className="flex items-center gap-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800 cursor-pointer"
+                      className="flex items-center gap-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 border border-emerald-200 dark:border-emerald-800 cursor-pointer"
                     >
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       <span>Clôturer</span>
@@ -190,7 +190,7 @@ export const FollowUpManager: React.FC<FollowUpManagerProps> = ({
       {/* Modal create task */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-fadeIn">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl transition-colors">
+          <div className="w-full max-w-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl transition-colors">
             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-3">
               Programmer une tâche de suivi clinique
             </h3>
@@ -203,7 +203,7 @@ export const FollowUpManager: React.FC<FollowUpManagerProps> = ({
                 <select
                   value={patientId}
                   onChange={(e) => setPatientId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 p-2 text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                  className="w-full border border-slate-300 dark:border-slate-700 p-2 text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                 >
                   {patients.map((p) => (
                     <option key={p.id} value={p.id} className="dark:bg-slate-900 dark:text-slate-100">
@@ -223,7 +223,7 @@ export const FollowUpManager: React.FC<FollowUpManagerProps> = ({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Ex: Contrôle INR à J+15"
-                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-xs text-slate-900 dark:text-slate-100"
+                  className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-xs text-slate-900 dark:text-slate-100"
                 />
               </div>
 
@@ -236,7 +236,7 @@ export const FollowUpManager: React.FC<FollowUpManagerProps> = ({
                   value={objective}
                   onChange={(e) => setObjective(e.target.value)}
                   placeholder="Instructions spécifiques pour le praticien ou l'IDE..."
-                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-xs text-slate-900 dark:text-slate-100"
+                  className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-xs text-slate-900 dark:text-slate-100"
                 />
               </div>
 
@@ -250,7 +250,7 @@ export const FollowUpManager: React.FC<FollowUpManagerProps> = ({
                     required
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-xs font-mono text-slate-900 dark:text-slate-100"
+                    className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-xs font-mono text-slate-900 dark:text-slate-100"
                   />
                 </div>
 
@@ -261,7 +261,7 @@ export const FollowUpManager: React.FC<FollowUpManagerProps> = ({
                   <select
                     value={priority}
                     onChange={(e) => setPriority(e.target.value as any)}
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 p-2 text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                    className="w-full border border-slate-300 dark:border-slate-700 p-2 text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                   >
                     <option value="routine">Routine</option>
                     <option value="important">Important</option>
@@ -274,13 +274,13 @@ export const FollowUpManager: React.FC<FollowUpManagerProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                  className="border border-slate-300 dark:border-slate-700 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 shadow-xs cursor-pointer"
+                  className="bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 shadow-xs cursor-pointer"
                 >
                   Créer le suivi
                 </button>

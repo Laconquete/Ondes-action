@@ -366,7 +366,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
       const data = payload[0].payload;
       const bpInterp = getBpStatus(data.systolic, data.diastolic);
       return (
-        <div className="rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-4 shadow-2xl backdrop-blur-md text-xs space-y-2.5 min-w-[250px] text-slate-900 dark:text-slate-100 z-50">
+        <div className="border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-4 shadow-2xl backdrop-blur-md text-xs space-y-2.5 min-w-[250px] text-slate-900 dark:text-slate-100 z-50">
           <div className="border-b border-slate-200 dark:border-slate-800 pb-2 flex items-center justify-between">
             <span className="font-extrabold text-slate-900 dark:text-slate-100 text-sm">
               {data.fullDateLabel}
@@ -392,7 +392,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
                 <div className="flex items-center justify-between text-xs text-slate-700 dark:text-slate-300 pl-4 pt-1">
                   <span>Pression pulsée : {data.pulsePressure} mmHg</span>
                   <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${bpInterp.color} ${bpInterp.bg}`}
+                    className={`text-[10px] font-bold px-2 py-0.5 ${bpInterp.color} ${bpInterp.bg}`}
                   >
                     {bpInterp.label}
                   </span>
@@ -452,8 +452,8 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
 
   if (chartData.length === 0) {
     return (
-      <div className="rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-8 text-center space-y-3 shadow-xs">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300">
+      <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-8 text-center space-y-3 shadow-xs">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300">
           <Activity className="h-6 w-6" />
         </div>
         <div className="space-y-1">
@@ -468,7 +468,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
           <button
             type="button"
             onClick={() => setTimeRange('all')}
-            className="rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-200"
+            className="border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-200"
           >
             Afficher tout l'historique
           </button>
@@ -476,7 +476,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
             <button
               type="button"
               onClick={onAddVitalsClick}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700 transition-all cursor-pointer"
             >
               <Plus className="h-4 w-4" />
               <span>Saisir une mesure</span>
@@ -495,10 +495,10 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
     <div className="space-y-4">
       {/* 1. Header Toolbar with Filter & Contrast Switch */}
       {!hideHeaderCard && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-clinical transition-colors">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-slate-200/90 dark:border-slate-800 shadow-clinical transition-colors">
           <div>
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+              <div className="flex h-8 w-8 items-center justify-center bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                 <Activity className="h-4 w-4" />
               </div>
               <div>
@@ -517,11 +517,11 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
 
           <div className="flex items-center flex-wrap gap-2">
             {/* Time range selector with 6-month highlight */}
-            <div className="inline-flex rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800 p-0.5 text-xs">
+            <div className="inline-flex border border-slate-200 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800 p-0.5 text-xs">
               <button
                 type="button"
                 onClick={() => setTimeRange('6months')}
-                className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+                className={` px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
                   timeRange === '6months'
                     ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white'
@@ -533,7 +533,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
               <button
                 type="button"
                 onClick={() => setTimeRange('3months')}
-                className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+                className={` px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
                   timeRange === '3months'
                     ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white'
@@ -544,7 +544,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
               <button
                 type="button"
                 onClick={() => setTimeRange('1year')}
-                className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+                className={` px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
                   timeRange === '1year'
                     ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white'
@@ -555,7 +555,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
               <button
                 type="button"
                 onClick={() => setTimeRange('all')}
-                className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+                className={` px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
                   timeRange === 'all'
                     ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white'
@@ -569,7 +569,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
             <button
               type="button"
               onClick={() => setHighContrast(!highContrast)}
-              className={`inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-bold transition-all shadow-2xs cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 border px-2.5 py-1.5 text-xs font-bold transition-all shadow-2xs cursor-pointer ${
                 highContrast
                   ? 'border-indigo-400 dark:border-indigo-600 bg-indigo-50 dark:bg-indigo-950/70 text-indigo-900 dark:text-indigo-200 ring-2 ring-indigo-500/20'
                   : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
@@ -584,7 +584,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
             <button
               type="button"
               onClick={() => setShowThresholds(!showThresholds)}
-              className={`inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-semibold transition-all shadow-2xs cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 border px-2.5 py-1.5 text-xs font-semibold transition-all shadow-2xs cursor-pointer ${
                 showThresholds
                   ? 'border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300'
                   : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
@@ -599,7 +599,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
               type="button"
               onClick={handleExportCsv}
               title="Exporter les données en CSV"
-              className="inline-flex items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 shadow-2xs transition-all cursor-pointer"
+              className="inline-flex items-center gap-1 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 shadow-2xs transition-all cursor-pointer"
             >
               <Download className="h-3.5 w-3.5 text-slate-500" />
               <span className="hidden sm:inline">CSV</span>
@@ -609,7 +609,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
               <button
                 type="button"
                 onClick={onAddVitalsClick}
-                className="inline-flex items-center gap-1 rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700 shadow-xs transition-all cursor-pointer"
+                className="inline-flex items-center gap-1 bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700 shadow-xs transition-all cursor-pointer"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>+ Mesure</span>
@@ -624,7 +624,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
         {/* Card 1 : Tension Artérielle */}
         <div
           onClick={() => setMetricView('bp')}
-          className={`cursor-pointer rounded-2xl border p-4 transition-all shadow-clinical ${
+          className={`cursor-pointer border p-4 transition-all shadow-clinical ${
             metricView === 'bp'
               ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 ring-2 ring-blue-500/20'
               : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
@@ -632,7 +632,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-              <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-600 text-white font-bold">
+              <span className="flex h-6 w-6 items-center justify-center bg-blue-600 text-white font-bold">
                 <Activity className="h-3.5 w-3.5" />
               </span>
               Pression Artérielle (TA)
@@ -677,7 +677,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
         {/* Card 2 : Poids & Évolution Pondérale */}
         <div
           onClick={() => setMetricView('weight')}
-          className={`cursor-pointer rounded-2xl border p-4 transition-all shadow-clinical ${
+          className={`cursor-pointer border p-4 transition-all shadow-clinical ${
             metricView === 'weight'
               ? 'border-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/40 ring-2 ring-emerald-500/20'
               : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
@@ -685,7 +685,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-              <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold">
+              <span className="flex h-6 w-6 items-center justify-center bg-emerald-600 text-white font-bold">
                 <Scale className="h-3.5 w-3.5" />
               </span>
               Poids & Indice Corporel (IMC)
@@ -708,7 +708,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
             </div>
             {stats && stats.weightDelta !== null && stats.weightDelta !== undefined && (
               <div
-                className={`flex items-center gap-1 text-xs font-mono font-extrabold px-2.5 py-1 rounded-lg ${
+                className={`flex items-center gap-1 text-xs font-mono font-extrabold px-2.5 py-1 ${
                   stats.weightDelta > 0
                     ? 'text-amber-950 dark:text-amber-200 bg-amber-100 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-700'
                     : stats.weightDelta < 0
@@ -741,7 +741,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
         {/* Card 3 : Pouls (Fréquence Cardiaque) */}
         <div
           onClick={() => setMetricView('heartRate')}
-          className={`cursor-pointer rounded-2xl border p-4 transition-all shadow-clinical ${
+          className={`cursor-pointer border p-4 transition-all shadow-clinical ${
             metricView === 'heartRate'
               ? 'border-rose-600 bg-rose-50/50 dark:bg-rose-950/40 ring-2 ring-rose-500/20'
               : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
@@ -749,7 +749,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-              <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-rose-600 text-white font-bold">
+              <span className="flex h-6 w-6 items-center justify-center bg-rose-600 text-white font-bold">
                 <Heart className="h-3.5 w-3.5" />
               </span>
               Fréquence Cardiaque
@@ -797,7 +797,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
         <button
           type="button"
           onClick={() => setMetricView('bp_weight')}
-          className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all shrink-0 cursor-pointer ${
+          className={`flex items-center gap-2 px-3.5 py-2 text-xs font-bold transition-all shrink-0 cursor-pointer ${
             metricView === 'bp_weight'
               ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
               : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
@@ -810,7 +810,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
         <button
           type="button"
           onClick={() => setMetricView('bp')}
-          className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all shrink-0 cursor-pointer ${
+          className={`flex items-center gap-2 px-3.5 py-2 text-xs font-bold transition-all shrink-0 cursor-pointer ${
             metricView === 'bp'
               ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
               : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
@@ -823,7 +823,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
         <button
           type="button"
           onClick={() => setMetricView('weight')}
-          className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all shrink-0 cursor-pointer ${
+          className={`flex items-center gap-2 px-3.5 py-2 text-xs font-bold transition-all shrink-0 cursor-pointer ${
             metricView === 'weight'
               ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
               : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
@@ -836,7 +836,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
         <button
           type="button"
           onClick={() => setMetricView('heartRate')}
-          className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all shrink-0 cursor-pointer ${
+          className={`flex items-center gap-2 px-3.5 py-2 text-xs font-bold transition-all shrink-0 cursor-pointer ${
             metricView === 'heartRate'
               ? 'bg-rose-600 text-white shadow-md shadow-rose-500/20'
               : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
@@ -849,7 +849,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
         <button
           type="button"
           onClick={() => setMetricView('all')}
-          className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all shrink-0 cursor-pointer ${
+          className={`flex items-center gap-2 px-3.5 py-2 text-xs font-bold transition-all shrink-0 cursor-pointer ${
             metricView === 'all'
               ? 'bg-slate-900 dark:bg-slate-700 text-white shadow-md shadow-slate-900/20'
               : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
@@ -861,7 +861,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
       </div>
 
       {/* 4. Main Chart Canvas Card with High Contrast */}
-      <div className="rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-clinical transition-colors">
+      <div className="border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-clinical transition-colors">
         {/* VIEW 0: TENSION & POIDS COMBINÉS (DUAL-AXIS LINE CHART) */}
         {metricView === 'bp_weight' && (
           <div>
@@ -878,16 +878,16 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
 
               {/* Legend Badges with High Contrast */}
               <div className="flex items-center flex-wrap gap-2 text-xs font-bold">
-                <span className="flex items-center gap-1.5 text-blue-900 dark:text-blue-200 bg-blue-100 dark:bg-blue-950 px-2.5 py-1 rounded-lg border border-blue-300 dark:border-blue-700">
+                <span className="flex items-center gap-1.5 text-blue-900 dark:text-blue-200 bg-blue-100 dark:bg-blue-950 px-2.5 py-1 border border-blue-300 dark:border-blue-700">
                   <span className="h-3 w-3 rounded-full bg-blue-600" />
                   Systolique (G)
                 </span>
-                <span className="flex items-center gap-1.5 text-teal-900 dark:text-teal-200 bg-teal-100 dark:bg-teal-950 px-2.5 py-1 rounded-lg border border-teal-300 dark:border-teal-700">
+                <span className="flex items-center gap-1.5 text-teal-900 dark:text-teal-200 bg-teal-100 dark:bg-teal-950 px-2.5 py-1 border border-teal-300 dark:border-teal-700">
                   <span className="h-3 w-3 rounded-full bg-teal-600" />
                   Diastolique (G)
                 </span>
-                <span className="flex items-center gap-1.5 text-emerald-900 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-950 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-700">
-                  <span className="h-3 w-3 rounded-sm bg-emerald-600" />
+                <span className="flex items-center gap-1.5 text-emerald-900 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-950 px-2.5 py-1 border border-emerald-300 dark:border-emerald-700">
+                  <span className="h-3 w-3 bg-emerald-600" />
                   Poids kg (D)
                 </span>
               </div>
@@ -1019,11 +1019,11 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
               </div>
 
               <div className="flex items-center gap-3 text-xs font-bold">
-                <span className="flex items-center gap-1.5 text-blue-900 dark:text-blue-200 bg-blue-100 dark:bg-blue-950 px-2.5 py-1 rounded-lg border border-blue-300 dark:border-blue-700">
+                <span className="flex items-center gap-1.5 text-blue-900 dark:text-blue-200 bg-blue-100 dark:bg-blue-950 px-2.5 py-1 border border-blue-300 dark:border-blue-700">
                   <span className="h-2.5 w-2.5 rounded-full bg-blue-600" />
                   Systolique
                 </span>
-                <span className="flex items-center gap-1.5 text-teal-900 dark:text-teal-200 bg-teal-100 dark:bg-teal-950 px-2.5 py-1 rounded-lg border border-teal-300 dark:border-teal-700">
+                <span className="flex items-center gap-1.5 text-teal-900 dark:text-teal-200 bg-teal-100 dark:bg-teal-950 px-2.5 py-1 border border-teal-300 dark:border-teal-700">
                   <span className="h-2.5 w-2.5 rounded-full bg-teal-600" />
                   Diastolique
                 </span>
@@ -1145,7 +1145,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
               </div>
 
               <div className="flex items-center gap-3 text-xs font-bold">
-                <span className="flex items-center gap-1.5 text-rose-900 dark:text-rose-200 bg-rose-100 dark:bg-rose-950 px-2.5 py-1 rounded-lg border border-rose-300 dark:border-rose-700">
+                <span className="flex items-center gap-1.5 text-rose-900 dark:text-rose-200 bg-rose-100 dark:bg-rose-950 px-2.5 py-1 border border-rose-300 dark:border-rose-700">
                   <span className="h-2.5 w-2.5 rounded-full bg-rose-600" />
                   Pouls (bpm)
                 </span>
@@ -1259,11 +1259,11 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
               </div>
 
               <div className="flex items-center gap-3 text-xs font-bold">
-                <span className="flex items-center gap-1.5 text-emerald-900 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-950 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-700">
+                <span className="flex items-center gap-1.5 text-emerald-900 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-950 px-2.5 py-1 border border-emerald-300 dark:border-emerald-700">
                   <span className="h-2.5 w-2.5 rounded-full bg-emerald-600" />
                   Poids (kg - axe G)
                 </span>
-                <span className="flex items-center gap-1.5 text-purple-900 dark:text-purple-200 bg-purple-100 dark:bg-purple-950 px-2.5 py-1 rounded-lg border border-purple-300 dark:border-purple-700">
+                <span className="flex items-center gap-1.5 text-purple-900 dark:text-purple-200 bg-purple-100 dark:bg-purple-950 px-2.5 py-1 border border-purple-300 dark:border-purple-700">
                   <span className="h-2.5 w-2.5 rounded-full bg-purple-600" />
                   IMC (kg/m² - axe D)
                 </span>
@@ -1426,7 +1426,7 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
       </div>
 
       {/* 5. Historical Data Table Toggle & Content */}
-      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-clinical overflow-hidden transition-colors">
+      <div className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-clinical overflow-hidden transition-colors">
         <button
           type="button"
           onClick={() => setShowFullTable(!showFullTable)}

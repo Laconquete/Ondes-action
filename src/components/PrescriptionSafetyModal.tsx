@@ -253,11 +253,11 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm overflow-y-auto animate-fadeIn">
-      <div className="my-8 w-full max-w-3xl rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl transition-colors">
+      <div className="my-8 w-full max-w-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl transition-colors">
         {/* Top Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-6 py-4 bg-slate-50/70 dark:bg-slate-800/50 rounded-t-3xl">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-6 py-4 bg-slate-50/70 dark:bg-slate-800/50">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 shadow-xs">
+            <div className="flex h-10 w-10 items-center justify-center bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 shadow-xs">
               <FileText className="h-5 w-5" />
             </div>
             <div>
@@ -266,7 +266,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
                   Prescription Électronique Structurée
                 </h2>
                 <span
-                  className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md ${
+                  className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 ${
                     isOnline
                       ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                       : 'bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
@@ -288,7 +288,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
           <button
             onClick={onClose}
             aria-label="Fermer la fenêtre de prescription"
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer rounded-xl p-1"
+            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer p-1"
           >
             <X className="h-5 w-5" />
           </button>
@@ -296,11 +296,11 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
 
         <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
           {/* Mode Selector Tab: Catalogue vs Saisie Manuelle */}
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-850 p-1.5 flex items-center justify-between gap-2">
+          <div className="border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-850 p-1.5 flex items-center justify-between gap-2">
             <button
               type="button"
               onClick={() => setEntryMode('catalog')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold transition-all cursor-pointer ${
                 entryMode === 'catalog'
                   ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-sm'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -318,7 +318,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
                   setCustomProductName(catalogSearchQuery);
                 }
               }}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold transition-all cursor-pointer ${
                 entryMode === 'custom'
                   ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-sm'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -330,7 +330,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
           </div>
 
           {/* 1. Sélection ou Saisie Manuelle du Produit */}
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-4">
+          <div className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-4">
             {entryMode === 'catalog' ? (
               <div className="space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -355,7 +355,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
                     value={catalogSearchQuery}
                     onChange={(e) => setCatalogSearchQuery(e.target.value)}
                     placeholder="Filtrer ou rechercher par nom commercial, DCI ou classe..."
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 py-2 pl-9 pr-3 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-850 focus:outline-hidden"
+                    className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 py-2 pl-9 pr-3 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-850 focus:outline-hidden"
                   />
                 </div>
 
@@ -364,7 +364,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
                   aria-label="Sélectionner le médicament dans le catalogue"
                   value={selectedMedId}
                   onChange={(e) => handleCatalogMedChange(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-hidden"
+                  className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-hidden"
                 >
                   {filteredCatalog.length === 0 ? (
                     <option value="" disabled>
@@ -381,14 +381,14 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
 
                 {/* Option to switch to custom typing if product not in list */}
                 {catalogSearchQuery.trim() && (
-                  <div className="p-2.5 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/70 dark:bg-blue-950/40 flex items-center justify-between gap-3 text-xs">
+                  <div className="p-2.5 border border-blue-200 dark:border-blue-900/60 bg-blue-50/70 dark:bg-blue-950/40 flex items-center justify-between gap-3 text-xs">
                     <span className="text-slate-700 dark:text-slate-300">
                       Vous cherchez <strong>« {catalogSearchQuery} »</strong> ?
                     </span>
                     <button
                       type="button"
                       onClick={() => handleSwitchToCustomWithName(catalogSearchQuery)}
-                      className="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors shrink-0 cursor-pointer"
+                      className="px-2.5 py-1 bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors shrink-0 cursor-pointer"
                     >
                       Prescrire en saisie libre &rarr;
                     </button>
@@ -422,7 +422,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
                       value={customProductName}
                       onChange={(e) => setCustomProductName(e.target.value)}
                       placeholder="Ex: Doliprane 1000mg, Augmentin 1g/125mg, Kardegic 75mg, Inexium 20mg..."
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
+                      className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-hidden"
                     />
                   </div>
 
@@ -435,7 +435,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
                       value={customGenericName}
                       onChange={(e) => setCustomGenericName(e.target.value)}
                       placeholder="Ex: Paracétamol, Amoxicilline, Acide acétylsalicylique..."
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-hidden"
+                      className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-hidden"
                     />
                   </div>
 
@@ -446,7 +446,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
                     <select
                       value={customCategory}
                       onChange={(e) => setCustomCategory(e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-hidden"
+                      className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-hidden"
                     >
                       <option value="Antalgique & Antipyrétique">Antalgique & Antipyrétique</option>
                       <option value="Antibiotique">Antibiotique</option>
@@ -459,7 +459,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
                   </div>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 flex items-start gap-2 text-[11px] text-blue-900 dark:text-blue-200">
+                <div className="p-2.5 bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 flex items-start gap-2 text-[11px] text-blue-900 dark:text-blue-200">
                   <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                   <span>
                     La détection automatique des substances actives et des classes allergéniques (pénicillines, AINS, macrolides) s'exécute en continu sur votre saisie pour préserver la sécurité clinique du patient.
@@ -480,7 +480,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
                 value={dosage}
                 onChange={(e) => setDosage(e.target.value)}
                 placeholder="Ex: 1 comprimé par prise"
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-hidden"
+                className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-hidden"
               />
             </div>
 
@@ -493,7 +493,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
                 value={frequency}
                 onChange={(e) => setFrequency(e.target.value)}
                 placeholder="Ex: 2 à 3 fois par jour si douleur"
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-hidden"
+                className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-hidden"
               />
             </div>
 
@@ -507,7 +507,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
                 max="365"
                 value={durationDays}
                 onChange={(e) => setDurationDays(parseInt(e.target.value) || 1)}
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-hidden font-mono tabular-nums"
+                className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-hidden font-mono tabular-nums"
               />
             </div>
 
@@ -518,7 +518,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
               <select
                 value={route}
                 onChange={(e) => setRoute(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-hidden"
+                className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-hidden"
               >
                 {activeMed.routeOptions.map((r) => (
                   <option key={r} value={r} className="dark:bg-slate-900 dark:text-slate-100">
@@ -537,7 +537,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
                 value={clinicalIndication}
                 onChange={(e) => setClinicalIndication(e.target.value)}
                 placeholder="Ex: Douleur articulaire / Céphalée / Épisode infectieux ORL"
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-hidden"
+                className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-hidden"
               />
             </div>
 
@@ -550,7 +550,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
                 value={patientInstructions}
                 onChange={(e) => setPatientInstructions(e.target.value)}
                 placeholder="Ex: À prendre au cours du repas avec un grand verre d'eau. Espacer les prises d'au moins 6 heures."
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-hidden"
+                className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-hidden"
               />
             </div>
           </div>
@@ -568,7 +568,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
             </div>
 
             {safetyEvaluation && safetyEvaluation.findings.length === 0 ? (
-              <div className="rounded-2xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/70 dark:bg-emerald-950/40 p-4 flex items-center gap-3 text-emerald-900 dark:text-emerald-200">
+              <div className="border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/70 dark:bg-emerald-950/40 p-4 flex items-center gap-3 text-emerald-900 dark:text-emerald-200">
                 <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <div className="text-xs">
                   <p className="font-bold">Aucune contre-indication ou interaction critique détectée</p>
@@ -587,7 +587,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
               return (
                 <div
                   key={finding.ruleId}
-                  className={`rounded-2xl border p-4 transition-all ${
+                  className={` border p-4 transition-all ${
                     isCritical
                       ? 'border-red-300 dark:border-red-900/60 bg-red-50/90 dark:bg-red-950/40 text-red-950 dark:text-red-200'
                       : isMajor
@@ -606,7 +606,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <span
-                          className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                          className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 ${
                             isCritical
                               ? 'bg-red-200/80 dark:bg-red-900/80 text-red-900 dark:text-red-100'
                               : 'bg-amber-200/80 dark:bg-amber-900/80 text-amber-900 dark:text-amber-100'
@@ -645,7 +645,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
                       </button>
 
                       {isExpanded && (
-                        <div className="mt-2 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 p-3 text-[11px] text-slate-700 dark:text-slate-300 space-y-1">
+                        <div className="mt-2 bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 p-3 text-[11px] text-slate-700 dark:text-slate-300 space-y-1">
                           <p className="font-bold text-slate-900 dark:text-slate-100">Faits cliniques probants :</p>
                           <ul className="list-disc pl-4 space-y-0.5">
                             {finding.evidence.map((ev, i) => (
@@ -665,7 +665,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
 
             {/* Mandatory Override Section if critical findings */}
             {hasCriticalFindings && (
-              <div className="rounded-2xl border border-red-300 dark:border-red-900/60 bg-white dark:bg-slate-900 p-4 shadow-xs">
+              <div className="border border-red-300 dark:border-red-900/60 bg-white dark:bg-slate-900 p-4 shadow-xs">
                 <div className="flex items-start gap-2.5">
                   <input
                     type="checkbox"
@@ -689,7 +689,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
                       value={overrideReason}
                       onChange={(e) => setOverrideReason(e.target.value)}
                       placeholder="Ex: Test cutané négatif récent sous contrôle allergologue / Prescription sous surveillance hospitalière stricte..."
-                      className="w-full rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50/40 dark:bg-red-950/40 p-2 text-xs text-slate-900 dark:text-slate-100 focus:border-red-500 focus:outline-hidden"
+                      className="w-full border border-red-200 dark:border-red-900/60 bg-red-50/40 dark:bg-red-950/40 p-2 text-xs text-slate-900 dark:text-slate-100 focus:border-red-500 focus:outline-hidden"
                     />
                     <p className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
                       Ce motif sera scellé avec votre identifiant RPPS dans le journal d'audit immuable.
@@ -701,7 +701,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
           </div>
 
           {/* 4. Checklist de validation progressive */}
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-4 space-y-2">
+          <div className="border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-4 space-y-2">
             <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
               Checklist de validation de la prescription
             </h4>
@@ -758,7 +758,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
         </div>
 
         {/* Footer actions */}
-        <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-800 px-6 py-4 bg-slate-50/70 dark:bg-slate-800/50 rounded-b-3xl">
+        <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-800 px-6 py-4 bg-slate-50/70 dark:bg-slate-800/50">
           <div className="text-xs text-slate-600 dark:text-slate-400">
             {entryMode === 'custom' && !customProductName.trim() && (
               <span className="text-amber-600 dark:text-amber-400 font-semibold">
@@ -780,7 +780,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="border border-slate-300 dark:border-slate-700 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               Annuler
             </button>
@@ -788,7 +788,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
               type="button"
               disabled={!canSign}
               onClick={handleSign}
-              className={`rounded-xl px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors cursor-pointer ${
+              className={` px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors cursor-pointer ${
                 canSign
                   ? 'bg-blue-600 hover:bg-blue-700'
                   : 'bg-slate-300 dark:bg-slate-800 cursor-not-allowed text-slate-500 dark:text-slate-600'

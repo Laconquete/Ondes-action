@@ -306,10 +306,10 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Filter & Action Bar inspired by CRM header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical transition-colors">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical transition-colors">
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300">
+            <span className="flex h-9 w-9 items-center justify-center bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300">
               <Calendar className="h-5 w-5" />
             </span>
             <div>
@@ -334,7 +334,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
               aria-label="Filtrer par praticien"
               value={selectedPractitioner}
               onChange={(e) => setSelectedPractitioner(e.target.value)}
-              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              className="border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">Tous les praticiens ({practitioners.length})</option>
               {practitioners.map((doc) => (
@@ -355,7 +355,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
               aria-label="Filtrer par statut de rendez-vous"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+              className="border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">Tous les statuts</option>
               <option value="arrived">En salle d'attente</option>
@@ -375,7 +375,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
                 setAppointmentDate('2026-09-29');
                 setIsCreateOpen(true);
               }}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition-colors"
+              className="inline-flex items-center gap-1.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition-colors"
             >
               <Plus className="h-4 w-4" />
               <span>Nouveau RDV</span>
@@ -385,7 +385,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
       </div>
 
       {/* Exact Card Body & FullCalendar Structure as requested */}
-      <div className="card-body rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-clinical transition-colors">
+      <div className="card-body border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-clinical transition-colors">
         <div
           id="calendarRdv"
           style={{ minHeight: '500px' }}
@@ -705,10 +705,10 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
                       return (
                         <div
                           key={apt.id}
-                          className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 dark:hover:bg-slate-850/50 p-3 rounded-xl transition-colors"
+                          className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 dark:hover:bg-slate-850/50 p-3 transition-colors"
                         >
                           <div className="flex items-start gap-3">
-                            <div className="flex flex-col items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 px-3 py-1.5 text-center">
+                            <div className="flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-800 px-3 py-1.5 text-center">
                               <span className="font-mono text-xs font-bold text-slate-900 dark:text-slate-100">
                                 {startTimeStr}
                               </span>
@@ -746,7 +746,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
                           <div className="flex items-center gap-2 self-end sm:self-center">
                             <button
                               onClick={() => onOpenConsultationForPatient(apt.patientId)}
-                              className="inline-flex items-center gap-1 rounded-lg bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs"
+                              className="inline-flex items-center gap-1 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs"
                             >
                               <Play className="h-3 w-3 fill-current" />
                               <span>Consulter</span>
@@ -853,10 +853,10 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
       {/* Appointment Detail Modal / Popover */}
       {selectedAppointment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-2xl transition-colors">
+          <div className="w-full max-w-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-2xl transition-colors">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300">
+                <span className="flex h-8 w-8 items-center justify-center bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300">
                   <Calendar className="h-4 w-4" />
                 </span>
                 <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
@@ -872,7 +872,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
             </div>
 
             <div className="mt-4 space-y-3 text-xs">
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3">
+              <div className="bg-slate-50 dark:bg-slate-800/60 p-3">
                 <span className="text-[11px] text-slate-500 dark:text-slate-400">Patient</span>
                 <p className="font-bold text-sm text-slate-900 dark:text-slate-100 mt-0.5">
                   {selectedAppointment.patientName}
@@ -883,7 +883,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-xl border border-slate-100 dark:border-slate-800 p-2.5">
+                <div className="border border-slate-100 dark:border-slate-800 p-2.5">
                   <span className="text-[10px] text-slate-500 uppercase">Horaire</span>
                   <p className="font-mono font-bold text-slate-900 dark:text-slate-100 mt-0.5">
                     {new Date(selectedAppointment.startsAt).toLocaleTimeString('fr-FR', {
@@ -901,7 +901,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-slate-100 dark:border-slate-800 p-2.5">
+                <div className="border border-slate-100 dark:border-slate-800 p-2.5">
                   <span className="text-[10px] text-slate-500 uppercase">Lieu & Salle</span>
                   <p className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
                     Salle {selectedAppointment.roomCode}
@@ -910,7 +910,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
                 </div>
               </div>
 
-              <div className="rounded-xl border border-slate-100 dark:border-slate-800 p-2.5">
+              <div className="border border-slate-100 dark:border-slate-800 p-2.5">
                 <span className="text-[10px] text-slate-500 uppercase">Motif de consultation</span>
                 <p className="text-slate-800 dark:text-slate-200 mt-0.5 font-medium">
                   {selectedAppointment.reason}
@@ -937,7 +937,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
                             status: st,
                           });
                         }}
-                        className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-all ${
+                        className={` px-2.5 py-1 text-[11px] font-semibold transition-all ${
                           selectedAppointment.status === st
                             ? 'bg-blue-600 text-white shadow-2xs'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -954,7 +954,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
             <div className="mt-5 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3">
               <button
                 onClick={() => setSelectedAppointment(null)}
-                className="rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                className="border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
               >
                 Fermer
               </button>
@@ -965,7 +965,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
                   setSelectedAppointment(null);
                   onOpenConsultationForPatient(patId);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 px-4 py-1.5 text-xs font-semibold text-white shadow-xs"
+                className="inline-flex items-center gap-1.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 px-4 py-1.5 text-xs font-semibold text-white shadow-xs"
               >
                 <Play className="h-3.5 w-3.5 fill-current" />
                 <span>Ouvrir la consultation</span>
@@ -978,10 +978,10 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
       {/* Appointment Creation Form Modal ("et de formulaire") */}
       {isCreateOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-lg rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl transition-colors">
+          <div className="w-full max-w-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl transition-colors">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300">
+                <span className="flex h-9 w-9 items-center justify-center bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300">
                   <Plus className="h-5 w-5" />
                 </span>
                 <div>
@@ -1013,14 +1013,14 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
                     placeholder="Filtrer les patients par nom, prénom ou IPP..."
                     value={patientSearchQuery}
                     onChange={(e) => setPatientSearchQuery(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 mb-1.5 focus:border-blue-500 focus:outline-hidden"
+                    className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 px-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 mb-1.5 focus:border-blue-500 focus:outline-hidden"
                   />
-                  <div className="max-h-32 overflow-y-auto space-y-1 rounded-xl border border-slate-200 dark:border-slate-700 p-1 bg-white dark:bg-slate-850">
+                  <div className="max-h-32 overflow-y-auto space-y-1 border border-slate-200 dark:border-slate-700 p-1 bg-white dark:bg-slate-850">
                     {filteredPatients.map((p) => (
                       <div
                         key={p.id}
                         onClick={() => setPatientId(p.id)}
-                        className={`flex items-center justify-between rounded-lg p-1.5 text-xs cursor-pointer transition-colors ${
+                        className={`flex items-center justify-between p-1.5 text-xs cursor-pointer transition-colors ${
                           patientId === p.id
                             ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold'
                             : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
@@ -1046,7 +1046,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
                 <select
                   value={targetPractitionerId}
                   onChange={(e) => setTargetPractitionerId(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-900 dark:text-slate-100"
+                  className="mt-1 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-900 dark:text-slate-100"
                 >
                   {practitioners.map((doc) => (
                     <option key={doc.id} value={doc.id}>
@@ -1066,7 +1066,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
                     type="date"
                     value={appointmentDate}
                     onChange={(e) => setAppointmentDate(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1.5 text-xs text-slate-900 dark:text-slate-100 font-mono"
+                    className="mt-1 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1.5 text-xs text-slate-900 dark:text-slate-100 font-mono"
                   />
                 </div>
 
@@ -1078,7 +1078,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
                     type="time"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1.5 text-xs text-slate-900 dark:text-slate-100 font-mono"
+                    className="mt-1 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1.5 text-xs text-slate-900 dark:text-slate-100 font-mono"
                   />
                 </div>
 
@@ -1089,7 +1089,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
                   <select
                     value={durationMinutes}
                     onChange={(e) => setDurationMinutes(Number(e.target.value))}
-                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1.5 text-xs text-slate-900 dark:text-slate-100 font-medium"
+                    className="mt-1 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1.5 text-xs text-slate-900 dark:text-slate-100 font-medium"
                   >
                     <option value={15}>15 min</option>
                     <option value={30}>30 min</option>
@@ -1110,7 +1110,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
                     onChange={(e) =>
                       setAppointmentType(e.target.value as Appointment['appointmentType'])
                     }
-                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-900 dark:text-slate-100"
+                    className="mt-1 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-900 dark:text-slate-100"
                   >
                     <option value="consultation">Consultation standard</option>
                     <option value="suivi">Suivi chronique</option>
@@ -1126,7 +1126,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
                   <select
                     value={roomCode}
                     onChange={(e) => setRoomCode(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-900 dark:text-slate-100"
+                    className="mt-1 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-900 dark:text-slate-100"
                   >
                     <option value="Box 1">Box 1 (Dr. Martin)</option>
                     <option value="Box 2">Box 2 (Dr. Lefèvre - Cardio)</option>
@@ -1146,7 +1146,7 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
                   value={appointmentReason}
                   onChange={(e) => setAppointmentReason(e.target.value)}
                   placeholder="Ex: Contrôle tensionnel, bilan annuel, crise d'asthme..."
-                  className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100"
+                  className="mt-1 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-slate-100"
                 />
               </div>
 
@@ -1154,13 +1154,13 @@ export const DoctorSchedule: React.FC<DoctorScheduleProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsCreateOpen(false)}
-                  className="rounded-xl border border-slate-300 dark:border-slate-700 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  className="border border-slate-300 dark:border-slate-700 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 px-4 py-2 text-xs font-semibold text-white shadow-xs"
+                  className="bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 px-4 py-2 text-xs font-semibold text-white shadow-xs"
                 >
                   Valider le Rendez-vous
                 </button>

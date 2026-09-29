@@ -41,10 +41,10 @@ export const AppointmentConflictDialog: React.FC<AppointmentConflictDialogProps>
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-fadeIn">
-      <div className="w-full max-w-lg rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-white dark:bg-slate-900 p-6 shadow-2xl transition-colors">
+      <div className="w-full max-w-lg border border-amber-200 dark:border-amber-900/60 bg-white dark:bg-slate-900 p-6 shadow-2xl transition-colors">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300">
               <AlertTriangle className="h-5 w-5" />
             </div>
             <div>
@@ -64,7 +64,7 @@ export const AppointmentConflictDialog: React.FC<AppointmentConflictDialogProps>
           </button>
         </div>
 
-        <div className="mt-4 rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/70 dark:bg-amber-950/40 p-3.5 text-xs text-amber-900 dark:text-amber-200">
+        <div className="mt-4 border border-amber-200 dark:border-amber-900/50 bg-amber-50/70 dark:bg-amber-950/40 p-3.5 text-xs text-amber-900 dark:text-amber-200">
           <div className="flex items-center justify-between font-medium">
             <span>Créneau demandé :</span>
             <span className="font-mono font-bold tabular-nums">{reqStart} – {reqEnd}</span>
@@ -91,7 +91,7 @@ export const AppointmentConflictDialog: React.FC<AppointmentConflictDialogProps>
               <button
                 key={index}
                 onClick={() => onSelectAlternative(slot)}
-                className="flex w-full items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 p-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/40 hover:text-blue-900 dark:hover:text-blue-200 transition-colors cursor-pointer"
+                className="flex w-full items-center justify-between border border-slate-200 dark:border-slate-800 p-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/40 hover:text-blue-900 dark:hover:text-blue-200 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-slate-400 dark:text-slate-500" />
@@ -109,7 +109,7 @@ export const AppointmentConflictDialog: React.FC<AppointmentConflictDialogProps>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            className="border border-slate-300 dark:border-slate-700 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             Modifier manuellement
           </button>

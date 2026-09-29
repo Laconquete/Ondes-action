@@ -38,10 +38,10 @@ export const BreakGlassModal: React.FC<BreakGlassModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-fadeIn">
-      <div className="w-full max-w-lg rounded-2xl border border-red-300 dark:border-red-900/70 bg-white dark:bg-slate-900 p-6 shadow-2xl transition-colors">
+      <div className="w-full max-w-lg border border-red-300 dark:border-red-900/70 bg-white dark:bg-slate-900 p-6 shadow-2xl transition-colors">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-100 dark:bg-red-950/70 text-red-700 dark:text-red-300">
+            <div className="flex h-11 w-11 items-center justify-center bg-red-100 dark:bg-red-950/70 text-red-700 dark:text-red-300">
               <AlertOctagon className="h-6 w-6" />
             </div>
             <div>
@@ -58,7 +58,7 @@ export const BreakGlassModal: React.FC<BreakGlassModalProps> = ({
           </button>
         </div>
 
-        <div className="mt-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 p-3.5 text-xs text-red-900 dark:text-red-200 space-y-1">
+        <div className="mt-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 p-3.5 text-xs text-red-900 dark:text-red-200 space-y-1">
           <p className="font-bold">Avertissement de sécurité et de conformité HDS :</p>
           <p className="text-[11px] text-red-800 dark:text-red-300 leading-relaxed">
             Le déclenchement d'un bris de glace outrepasse les règles d'équipe de soins habituelles. Cette action est <strong>immédiatement notifiée au DPO et au responsable de sécurité</strong> et inscrite dans le registre immuable d'audit.
@@ -73,7 +73,7 @@ export const BreakGlassModal: React.FC<BreakGlassModalProps> = ({
             <select
               value={selectedPatientId}
               onChange={(e) => setSelectedPatientId(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 p-2 text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+              className="w-full border border-slate-300 dark:border-slate-700 p-2 text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
             >
               {patients.map((p) => (
                 <option key={p.id} value={p.id} className="dark:bg-slate-900 dark:text-slate-100">
@@ -90,7 +90,7 @@ export const BreakGlassModal: React.FC<BreakGlassModalProps> = ({
             <select
               value={reasonCode}
               onChange={(e) => setReasonCode(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 p-2 text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+              className="w-full border border-slate-300 dark:border-slate-700 p-2 text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
             >
               <option value="URGENCE_VITALE">Urgence vitale immédiate — Pronostic engagé</option>
               <option value="PATIENT_INCONSCIENT">Patient inconscient / incapable d'exprimer son consentement</option>
@@ -108,7 +108,7 @@ export const BreakGlassModal: React.FC<BreakGlassModalProps> = ({
               value={justification}
               onChange={(e) => setJustification(e.target.value)}
               placeholder="Décrire le contexte clinique exact nécessitant la levée immédiate de restriction d'accès..."
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-xs text-slate-900 dark:text-slate-100"
+              className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-xs text-slate-900 dark:text-slate-100"
             />
           </div>
 
@@ -129,14 +129,14 @@ export const BreakGlassModal: React.FC<BreakGlassModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+              className="border border-slate-300 dark:border-slate-700 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
             >
               Annuler
             </button>
             <button
               type="submit"
               disabled={!confirmedRisk || !justification.trim()}
-              className="rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700 disabled:bg-slate-300 dark:disabled:bg-slate-800 disabled:cursor-not-allowed shadow-xs cursor-pointer"
+              className="bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700 disabled:bg-slate-300 dark:disabled:bg-slate-800 disabled:cursor-not-allowed shadow-xs cursor-pointer"
             >
               Déclencher le bris de glace (60 min)
             </button>

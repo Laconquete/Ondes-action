@@ -41,8 +41,7 @@
 
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 9999px;
-}
+  }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
@@ -131,7 +130,6 @@
 
 .fc-button-group {
   display: inline-flex;
-  border-radius: 0.5rem;
   overflow: hidden;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
@@ -185,7 +183,6 @@
   border-collapse: separate;
   border-spacing: 0;
   border: 1px solid #e2e8f0;
-  border-radius: 0.75rem;
   overflow: hidden;
 }
 .dark .fc-scrollgrid {
@@ -260,7 +257,6 @@
 .fc-day-today .fc-daygrid-day-number {
   background-color: #2563eb;
   color: #ffffff;
-  border-radius: 9999px;
   width: 1.5rem;
   height: 1.5rem;
   display: inline-flex;

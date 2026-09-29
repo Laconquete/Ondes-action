@@ -283,10 +283,10 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
   return (
     <div className="space-y-5">
       {/* Premium Header & Reception Quick Desk */}
-      <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-clinical transition-colors">
+      <div className="border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-clinical transition-colors">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-md shadow-blue-500/20">
+            <div className="flex h-12 w-12 items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-md shadow-blue-500/20">
               <Building2 className="h-6 w-6" />
             </div>
             <div>
@@ -309,7 +309,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
             {onOpenReceptionCheckIn && (
               <button
                 onClick={onOpenReceptionCheckIn}
-                className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-500/15 transition-all cursor-pointer hover:scale-102"
+                className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-500/15 transition-all cursor-pointer hover:scale-102"
               >
                 <UserCheck className="h-4 w-4" />
                 <span>Accueil & Arrivée Patient</span>
@@ -318,7 +318,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
 
             <button
               onClick={() => setIsNewPatientOpen(true)}
-              className="flex items-center gap-1.5 rounded-2xl bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-500/15 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-500/15 transition-all cursor-pointer"
             >
               <UserPlus className="h-4 w-4" />
               <span>Nouveau Patient</span>
@@ -329,10 +329,10 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
         {/* Filter Controls Row */}
         <div className="mt-4 flex flex-col md:flex-row md:items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
           {/* Filter Scope Tabs */}
-          <div className="flex flex-wrap items-center gap-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-850 p-1">
+          <div className="flex flex-wrap items-center gap-1.5 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-850 p-1">
             <button
               onClick={() => setFilterScope('all')}
-              className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${
+              className={` px-3 py-1.5 text-xs font-semibold transition-all ${
                 filterScope === 'all'
                   ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-2xs font-bold'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
@@ -342,7 +342,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
             </button>
             <button
               onClick={() => setFilterScope('my')}
-              className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${
+              className={` px-3 py-1.5 text-xs font-semibold transition-all ${
                 filterScope === 'my'
                   ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-2xs font-bold'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
@@ -352,7 +352,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
             </button>
             <button
               onClick={() => setFilterScope('risk')}
-              className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${
+              className={` px-3 py-1.5 text-xs font-semibold transition-all ${
                 filterScope === 'risk'
                   ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-2xs font-bold'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
@@ -362,7 +362,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
             </button>
             <button
               onClick={() => setFilterScope('recent')}
-              className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${
+              className={` px-3 py-1.5 text-xs font-semibold transition-all ${
                 filterScope === 'recent'
                   ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-2xs font-bold'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
@@ -382,7 +382,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
               <select
                 value={doctorFilter}
                 onChange={(e) => setDoctorFilter(e.target.value)}
-                className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden"
+                className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden"
               >
                 <option value="all">Tous les confrères</option>
                 {allDoctors.map((doc) => (
@@ -403,7 +403,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Recherche instantanée par nom, prénom, IPP (MRN-...), téléphone, pathologie ou tag..."
-            className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 pl-10 pr-4 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-850 focus:outline-hidden transition-all shadow-inner"
+            className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 pl-10 pr-4 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-850 focus:outline-hidden transition-all shadow-inner"
           />
         </div>
       </div>
@@ -412,7 +412,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
       <div className="grid grid-cols-12 gap-5">
         {/* Left: Modern Sortable Data Table */}
         <div className="col-span-12 xl:col-span-7">
-          <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-clinical overflow-hidden transition-colors">
+          <div className="border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-clinical overflow-hidden transition-colors">
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <div className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
                 Affichage de <span className="font-bold text-slate-800 dark:text-slate-200">{processedPatients.length}</span> patient(s) · Cliquez sur une ligne pour ouvrir sa fiche
@@ -518,7 +518,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                           <td className="p-3.5">
                             <div className="flex items-center gap-2.5">
                               <div
-                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-bold transition-colors ${
+                                className={`flex h-8 w-8 shrink-0 items-center justify-center text-xs font-bold transition-colors ${
                                   isSelected
                                     ? 'bg-blue-600 text-white shadow-xs'
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
@@ -581,7 +581,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                           {/* Assigned Doctor */}
                           <td className="p-3.5">
                             {pat.primaryDoctorName ? (
-                              <span className="inline-flex items-center gap-1 rounded-md bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-900 text-indigo-800 dark:text-indigo-300 px-2 py-0.5 text-[10px] font-semibold">
+                              <span className="inline-flex items-center gap-1 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-900 text-indigo-800 dark:text-indigo-300 px-2 py-0.5 text-[10px] font-semibold">
                                 {pat.primaryDoctorName.replace('Dr. ', '')}
                               </span>
                             ) : (
@@ -599,7 +599,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                                   onOpenConsultation(pat.id);
                                 }}
                                 title="Lancer la consultation médicale"
-                                className="inline-flex items-center gap-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-2.5 py-1 text-xs font-bold transition-colors"
+                                className="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 px-2.5 py-1 text-xs font-bold transition-colors"
                               >
                                 <Play className="h-3 w-3 fill-current" />
                                 <span>Consulter</span>
@@ -619,11 +619,11 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
         {/* Right: Comprehensive Medical Record Preview & Actions */}
         <div className="col-span-12 xl:col-span-5 space-y-4">
           {activePatient ? (
-            <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-clinical space-y-6 transition-colors">
+            <div className="border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-clinical space-y-6 transition-colors">
               {/* Patient Identification Card */}
               <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-5">
                 <div className="flex items-center gap-3.5">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white font-extrabold text-lg shadow-md shadow-blue-500/20">
+                  <div className="flex h-14 w-14 items-center justify-center bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white font-extrabold text-lg shadow-md shadow-blue-500/20">
                     {activePatient.familyName[0]}{activePatient.givenName[0]}
                   </div>
                   <div>
@@ -658,7 +658,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                         });
                       }
                     }}
-                    className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 px-3 py-2 text-xs font-bold shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                    className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 px-3 py-2 text-xs font-bold shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
                     title="Exporter le dossier patient en PDF certifié HDS"
                   >
                     <FileDown className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -667,7 +667,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
 
                   <button
                     onClick={() => onOpenConsultation(activePatient.id)}
-                    className="rounded-xl bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-3.5 py-2 text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                    className="bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-3.5 py-2 text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
                     <Play className="h-3.5 w-3.5 fill-current" />
                     <span>Ouvrir Dossier</span>
@@ -676,7 +676,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
               </div>
 
               {/* Referent Doctor Assignment Widget */}
-              <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-850/60 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-850/60 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
                   <Stethoscope className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   <div>
@@ -700,7 +700,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                           onUpdatePatientDoctor(activePatient.id, targetDoc.id, targetDoc.displayName);
                         }
                       }}
-                      className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden"
+                      className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden"
                     >
                       {allDoctors.map((doc) => (
                         <option key={doc.id} value={doc.id}>
@@ -714,7 +714,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
 
               {/* Critical Allergies Box if present */}
               {canViewClinical && activePatient.allergies.length > 0 && (
-                <div className="rounded-2xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/40 p-4 space-y-2">
+                <div className="border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/40 p-4 space-y-2">
                   <div className="flex items-center gap-2 text-rose-800 dark:text-rose-300 font-bold text-xs">
                     <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
                     <span>Allergies Médicamenteuses Critiques ({activePatient.allergies.length})</span>
@@ -723,7 +723,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                     {activePatient.allergies.map((all) => (
                       <div
                         key={all.id}
-                        className="rounded-xl bg-white/80 dark:bg-slate-900/80 p-2.5 text-xs border border-rose-100 dark:border-rose-900/40 flex items-center justify-between"
+                        className="bg-white/80 dark:bg-slate-900/80 p-2.5 text-xs border border-rose-100 dark:border-rose-900/40 flex items-center justify-between"
                       >
                         <span className="font-bold text-slate-900 dark:text-slate-100">
                           {all.substanceDisplay}
@@ -747,7 +747,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                     {activePatient.problems.map((pr) => (
                       <div
                         key={pr.id}
-                        className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-850/40 p-3 text-xs flex items-center justify-between"
+                        className="border border-slate-200/80 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-850/40 p-3 text-xs flex items-center justify-between"
                       >
                         <div>
                           <span className="font-bold text-slate-900 dark:text-slate-100 block">
@@ -757,7 +757,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                             Diagnostiqué le {new Date(pr.onsetDate).toLocaleDateString('fr-FR')}
                           </span>
                         </div>
-                        <span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-md">
+                        <span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5">
                           {pr.code}
                         </span>
                       </div>
@@ -780,7 +780,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                     const activeAlerts = analyzePatientVitals(activePatient);
                     if (activeAlerts.length === 0) return null;
                     return (
-                      <div className="mb-3 p-3 rounded-xl border border-rose-300 dark:border-rose-900 bg-rose-50/80 dark:bg-rose-950/40 text-xs space-y-1.5 shadow-2xs">
+                      <div className="mb-3 p-3 border border-rose-300 dark:border-rose-900 bg-rose-50/80 dark:bg-rose-950/40 text-xs space-y-1.5 shadow-2xs">
                         <div className="flex items-center gap-1.5 font-bold text-rose-800 dark:text-rose-200">
                           <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0 animate-pulse" />
                           <span>Alerte Clinique Constantes ({activeAlerts.length})</span>
@@ -799,7 +799,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                       const vit = activePatient.vitalsHistory[activePatient.vitalsHistory.length - 1];
                       return (
                         <>
-                          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 p-2.5 bg-slate-50/50 dark:bg-slate-850/50">
+                          <div className="border border-slate-200 dark:border-slate-800 p-2.5 bg-slate-50/50 dark:bg-slate-850/50">
                             <span className="text-[10px] text-slate-500 uppercase">Tension</span>
                             <p className="font-mono font-bold text-base text-slate-900 dark:text-slate-100 mt-0.5 tabular-nums">
                               {vit.systolic}/{vit.diastolic}
@@ -807,7 +807,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                             <span className="text-[10px] text-slate-400">mmHg</span>
                           </div>
 
-                          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 p-2.5 bg-slate-50/50 dark:bg-slate-850/50">
+                          <div className="border border-slate-200 dark:border-slate-800 p-2.5 bg-slate-50/50 dark:bg-slate-850/50">
                             <span className="text-[10px] text-slate-500 uppercase">Pouls</span>
                             <p className="font-mono font-bold text-base text-slate-900 dark:text-slate-100 mt-0.5 tabular-nums">
                               {vit.pulseBpm}
@@ -815,7 +815,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                             <span className="text-[10px] text-slate-400">bpm</span>
                           </div>
 
-                          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 p-2.5 bg-slate-50/50 dark:bg-slate-850/50">
+                          <div className="border border-slate-200 dark:border-slate-800 p-2.5 bg-slate-50/50 dark:bg-slate-850/50">
                             <span className="text-[10px] text-slate-500 uppercase">Poids</span>
                             <p className="font-mono font-bold text-base text-slate-900 dark:text-slate-100 mt-0.5 tabular-nums">
                               {vit.weightKg}
@@ -823,7 +823,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                             <span className="text-[10px] text-slate-400">kg</span>
                           </div>
 
-                          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 p-2.5 bg-slate-50/50 dark:bg-slate-850/50">
+                          <div className="border border-slate-200 dark:border-slate-800 p-2.5 bg-slate-50/50 dark:bg-slate-850/50">
                             <span className="text-[10px] text-slate-500 uppercase">SpO2</span>
                             <p className="font-mono font-bold text-base text-slate-900 dark:text-slate-100 mt-0.5 tabular-nums">
                               {vit.oxygenSaturation}%
@@ -839,7 +839,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                   <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-white font-bold shadow-xs">
+                        <div className="flex h-7 w-7 items-center justify-center bg-blue-600 text-white font-bold shadow-xs">
                           <Activity className="h-4 w-4" />
                         </div>
                         <div>
@@ -858,7 +858,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                       <button
                         type="button"
                         onClick={() => setIsVitalsModalOpen(true)}
-                        className="inline-flex items-center gap-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-slate-200 transition-colors shadow-2xs cursor-pointer"
+                        className="inline-flex items-center gap-1 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-slate-200 transition-colors shadow-2xs cursor-pointer"
                         title="Agrandir en plein écran pour une analyse approfondie"
                       >
                         <Maximize2 className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
@@ -866,7 +866,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                       </button>
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 shadow-xs">
+                    <div className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 shadow-xs">
                       <PatientVitalsTrends
                         patient={activePatient}
                         compact={true}
@@ -910,10 +910,10 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
       {/* New Patient Modal */}
       {isNewPatientOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md">
-          <div className="w-full max-w-lg rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl transition-colors">
+          <div className="w-full max-w-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl transition-colors">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300">
+                <span className="flex h-9 w-9 items-center justify-center bg-blue-100 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300">
                   <UserPlus className="h-5 w-5" />
                 </span>
                 <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
@@ -930,7 +930,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
 
             <form onSubmit={handleCreatePatient} className="mt-4 space-y-4 text-xs">
               {duplicateWarning && (
-                <div className="rounded-2xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/60 p-3 text-amber-900 dark:text-amber-300 flex items-start gap-2">
+                <div className="border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/60 p-3 text-amber-900 dark:text-amber-300 flex items-start gap-2">
                   <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
                   <span>{duplicateWarning}</span>
                 </div>
@@ -945,7 +945,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                     value={familyName}
                     onChange={(e) => handleFamilyNameChange(e.target.value)}
                     placeholder="Ex: Martin"
-                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs"
+                    className="mt-1 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs"
                   />
                 </div>
 
@@ -957,7 +957,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                     value={givenName}
                     onChange={(e) => setGivenName(e.target.value)}
                     placeholder="Ex: Julien"
-                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs"
+                    className="mt-1 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs"
                   />
                 </div>
               </div>
@@ -970,7 +970,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                     required
                     value={birthDate}
                     onChange={(e) => handleBirthDateChange(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-mono"
+                    className="mt-1 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-mono"
                   />
                 </div>
 
@@ -979,7 +979,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                   <select
                     value={gender}
                     onChange={(e) => setGender(e.target.value as 'M' | 'F' | 'O')}
-                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold"
+                    className="mt-1 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold"
                   >
                     <option value="M">Masculin</option>
                     <option value="F">Féminin</option>
@@ -996,7 +996,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="06 12 34 56 78"
-                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-mono"
+                    className="mt-1 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-mono"
                   />
                 </div>
 
@@ -1007,7 +1007,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="patient@email.fr"
-                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs"
+                    className="mt-1 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs"
                   />
                 </div>
               </div>
@@ -1020,7 +1020,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                   <select
                     value={assignedDoctorId}
                     onChange={(e) => setAssignedDoctorId(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold"
+                    className="mt-1 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold"
                   >
                     {allDoctors.map((doc) => (
                       <option key={doc.id} value={doc.id}>
@@ -1035,13 +1035,13 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsNewPatientOpen(false)}
-                  className="rounded-xl border border-slate-200 dark:border-slate-700 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  className="border border-slate-200 dark:border-slate-700 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 px-4 py-2 text-xs font-semibold text-white shadow-xs"
+                  className="bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 px-4 py-2 text-xs font-semibold text-white shadow-xs"
                 >
                   Enregistrer le Dossier
                 </button>
@@ -1054,16 +1054,16 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
       {/* Fullscreen Vitals Trends Modal */}
       {isVitalsModalOpen && activePatient && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-md transition-all">
-          <div className="w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl space-y-4">
+          <div className="w-full max-w-5xl max-h-[92vh] overflow-y-auto border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20">
+                <div className="flex h-11 w-11 items-center justify-center bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20">
                   <Activity className="h-6 w-6" />
                 </div>
                 <div>
                   <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                     <span>Analyse Approfondie des Constantes</span>
-                    <span className="font-mono text-sm font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/80 px-2 py-0.5 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <span className="font-mono text-sm font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/80 px-2 py-0.5 border border-blue-200 dark:border-blue-800">
                       {activePatient.familyName.toUpperCase()} {activePatient.givenName}
                     </span>
                   </h3>
@@ -1076,7 +1076,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
               <button
                 type="button"
                 onClick={() => setIsVitalsModalOpen(false)}
-                className="rounded-xl p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>

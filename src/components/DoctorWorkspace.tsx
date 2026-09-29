@@ -237,12 +237,12 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
       {/* ======================================================== */}
       <div className="col-span-12 lg:col-span-3 space-y-4">
         {/* Fiche Patient Principal */}
-        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical transition-colors">
+        <div className="border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical transition-colors">
           <div className="flex items-center justify-between">
             <button
               type="button"
               onClick={handleCopyMrn}
-              className="flex items-center gap-1.5 text-[11px] font-mono font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-2 py-0.5 rounded-md transition-colors"
+              className="flex items-center gap-1.5 text-[11px] font-mono font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-2 py-0.5 transition-colors"
               title="Copier l'identifiant patient IPP"
             >
               <span>{patient.medicalRecordNumber}</span>
@@ -257,7 +257,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                 type="button"
                 onClick={handleExportPdf}
                 disabled={isExportingPdf}
-                className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/70 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/70 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 px-2 py-0.5 border border-emerald-200 dark:border-emerald-800 transition-colors cursor-pointer"
                 title="Exporter le dossier patient en PDF certifié HDS"
               >
                 <FileDown className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
@@ -271,7 +271,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
           </div>
 
           <div className="mt-3 flex items-start gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black text-base shadow-sm shrink-0">
+            <div className="flex h-12 w-12 items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black text-base shadow-sm shrink-0">
               {patient.givenName[0]}
               {patient.familyName[0]}
             </div>
@@ -319,7 +319,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
 
         {/* Bloc Allergies & Intolérances (Sécurité Médicale Critique) */}
         <div
-          className={`rounded-2xl border p-4 shadow-clinical transition-all ${
+          className={` border p-4 shadow-clinical transition-all ${
             patient.allergies.length > 0
               ? 'border-red-300 dark:border-red-900/60 bg-gradient-to-b from-red-50/80 dark:from-red-950/40 to-white dark:to-slate-900'
               : 'border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900'
@@ -328,11 +328,11 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {patient.allergies.length > 0 ? (
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-600 text-white shadow-xs">
+                <div className="flex h-7 w-7 items-center justify-center bg-red-600 text-white shadow-xs">
                   <AlertOctagon className="h-4 w-4" />
                 </div>
               ) : (
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+                <div className="flex h-7 w-7 items-center justify-center bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
                   <CheckCircle2 className="h-4 w-4" />
                 </div>
               )}
@@ -355,7 +355,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
           </div>
 
           {patient.allergies.length === 0 ? (
-            <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 italic bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
+            <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 italic bg-slate-50 dark:bg-slate-800/50 p-2.5 border border-slate-100 dark:border-slate-800">
               Aucune allergie documentée à ce jour.
             </p>
           ) : (
@@ -363,13 +363,13 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
               {patient.allergies.map((allergy) => (
                 <div
                   key={allergy.id}
-                  className="rounded-xl border border-red-200 dark:border-red-900/50 bg-white dark:bg-slate-900/90 p-3 shadow-2xs"
+                  className="border border-red-200 dark:border-red-900/50 bg-white dark:bg-slate-900/90 p-3 shadow-2xs"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-extrabold text-red-950 dark:text-red-200">
                       {allergy.substanceDisplay}
                     </span>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-950/60 px-2 py-0.5 rounded-md border border-red-200 dark:border-red-800">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-950/60 px-2 py-0.5 border border-red-200 dark:border-red-800">
                       {allergy.severity === 'critical' ? 'Critique' : allergy.severity}
                     </span>
                   </div>
@@ -383,10 +383,10 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
         </div>
 
         {/* Constantes vitales récentes & Moniteur */}
-        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical transition-colors">
+        <div className="border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical transition-colors">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
+              <div className="flex h-7 w-7 items-center justify-center bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
                 <Activity className="h-4 w-4" />
               </div>
               <div>
@@ -400,7 +400,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
               <button
                 type="button"
                 onClick={() => setIsRecordingVitals(!isRecordingVitals)}
-                className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-2 py-1 rounded-lg border border-blue-200 dark:border-blue-800 transition-colors"
+                className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-2 py-1 border border-blue-200 dark:border-blue-800 transition-colors"
               >
                 + Saisir
               </button>
@@ -412,7 +412,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
             const vitalsAlerts = analyzePatientVitals(patient);
             if (vitalsAlerts.length === 0) return null;
             return (
-              <div className="mt-3 p-3 rounded-xl border border-rose-300 dark:border-rose-900 bg-rose-50/90 dark:bg-rose-950/50 text-xs space-y-1.5 shadow-2xs">
+              <div className="mt-3 p-3 border border-rose-300 dark:border-rose-900 bg-rose-50/90 dark:bg-rose-950/50 text-xs space-y-1.5 shadow-2xs">
                 <div className="flex items-center gap-1.5 font-extrabold text-rose-800 dark:text-rose-200">
                   <AlertOctagon className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0 animate-pulse" />
                   <span>Alerte Clinique Constantes ({vitalsAlerts.length})</span>
@@ -437,7 +437,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
 
                 return (
                   <>
-                    <div className={`rounded-xl p-2.5 border transition-colors ${
+                    <div className={` p-2.5 border transition-colors ${
                       hasBpAlert
                         ? 'bg-rose-50 dark:bg-rose-950/50 border-rose-300 dark:border-rose-800 text-rose-950 dark:text-rose-100'
                         : 'bg-slate-50 dark:bg-slate-800/60 border-slate-100 dark:border-slate-800'
@@ -452,7 +452,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                       </p>
                     </div>
 
-                    <div className={`rounded-xl p-2.5 border transition-colors ${
+                    <div className={` p-2.5 border transition-colors ${
                       hasPulseAlert
                         ? 'bg-rose-50 dark:bg-rose-950/50 border-rose-300 dark:border-rose-800 text-rose-950 dark:text-rose-100'
                         : 'bg-slate-50 dark:bg-slate-800/60 border-slate-100 dark:border-slate-800'
@@ -467,14 +467,14 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                       </p>
                     </div>
 
-                    <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-100 dark:border-slate-800">
+                    <div className="bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-100 dark:border-slate-800">
                       <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Température</span>
                       <p className="text-base font-extrabold font-mono text-slate-900 dark:text-slate-100 mt-0.5 tabular-nums">
                         {latestVitals.temperatureC}°C
                       </p>
                     </div>
 
-                    <div className={`rounded-xl p-2.5 border transition-colors ${
+                    <div className={` p-2.5 border transition-colors ${
                       hasSpo2Alert
                         ? 'bg-rose-50 dark:bg-rose-950/50 border-rose-300 dark:border-rose-800 text-rose-950 dark:text-rose-100'
                         : 'bg-slate-50 dark:bg-slate-800/60 border-slate-100 dark:border-slate-800'
@@ -488,7 +488,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                       </p>
                     </div>
 
-                    <div className="col-span-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                    <div className="col-span-2 bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                       <span className="text-slate-500 dark:text-slate-400 font-medium">Poids & Taille :</span>
                       <span className="font-mono font-bold text-slate-900 dark:text-slate-100 tabular-nums">
                         {latestVitals.weightKg} kg · {latestVitals.heightCm} cm{' '}
@@ -507,7 +507,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
           <button
             type="button"
             onClick={() => setActiveCenterTab('trends')}
-            className={`mt-3 w-full flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-bold transition-all shadow-xs ${
+            className={`mt-3 w-full flex items-center justify-center gap-2 py-2 text-xs font-bold transition-all shadow-xs ${
               activeCenterTab === 'trends'
                 ? 'bg-blue-600 text-white shadow-blue-500/20'
                 : 'border border-blue-200 dark:border-blue-900/60 bg-blue-50/80 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40'
@@ -518,7 +518,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
           </button>
 
           {isRecordingVitals && (
-            <div className="mt-3.5 p-3.5 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-900/60 text-xs space-y-2.5 animate-fadeIn">
+            <div className="mt-3.5 p-3.5 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 text-xs space-y-2.5 animate-fadeIn">
               <p className="font-bold text-blue-950 dark:text-blue-200 flex items-center gap-1.5">
                 <Activity className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                 Saisie rapide des constantes
@@ -529,34 +529,34 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                   placeholder="TA Sys"
                   value={newBpSys}
                   onChange={(e) => setNewBpSys(e.target.value)}
-                  className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-1.5 text-xs font-mono text-slate-900 dark:text-slate-100"
+                  className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-1.5 text-xs font-mono text-slate-900 dark:text-slate-100"
                 />
                 <input
                   type="text"
                   placeholder="TA Dia"
                   value={newBpDia}
                   onChange={(e) => setNewBpDia(e.target.value)}
-                  className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-1.5 text-xs font-mono text-slate-900 dark:text-slate-100"
+                  className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-1.5 text-xs font-mono text-slate-900 dark:text-slate-100"
                 />
                 <input
                   type="text"
                   placeholder="Pouls (bpm)"
                   value={newPulse}
                   onChange={(e) => setNewPulse(e.target.value)}
-                  className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-1.5 text-xs font-mono text-slate-900 dark:text-slate-100"
+                  className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-1.5 text-xs font-mono text-slate-900 dark:text-slate-100"
                 />
                 <input
                   type="text"
                   placeholder="SpO₂ (%)"
                   value={newSpo2}
                   onChange={(e) => setNewSpo2(e.target.value)}
-                  className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-1.5 text-xs font-mono text-slate-900 dark:text-slate-100"
+                  className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-1.5 text-xs font-mono text-slate-900 dark:text-slate-100"
                 />
               </div>
               <button
                 type="button"
                 onClick={handleRecordNewVitals}
-                className="w-full rounded-lg bg-blue-600 py-1.5 text-xs font-bold text-white hover:bg-blue-700 shadow-xs cursor-pointer"
+                className="w-full bg-blue-600 py-1.5 text-xs font-bold text-white hover:bg-blue-700 shadow-xs cursor-pointer"
               >
                 Valider & Actualiser les courbes
               </button>
@@ -565,13 +565,13 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
         </div>
 
         {/* Pathologies Actives CIM-10 */}
-        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical transition-colors">
+        <div className="border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical transition-colors">
           <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-slate-100">
             Pathologies Actives (CIM-10)
           </h3>
           <ul className="mt-2.5 space-y-2 text-xs">
             {patient.problems.map((prob) => (
-              <li key={prob.id} className="flex items-start gap-2 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-800">
+              <li key={prob.id} className="flex items-start gap-2 bg-slate-50 dark:bg-slate-800/50 p-2 border border-slate-100 dark:border-slate-800">
                 <span className="font-mono text-[10px] font-bold text-blue-800 dark:text-blue-300 bg-blue-100 dark:bg-blue-950/70 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800 shrink-0">
                   {prob.code}
                 </span>
@@ -587,12 +587,12 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
       {/* ======================================================== */}
       <div className="col-span-12 lg:col-span-6 space-y-3">
         {/* Navigation Onglets Zone Centrale */}
-        <div className="flex items-center justify-between border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 rounded-2xl shadow-clinical transition-colors">
+        <div className="flex items-center justify-between border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 shadow-clinical transition-colors">
           <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => setActiveCenterTab('soap')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
                 activeCenterTab === 'soap'
                   ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
                   : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
@@ -614,7 +614,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
             <button
               type="button"
               onClick={() => setActiveCenterTab('trends')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
                 activeCenterTab === 'trends'
                   ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
                   : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
@@ -643,7 +643,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
               type="button"
               onClick={handleExportPdf}
               disabled={isExportingPdf}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold shadow-xs hover:shadow-md transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold shadow-xs hover:shadow-md transition-all cursor-pointer"
               title="Exporter l'ensemble du dossier patient au format PDF certifié HDS"
             >
               {pdfExportSuccess ? (
@@ -673,11 +673,11 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
             onAddVitalsClick={() => setIsRecordingVitals(true)}
           />
         ) : (
-          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-clinical flex flex-col h-full overflow-hidden transition-colors">
+          <div className="border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-clinical flex flex-col h-full overflow-hidden transition-colors">
             {/* Header consultation */}
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-5 py-4 bg-slate-50/70 dark:bg-slate-800/50">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
+                <div className="flex h-8 w-8 items-center justify-center bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">
                   <Stethoscope className="h-4 w-4" />
                 </div>
                 <div>
@@ -695,7 +695,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                   type="button"
                   onClick={handleExportPdf}
                   disabled={isExportingPdf}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold border bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors cursor-pointer"
                   title="Télécharger le compte-rendu médical officiel en PDF"
                 >
                   <FileDown className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -703,7 +703,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                 </button>
 
                 <span
-                  className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg border ${
+                  className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 border ${
                     isSigned
                       ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
                       : 'bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800'
@@ -727,10 +727,10 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
             {/* Formulaire SOAP */}
             <div className="p-5 space-y-4 flex-1">
               {/* S - Subjective */}
-              <div className="rounded-xl border border-blue-100 dark:border-blue-900/30 bg-blue-50/20 dark:bg-blue-950/20 p-3.5 space-y-2">
+              <div className="border border-blue-100 dark:border-blue-900/30 bg-blue-50/20 dark:bg-blue-950/20 p-3.5 space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-extrabold text-blue-900 dark:text-blue-300 uppercase tracking-wider flex items-center gap-2">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-md bg-blue-600 text-white font-bold text-[10px]">
+                    <span className="flex h-5 w-5 items-center justify-center bg-blue-600 text-white font-bold text-[10px]">
                       S
                     </span>
                     Motif de Consultation & Anamnèse (Subjectif)
@@ -744,7 +744,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                     setSubjective((p) => ({ ...p, chiefComplaint: e.target.value }))
                   }
                   placeholder="Motif de la consultation exprimé par le patient..."
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 shadow-2xs"
+                  className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 shadow-2xs"
                 />
                 <textarea
                   disabled={isSigned || !canEditClinical}
@@ -754,15 +754,15 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                     setSubjective((p) => ({ ...p, historyOfPresentIllness: e.target.value }))
                   }
                   placeholder="Histoire de la maladie, antériorité des symptômes, facteurs déclenchants..."
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 shadow-2xs"
+                  className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 shadow-2xs"
                 />
               </div>
 
               {/* O - Objective */}
-              <div className="rounded-xl border border-teal-100 dark:border-teal-900/30 bg-teal-50/20 dark:bg-teal-950/20 p-3.5 space-y-2">
+              <div className="border border-teal-100 dark:border-teal-900/30 bg-teal-50/20 dark:bg-teal-950/20 p-3.5 space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-extrabold text-teal-900 dark:text-teal-300 uppercase tracking-wider flex items-center gap-2">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-md bg-teal-600 text-white font-bold text-[10px]">
+                    <span className="flex h-5 w-5 items-center justify-center bg-teal-600 text-white font-bold text-[10px]">
                       O
                     </span>
                     Examen Clinique & Données Biométriques (Objectif)
@@ -770,7 +770,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                   <button
                     type="button"
                     onClick={() => setActiveCenterTab('trends')}
-                    className="text-[11px] font-bold text-teal-700 dark:text-teal-300 hover:text-teal-900 dark:hover:text-teal-100 flex items-center gap-1 bg-teal-50 dark:bg-teal-950/60 px-2 py-0.5 rounded-lg border border-teal-200 dark:border-teal-800 transition-colors cursor-pointer"
+                    className="text-[11px] font-bold text-teal-700 dark:text-teal-300 hover:text-teal-900 dark:hover:text-teal-100 flex items-center gap-1 bg-teal-50 dark:bg-teal-950/60 px-2 py-0.5 border border-teal-200 dark:border-teal-800 transition-colors cursor-pointer"
                   >
                     <TrendingUp className="h-3 w-3" />
                     <span>Courbes Recharts (TA, Pouls, Poids)</span>
@@ -784,14 +784,14 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                     setObjective((p) => ({ ...p, physicalExam: e.target.value }))
                   }
                   placeholder="Signes physiques constatés, auscultation, examen cutané, constantes du jour..."
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-teal-500 dark:focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900/30 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 shadow-2xs"
+                  className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-teal-500 dark:focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900/30 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 shadow-2xs"
                 />
               </div>
 
               {/* A - Assessment */}
-              <div className="rounded-xl border border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/20 dark:bg-indigo-950/20 p-3.5 space-y-2">
+              <div className="border border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/20 dark:bg-indigo-950/20 p-3.5 space-y-2">
                 <label className="text-xs font-extrabold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider flex items-center gap-2">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-md bg-indigo-600 text-white font-bold text-[10px]">
+                  <span className="flex h-5 w-5 items-center justify-center bg-indigo-600 text-white font-bold text-[10px]">
                     A
                   </span>
                   Synthèse Diagnostique & Hypothèses (Assessment)
@@ -804,14 +804,14 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                     setAssessment((p) => ({ ...p, clinicalEvaluation: e.target.value }))
                   }
                   placeholder="Synthèse diagnostique, stade de sévérité, codage CIM-10 correspondant..."
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 shadow-2xs"
+                  className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-indigo-500 dark:focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 shadow-2xs"
                 />
               </div>
 
               {/* P - Plan */}
-              <div className="rounded-xl border border-purple-100 dark:border-purple-900/30 bg-purple-50/20 dark:bg-purple-950/20 p-3.5 space-y-2">
+              <div className="border border-purple-100 dark:border-purple-900/30 bg-purple-50/20 dark:bg-purple-950/20 p-3.5 space-y-2">
                 <label className="text-xs font-extrabold text-purple-900 dark:text-purple-300 uppercase tracking-wider flex items-center gap-2">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-md bg-purple-600 text-white font-bold text-[10px]">
+                  <span className="flex h-5 w-5 items-center justify-center bg-purple-600 text-white font-bold text-[10px]">
                     P
                   </span>
                   Plan Thérapeutique & Conduite à Tenir (Plan)
@@ -824,13 +824,13 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                     setPlan((p) => ({ ...p, treatmentPlan: e.target.value }))
                   }
                   placeholder="Prescription médicamenteuse, examens complémentaires, conseils hygiéno-diététiques, délai de reconsultation..."
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-purple-500 dark:focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-100 dark:focus:ring-purple-900/30 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 shadow-2xs"
+                  className="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/90 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:border-purple-500 dark:focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-100 dark:focus:ring-purple-900/30 disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 shadow-2xs"
                 />
               </div>
 
               {/* Addendums si note signée */}
               {isSigned && (
-                <div className="mt-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/40 p-4">
+                <div className="mt-4 border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/40 p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <History className="h-4 w-4 text-slate-700 dark:text-slate-300" />
@@ -853,7 +853,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                   {addenda.map((ad, idx) => (
                     <div
                       key={ad.id || idx}
-                      className="mt-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3.5 text-xs shadow-2xs"
+                      className="mt-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3.5 text-xs shadow-2xs"
                     >
                       <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800 pb-1.5 mb-2">
                         <span className="font-bold text-slate-900 dark:text-slate-100">
@@ -869,7 +869,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                   ))}
 
                   {isAddingAddendum && (
-                    <form onSubmit={handleSubmitAddendum} className="mt-3.5 space-y-2.5 bg-white dark:bg-slate-900 p-4 rounded-xl border border-blue-200 dark:border-blue-900/60 shadow-xs">
+                    <form onSubmit={handleSubmitAddendum} className="mt-3.5 space-y-2.5 bg-white dark:bg-slate-900 p-4 border border-blue-200 dark:border-blue-900/60 shadow-xs">
                       <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
                         Nouvel Addendum Clinique (Scellé dans le journal d'audit HDS)
                       </p>
@@ -879,7 +879,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                         value={addendumText}
                         onChange={(e) => setAddendumText(e.target.value)}
                         placeholder="Complément d'information ou précision clinique..."
-                        className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-xs text-slate-900 dark:text-slate-100"
+                        className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-xs text-slate-900 dark:text-slate-100"
                       />
                       <input
                         required
@@ -887,19 +887,19 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                         value={addendumReason}
                         onChange={(e) => setAddendumReason(e.target.value)}
                         placeholder="Motif réglementaire de l'addendum..."
-                        className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-xs text-slate-900 dark:text-slate-100"
+                        className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-xs text-slate-900 dark:text-slate-100"
                       />
                       <div className="flex justify-end gap-2 pt-1">
                         <button
                           type="button"
                           onClick={() => setIsAddingAddendum(false)}
-                          className="rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                          className="border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                         >
                           Annuler
                         </button>
                         <button
                           type="submit"
-                          className="rounded-lg bg-blue-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-blue-700 shadow-xs cursor-pointer"
+                          className="bg-blue-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-blue-700 shadow-xs cursor-pointer"
                         >
                           Enregistrer l'addendum
                         </button>
@@ -928,7 +928,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                   type="button"
                   onClick={handleExportPdf}
                   disabled={isExportingPdf}
-                  className="flex items-center gap-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
                   title="Exporter le compte-rendu médical et le dossier patient en PDF"
                 >
                   {pdfExportSuccess ? (
@@ -954,14 +954,14 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                     <button
                       type="button"
                       onClick={handleSaveDraft}
-                      className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                      className="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                     >
                       Enregistrer le brouillon
                     </button>
                     <button
                       type="button"
                       onClick={handleSign}
-                      className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-xs font-bold text-white hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-xs font-bold text-white hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
                     >
                       Signer la consultation
                     </button>
@@ -978,7 +978,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
       {/* ======================================================== */}
       <div className="col-span-12 lg:col-span-3 space-y-4">
         {/* Actions Rapides */}
-        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical space-y-2.5 transition-colors">
+        <div className="border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical space-y-2.5 transition-colors">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-slate-100">
               Actions Cliniques
@@ -994,11 +994,11 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
               type="button"
               onClick={handleExportPdf}
               disabled={isExportingPdf}
-              className="w-full flex items-center justify-between rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-800 p-3 text-xs font-bold text-white shadow-md shadow-emerald-500/25 transition-all cursor-pointer group"
+              className="w-full flex items-center justify-between bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-800 p-3 text-xs font-bold text-white shadow-md shadow-emerald-500/25 transition-all cursor-pointer group"
               title="Exporter l'intégralité du dossier patient (notes SOAP, ordonnances, antécédents, constantes) en PDF conforme HDS"
             >
               <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 backdrop-blur-xs group-hover:scale-105 transition-transform shrink-0">
+                <div className="flex h-8 w-8 items-center justify-center bg-white/20 backdrop-blur-xs group-hover:scale-105 transition-transform shrink-0">
                   {pdfExportSuccess ? (
                     <Check className="h-4 w-4 text-white" />
                   ) : isExportingPdf ? (
@@ -1023,7 +1023,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
               <button
                 type="button"
                 onClick={onOpenPrescriptionModal}
-                className="w-full flex items-center justify-between rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 p-3 text-xs font-bold text-white hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+                className="w-full flex items-center justify-between bg-gradient-to-r from-blue-600 to-indigo-600 p-3 text-xs font-bold text-white hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
               >
                 <div className="flex items-center gap-2">
                   <Pill className="h-4 w-4" />
@@ -1036,7 +1036,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
             <button
               type="button"
               onClick={onOpenSchedule}
-              className="w-full flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/70 p-2.5 text-xs font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="w-full flex items-center justify-between border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/70 p-2.5 text-xs font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -1048,7 +1048,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
             <button
               type="button"
               onClick={onOpenFollowUpModal}
-              className="w-full flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/70 p-2.5 text-xs font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="w-full flex items-center justify-between border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/70 p-2.5 text-xs font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-2">
                 <UserCheck className="h-4 w-4 text-teal-600 dark:text-teal-400" />
@@ -1060,37 +1060,37 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
         </div>
 
         {/* Traitements Actifs */}
-        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical transition-colors">
+        <div className="border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical transition-colors">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
+              <div className="flex h-7 w-7 items-center justify-center bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
                 <Pill className="h-3.5 w-3.5" />
               </div>
               <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-slate-100">
                 Traitements Actifs
               </h3>
             </div>
-            <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md tabular-nums">
+            <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 tabular-nums">
               {activeMedications.length}
             </span>
           </div>
 
           <div className="mt-3.5 space-y-2">
             {activeMedications.length === 0 ? (
-              <p className="text-xs text-slate-500 dark:text-slate-400 italic bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+              <p className="text-xs text-slate-500 dark:text-slate-400 italic bg-slate-50 dark:bg-slate-800/50 p-3 border border-slate-100 dark:border-slate-800">
                 Aucun traitement actif en cours.
               </p>
             ) : (
               activeMedications.map((order) => (
                 <div
                   key={order.id}
-                  className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-3 text-xs space-y-1 hover:bg-white dark:hover:bg-slate-800 transition-all shadow-2xs"
+                  className="border border-slate-200/90 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-3 text-xs space-y-1 hover:bg-white dark:hover:bg-slate-800 transition-all shadow-2xs"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-slate-900 dark:text-slate-100">
                       {order.medicationDisplay}
                     </span>
-                    <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded-md">
+                    <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.2">
                       Actif
                     </span>
                   </div>
@@ -1105,17 +1105,17 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
         </div>
 
         {/* Suivis & Tâches ouvertes */}
-        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical transition-colors">
+        <div className="border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical transition-colors">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800">
+              <div className="flex h-7 w-7 items-center justify-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800">
                 <ClipboardList className="h-3.5 w-3.5" />
               </div>
               <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-slate-100">
                 Suivis Programmés
               </h3>
             </div>
-            <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md tabular-nums">
+            <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 tabular-nums">
               {followUps.filter((f) => f.patientId === patient.id).length}
             </span>
           </div>
@@ -1126,7 +1126,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
               .map((tsk) => (
                 <div
                   key={tsk.id}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 p-2.5 text-xs bg-slate-50/60 dark:bg-slate-800/40 space-y-1 hover:bg-white dark:hover:bg-slate-800 transition-all shadow-2xs"
+                  className="border border-slate-200 dark:border-slate-800 p-2.5 text-xs bg-slate-50/60 dark:bg-slate-800/40 space-y-1 hover:bg-white dark:hover:bg-slate-800 transition-all shadow-2xs"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-slate-900 dark:text-slate-100">{tsk.title}</span>
