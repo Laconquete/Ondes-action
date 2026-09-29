@@ -1,0 +1,6 @@
+{
+  "name": "Clinique OneDesk",
+  "description": "Poste de travail clinique PWA sécurisé, modulaire et orienté dossier patient longitudinal, agenda médical et prescriptions sécurisées.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
