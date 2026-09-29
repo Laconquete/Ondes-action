@@ -2,21 +2,128 @@
 
 @variant dark (&:where(.dark, .dark *));
 
+/* ============================================================
+   DESIGN TOKENS — Pharmacy Premium (NetPhar+)
+   Variables CSS centralisées, thémables, multi-tenant ready.
+   ============================================================ */
+
 @layer base {
   :root {
-    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    /* Typographie */
+    --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+
+    /* Couleurs primaires — Pharmacy Blue */
+    --color-primary: #1e40af;
+    --color-primary-hover: #1e3a8a;
+    --color-primary-active: #172554;
+    --color-primary-soft: #eff6ff;
+    --color-primary-border: #bfdbfe;
+
+    /* Couleurs sémantiques cliniques */
+    --color-critical: #dc2626;
+    --color-critical-bg: #fef2f2;
+    --color-critical-border: #fecaca;
+    --color-warning: #d97706;
+    --color-warning-bg: #fffbeb;
+    --color-warning-border: #fde68a;
+    --color-success: #059669;
+    --color-success-bg: #ecfdf5;
+    --color-success-border: #a7f3d0;
+    --color-info: #0284c7;
+    --color-info-bg: #f0f9ff;
+    --color-info-border: #bae6fd;
+
+    /* Neutres — Slate scale */
+    --color-bg: #f8fafc;
+    --color-surface: #ffffff;
+    --color-surface-2: #f1f5f9;
+    --color-border: #e2e8f0;
+    --color-border-strong: #cbd5e1;
+    --color-text: #0f172a;
+    --color-text-secondary: #475569;
+    --color-text-muted: #94a3b8;
+
+    /* Espacements */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 0.75rem;
+    --space-lg: 1rem;
+    --space-xl: 1.5rem;
+    --space-2xl: 2rem;
+    --space-3xl: 3rem;
+
+    /* Ombres */
+    --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(15 23 42 / 0.07), 0 2px 4px -2px rgb(15 23 42 / 0.07);
+    --shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.08), 0 4px 6px -4px rgb(15 23 42 / 0.05);
+    --shadow-xl: 0 20px 25px -5px rgb(15 23 42 / 0.1), 0 8px 10px -6px rgb(15 23 42 / 0.05);
+    --shadow-clinical: 0 1px 3px 0 rgb(15 23 42 / 0.05), 0 1px 2px -1px rgb(15 23 42 / 0.05);
+    --shadow-clinical-md: 0 4px 6px -1px rgb(15 23 42 / 0.07), 0 2px 4px -2px rgb(15 23 42 / 0.07);
+    --shadow-clinical-lg: 0 10px 15px -3px rgb(15 23 42 / 0.08), 0 4px 6px -4px rgb(15 23 42 / 0.05);
+
+    /* Transitions (fade discret) */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Rayons — cartes anguleuses (sharp modern clinical), pills arrondies */
+    --radius-none: 0;
+    --radius-pill: 9999px;
+
+    /* Z-index scale */
+    --z-base: 1;
+    --z-dropdown: 1000;
+    --z-sticky: 1100;
+    --z-modal: 1200;
+    --z-toast: 1300;
   }
 
+  /* Dark mode tokens */
   html.dark,
   body.dark,
   :root[data-theme='dark'] {
     color-scheme: dark;
+    --color-primary: #3b82f6;
+    --color-primary-hover: #2563eb;
+    --color-primary-active: #1d4ed8;
+    --color-primary-soft: #1e293b;
+    --color-primary-border: #1e3a8a;
+
+    --color-critical: #ef4444;
+    --color-critical-bg: #450a0a;
+    --color-critical-border: #7f1d1d;
+    --color-warning: #f59e0b;
+    --color-warning-bg: #422006;
+    --color-warning-border: #78350f;
+    --color-success: #10b981;
+    --color-success-bg: #022c22;
+    --color-success-border: #064e3b;
+    --color-info: #38bdf8;
+    --color-info-bg: #082f49;
+    --color-info-border: #0c4a6e;
+
+    --color-bg: #090e17;
+    --color-surface: #0f172a;
+    --color-surface-2: #1e293b;
+    --color-border: #1e293b;
+    --color-border-strong: #334155;
+    --color-text: #f1f5f9;
+    --color-text-secondary: #cbd5e1;
+    --color-text-muted: #64748b;
+
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    --shadow-clinical: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+    --shadow-clinical-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+    --shadow-clinical-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.4);
   }
 
   body {
     font-family: var(--font-sans);
-    background-color: #f8fafc;
-    color: #0f172a;
+    background-color: var(--color-bg);
+    color: var(--color-text);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -24,12 +131,74 @@
 
   .dark body,
   body.dark {
-    background-color: #090e17;
-    color: #f1f5f9;
+    background-color: var(--color-bg);
+    color: var(--color-text);
   }
 }
 
-/* Custom modern scrollbars */
+/* ============================================================
+   ANIMATIONS — fade discret et soigné
+   ============================================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideOutRight {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(24px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulseSoft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-fadeIn { animation: fadeIn var(--transition-normal) ease-out; }
+.animate-fadeInUp { animation: fadeInUp var(--transition-normal) ease-out; }
+.animate-fadeInScale { animation: fadeInScale var(--transition-normal) ease-out; }
+.animate-slideInRight { animation: slideInRight var(--transition-normal) ease-out; }
+.animate-slideOutRight { animation: slideOutRight var(--transition-fast) ease-in forwards; }
+
+/* ============================================================
+   SKELETON LOADER — état de chargement discret
+   ============================================================ */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-2) 0%,
+    var(--color-border) 50%,
+    var(--color-surface-2) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* ============================================================
+   SCROLLBARS
+   ============================================================ */
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -40,50 +209,25 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  }
+  background: var(--color-border-strong);
+  border-radius: var(--radius-pill);
+}
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--color-text-muted);
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: #334155;
-}
+/* ============================================================
+   UTILITAIRES MÉTIER
+   ============================================================ */
 
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
-
-/* Tabular numbers for clinical measurements */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
-/* Soft medical glows and shadows */
-.shadow-clinical {
-  box-shadow: 0 1px 3px 0 rgb(15 23 42 / 0.05), 0 1px 2px -1px rgb(15 23 42 / 0.05);
-}
-
-.dark .shadow-clinical {
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
-}
-
-.shadow-clinical-md {
-  box-shadow: 0 4px 6px -1px rgb(15 23 42 / 0.07), 0 2px 4px -2px rgb(15 23 42 / 0.07);
-}
-
-.dark .shadow-clinical-md {
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
-}
-
-.shadow-clinical-lg {
-  box-shadow: 0 10px 15px -3px rgb(15 23 42 / 0.08), 0 4px 6px -4px rgb(15 23 42 / 0.05);
-}
-
-.dark .shadow-clinical-lg {
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.4);
-}
+.shadow-clinical { box-shadow: var(--shadow-clinical); }
+.shadow-clinical-md { box-shadow: var(--shadow-clinical-md); }
+.shadow-clinical-lg { box-shadow: var(--shadow-clinical-lg); }
 
 .glass-panel {
   background: rgba(255, 255, 255, 0.94);
@@ -96,6 +240,7 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
+
 
 /* FullCalendar Standard & Dark Theme Styles */
 .fc {

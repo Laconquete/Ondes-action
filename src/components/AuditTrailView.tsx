@@ -25,7 +25,7 @@ export const AuditTrailView: React.FC<AuditTrailViewProps> = ({ auditEvents }) =
       ev.actorName.toLowerCase().includes(q) ||
       ev.action.toLowerCase().includes(q) ||
       (ev.patientName && ev.patientName.toLowerCase().includes(q)) ||
-      ev.eventHash.toLowerCase().includes(q) ||
+      (ev.eventHash && ev.eventHash.toLowerCase().includes(q)) ||
       (ev.reasonText && ev.reasonText.toLowerCase().includes(q));
 
     const matchAction = filterAction === 'all' || ev.action === filterAction;
@@ -156,7 +156,7 @@ export const AuditTrailView: React.FC<AuditTrailViewProps> = ({ auditEvents }) =
                   </td>
                   <td className="py-3 px-4 font-mono text-[10px] text-slate-500 dark:text-slate-400">
                     <span className="truncate block w-28 tabular-nums" title={ev.eventHash}>
-                      {ev.eventHash.substring(0, 16)}...
+                      {(ev.eventHash || '—').substring(0, 16)}...
                     </span>
                   </td>
                 </tr>

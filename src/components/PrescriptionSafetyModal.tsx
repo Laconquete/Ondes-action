@@ -129,6 +129,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
       return {
         id: `custom_${Date.now()}`,
         code: 'CUSTOM_ENTRY',
+        atcCode: 'CUSTOM', // Pas de code ATC pour saisie libre — validation manuelle requise
         displayName: name,
         genericName: generic,
         category: customCategory,
@@ -139,6 +140,7 @@ export const PrescriptionSafetyModal: React.FC<PrescriptionSafetyModalProps> = (
         standardDurationDays: durationDays || 7,
         routeOptions: ['Orale', 'Injectable', 'Inhalée', 'Cutanée', 'Sublinguale', 'Autre'],
         activeSubstances: detectedSubstances,
+        allergenClassCodes: [],
         allergenClasses: detectedAllergenClasses,
       };
     }

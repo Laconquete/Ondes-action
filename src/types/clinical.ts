@@ -18,8 +18,11 @@ export type AllergySeverity = 'mild' | 'moderate' | 'severe' | 'life_threatening
 
 export interface Allergy {
   id: string;
-  substanceCode: string;
+  substanceCode: string; // Code ATC du principe actif (ex: "N02AA01" pour codéine, "J01CA04" pour amoxicilline)
   substanceDisplay: string;
+  // Code ATC de la classe allergénique (ex: "J01CA" pénicillines, "N02AA" opioïdes)
+  // Permet un matching hiérarchique strict : pénicillamine (M01CB02) ≠ pénicilline (J01CA04)
+  allergenClassCode?: string;
   reaction: string;
   severity: AllergySeverity;
   recordedAt: string;
@@ -177,6 +180,9 @@ export interface ClinicalAddendum {
 export interface MedicationCatalogItem {
   id: string;
   code: string;
+  // Code ATC complet du médicament (ex: "J01CA04" pour amoxicilline, "M01CB02" pour pénicillamine)
+  // Référentiel WHO ATC : https://www.whocc.no/atc_ddd_index/
+  atcCode: string;
   displayName: string;
   genericName: string;
   category: string;
@@ -186,8 +192,12 @@ export interface MedicationCatalogItem {
   standardFrequency: string;
   standardDurationDays: number;
   routeOptions: string[];
-  activeSubstances: string[]; // e.g. ['amoxicilline', 'acide_clavulanique']
-  allergenClasses: string[]; // e.g. ['penicillin', 'beta_lactam']
+  activeSubstances: string[]; // noms scientifiques (ex: ['amoxicilline', 'acide_clavulanique'])
+  // Codes ATC des classes allergéniques (ex: ['J01CA', 'J01CR'])
+  // Permet un matching strict par code, jamais par `.includes()` sur le display name
+  allergenClassCodes: string[];
+  // Maintenu pour rétro-compatibilité — déprécié, utiliser allergenClassCodes
+  allergenClasses?: string[];
 }
 
 export interface MedicationOrder {
@@ -289,9 +299,13 @@ export interface AuditEvent {
   resourceId?: string;
   patientId?: string;
   patientName?: string;
-  outcome: 'allowed' | 'denied' | 'challenged';
+  outcome: 'allowed' | 'denied' | 'challenged' | 'error';
   reasonText?: string;
-  eventHash: string;
+  // Champs cryptographiques remplis par cryptoAuditService (chaînage SHA-256)
+  eventHash?: string;
+  previousHash?: string;
+  tenantId?: string;
+  integrityChainSeq?: number;
 }
 
 export interface OutboxItem {

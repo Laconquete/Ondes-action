@@ -29,7 +29,10 @@ export function evaluateMedicationSafety(
     const allergyDisplay = allergy.substanceDisplay.toLowerCase();
 
     // Vérification des correspondances de substances ou de classes allergéniques
-    const matchesAllergenClass = proposedMedication.allergenClasses.some(
+    // NOTE : pour la rétro-compatibilité, on accepte l'ancien champ allergenClasses (display-based)
+    // mais on privilégie allergenClassCodes (ATC-based, strict) via allergyMatchingService.
+    const legacyClasses = proposedMedication.allergenClasses ?? [];
+    const matchesAllergenClass = legacyClasses.some(
       (c) => allergyCode.includes(c) || allergyDisplay.includes(c)
     );
     const matchesSubstance = proposedMedication.activeSubstances.some(
@@ -46,7 +49,7 @@ export function evaluateMedicationSafety(
         evidence: [
           `Allergie patient : ${allergy.substanceDisplay} (enregistrée le ${new Date(allergy.recordedAt).toLocaleDateString('fr-FR')})`,
           `Substances actives du produit : ${proposedMedication.activeSubstances.join(', ')}`,
-          `Classes allergéniques : ${proposedMedication.allergenClasses.join(', ')}`,
+          `Classes allergéniques : ${(proposedMedication.allergenClasses ?? []).join(', ')}`,
         ],
         action: 'block_unless_overridden',
         requiresOverride: true,
