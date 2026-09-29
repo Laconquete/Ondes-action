@@ -26,6 +26,7 @@ import {
   AuditEvent,
   OutboxItem,
   BreakGlassEvent,
+  DoctorNotification,
 } from './types/clinical';
 import { evaluateUserPermissions } from './services/clinicalEngine';
 import { Header } from './components/Header';
@@ -40,6 +41,7 @@ import { AuditTrailView } from './components/AuditTrailView';
 import { BreakGlassModal } from './components/BreakGlassModal';
 import { PatientSearchModal } from './components/PatientSearchModal';
 import { OfflineSyncModal } from './components/OfflineSyncModal';
+import { ReceptionCheckInModal } from './components/ReceptionCheckInModal';
 
 export default function App() {
   // Current user & authentication
@@ -64,6 +66,25 @@ export default function App() {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
   const [isBreakGlassModalOpen, setIsBreakGlassModalOpen] = useState(false);
+  const [isReceptionCheckInOpen, setIsReceptionCheckInOpen] = useState(false);
+
+  // Real-time Doctor Notifications
+  const [notifications, setNotifications] = useState<DoctorNotification[]>([
+    {
+      id: 'notif_init_01',
+      timestamp: '10:28',
+      doctorId: 'usr_nadia_martin',
+      patientId: 'pat_jc_bernard',
+      patientName: 'JEAN-CLAUDE BERNARD',
+      patientMrn: 'MRN-2026-0422',
+      ticketNumber: 'T-101',
+      roomCode: 'Box 1',
+      type: 'patient_arrival',
+      title: 'Patient arrivé en salle d\'attente',
+      message: 'Patient arrivé à l\'accueil pour son RDV de 10:30 (Contrôle INR & Douleurs genou)',
+      read: false,
+    },
+  ]);
 
   // Clinical records state
   const [patients, setPatients] = useState<Patient[]>(INITIAL_PATIENTS);
@@ -234,6 +255,123 @@ export default function App() {
       patientId,
       reasonText: `Attribution du médecin traitant référent à : ${doctorName}`,
     });
+  };
+
+  // Reception desk check-in workflow
+  const handleReceptionCheckIn = (params: {
+    patient: Patient;
+    appointmentId?: string;
+    targetDoctorId: string;
+    targetDoctorName: string;
+    roomCode: string;
+    reason: string;
+    isWalkIn: boolean;
+    priority: number;
+  }) => {
+    const ticketId = `tkt_${Date.now()}`;
+    const ticketNum = `T-${Math.floor(100 + Math.random() * 900)}`;
+
+    // 1. If appointment exists, update status to 'arrived'
+    if (params.appointmentId) {
+      setAppointments((prev) =>
+        prev.map((a) =>
+          a.id === params.appointmentId
+            ? { ...a, status: 'arrived', queueTicketId: ticketId, roomCode: params.roomCode }
+            : a
+        )
+      );
+    } else {
+      // Create instant walk-in appointment
+      const walkInApt: Appointment = {
+        id: `apt_walkin_${Date.now()}`,
+        patientId: params.patient.id,
+        patientName: `${params.patient.givenName} ${params.patient.familyName}`,
+        patientMrn: params.patient.medicalRecordNumber,
+        practitionerId: params.targetDoctorId,
+        practitionerName: params.targetDoctorName,
+        serviceCode: 'MED-GEN',
+        appointmentType: params.priority > 0 ? 'urgence' : 'consultation',
+        startsAt: new Date().toISOString(),
+        endsAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+        status: 'arrived',
+        reason: params.reason,
+        roomCode: params.roomCode,
+        priority: params.priority as 0 | 1 | 2,
+        queueTicketId: ticketId,
+      };
+      setAppointments((prev) => [walkInApt, ...prev]);
+    }
+
+    // 2. Add queue ticket
+    const newTicket: QueueTicket = {
+      id: ticketId,
+      appointmentId: params.appointmentId || `apt_walkin_${Date.now()}`,
+      patientId: params.patient.id,
+      patientName: `${params.patient.givenName} ${params.patient.familyName}`,
+      arrivedAt: new Date().toISOString(),
+      roomCode: params.roomCode,
+      status: 'waiting',
+      priority: params.priority,
+    };
+    setQueueTickets((prev) => [newTicket, ...prev]);
+
+    // 3. Dispatch Doctor Notification
+    const newNotification: DoctorNotification = {
+      id: `notif_${Date.now()}`,
+      timestamp: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      doctorId: params.targetDoctorId,
+      patientId: params.patient.id,
+      patientName: `${params.patient.familyName.toUpperCase()} ${params.patient.givenName}`,
+      patientMrn: params.patient.medicalRecordNumber,
+      ticketNumber: ticketNum,
+      roomCode: params.roomCode,
+      type: params.isWalkIn ? 'urgent_walk_in' : 'patient_arrival',
+      title: params.isWalkIn ? 'Arrivée Sans Rendez-vous' : 'Patient arrivé en salle d\'attente',
+      message: params.isWalkIn
+        ? `Patient orienté vers votre box sans RDV pour : ${params.reason}`
+        : `Patient arrivé en salle d'attente pour son RDV : ${params.reason}`,
+      read: false,
+    };
+    setNotifications((prev) => [newNotification, ...prev]);
+
+    logAudit('PATIENT_ADMISSION_RECEPTION', 'queue_ticket', {
+      resourceId: ticketId,
+      patientId: params.patient.id,
+      patientName: `${params.patient.familyName} ${params.patient.givenName}`,
+      reasonText: `Accueil & orientation patient vers ${params.targetDoctorName} (Ticket ${ticketNum}, ${params.roomCode})`,
+    });
+  };
+
+  // Add new patient and check in directly
+  const handleAddNewPatientAndCheckIn = (
+    newPatient: Patient,
+    checkInParams: {
+      targetDoctorId: string;
+      targetDoctorName: string;
+      roomCode: string;
+      reason: string;
+      priority: number;
+    }
+  ) => {
+    setPatients((prev) => [newPatient, ...prev]);
+    handleReceptionCheckIn({
+      patient: newPatient,
+      targetDoctorId: checkInParams.targetDoctorId,
+      targetDoctorName: checkInParams.targetDoctorName,
+      roomCode: checkInParams.roomCode,
+      reason: checkInParams.reason,
+      isWalkIn: true,
+      priority: checkInParams.priority,
+    });
+  };
+
+  // Select notification: mark read, select patient, and open consultation
+  const handleSelectNotification = (notif: DoctorNotification) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n))
+    );
+    handleSelectPatient(notif.patientId);
+    setActiveTab('workspace');
   };
 
   // Save clinical note draft
@@ -512,6 +650,9 @@ export default function App() {
         onOpenSearchModal={() => setIsSearchModalOpen(true)}
         onOpenBreakGlassModal={() => setIsBreakGlassModalOpen(true)}
         activeBreakGlass={activeBreakGlass}
+        notifications={currentUser.role === 'doctor' ? notifications.filter(n => n.doctorId === currentUser.id) : notifications}
+        onSelectNotification={handleSelectNotification}
+        onOpenReceptionCheckIn={() => setIsReceptionCheckInOpen(true)}
       />
 
       {/* Main Clinical Viewport */}
@@ -536,6 +677,7 @@ export default function App() {
             onNavigateToMessaging={() => setActiveTab('messaging')}
             onOpenCreateAppointment={() => setActiveTab('schedule')}
             onOpenCreatePatient={() => setActiveTab('patients')}
+            onOpenReceptionCheckIn={() => setIsReceptionCheckInOpen(true)}
           />
         )}
 
@@ -595,6 +737,7 @@ export default function App() {
               handleSelectPatient(patId);
               setActiveTab('schedule');
             }}
+            onOpenReceptionCheckIn={() => setIsReceptionCheckInOpen(true)}
           />
         )}
 
@@ -673,6 +816,19 @@ export default function App() {
           isOnline={isOnline}
           onTriggerSync={handleTriggerSync}
           lastSyncTime={lastSyncTime}
+        />
+      )}
+
+      {/* Reception Check-In Desk Modal */}
+      {isReceptionCheckInOpen && (
+        <ReceptionCheckInModal
+          isOpen={isReceptionCheckInOpen}
+          onClose={() => setIsReceptionCheckInOpen(false)}
+          patients={patients}
+          appointments={appointments}
+          doctors={allUsers.filter((u) => u.role === 'doctor')}
+          onCheckInPatient={handleReceptionCheckIn}
+          onAddNewPatientAndCheckIn={handleAddNewPatientAndCheckIn}
         />
       )}
     </div>

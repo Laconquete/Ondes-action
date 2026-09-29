@@ -21,6 +21,8 @@ import {
   Clock,
   ArrowRight,
   ClipboardList,
+  FileDown,
+  Loader2,
 } from 'lucide-react';
 import {
   Patient,
@@ -32,6 +34,8 @@ import {
   VitalSignSet,
 } from '../types/clinical';
 import { PatientVitalsTrends } from './PatientVitalsTrends';
+import { exportPatientDossierPdf } from '../services/pdfExportService';
+import { analyzePatientVitals } from '../services/clinicalAlertsEngine';
 
 interface DoctorWorkspaceProps {
   patient: Patient;
@@ -96,6 +100,10 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
 
   // Copy IPP state
   const [copiedMrn, setCopiedMrn] = useState(false);
+
+  // PDF Export states
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [pdfExportSuccess, setPdfExportSuccess] = useState(false);
 
   const isSigned = clinicalNote.status === 'signed' || clinicalNote.status === 'amended';
 
@@ -192,6 +200,36 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
     setIsAddingAddendum(false);
   };
 
+  const handleExportPdf = () => {
+    try {
+      setIsExportingPdf(true);
+      const noteToExport: ClinicalNote = {
+        ...clinicalNote,
+        subjective,
+        objective,
+        assessment,
+        plan,
+        followUp,
+        authoredByName: clinicalNote.authoredByName || currentUser.displayName,
+      };
+
+      exportPatientDossierPdf({
+        patient,
+        clinicalNote: noteToExport,
+        addenda,
+        activeMedications,
+        currentUser,
+      });
+
+      setPdfExportSuccess(true);
+      setTimeout(() => setPdfExportSuccess(false), 3000);
+    } catch (err) {
+      console.error('Erreur lors de l\'exportation du dossier patient en PDF :', err);
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
+
   return (
     <div className="grid grid-cols-12 gap-5 h-full">
       {/* ======================================================== */}
@@ -214,10 +252,22 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                 <Copy className="h-3 w-3 text-slate-400" />
               )}
             </button>
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Dossier Actif
-            </span>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handleExportPdf}
+                disabled={isExportingPdf}
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/70 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800 transition-colors cursor-pointer"
+                title="Exporter le dossier patient en PDF certifié HDS"
+              >
+                <FileDown className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                <span>PDF</span>
+              </button>
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Dossier Actif
+              </span>
+            </div>
           </div>
 
           <div className="mt-3 flex items-start gap-3">
@@ -357,45 +407,97 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
             )}
           </div>
 
+          {/* Real-time Clinical Alerts Alert Box if abnormal vitals */}
+          {(() => {
+            const vitalsAlerts = analyzePatientVitals(patient);
+            if (vitalsAlerts.length === 0) return null;
+            return (
+              <div className="mt-3 p-3 rounded-xl border border-rose-300 dark:border-rose-900 bg-rose-50/90 dark:bg-rose-950/50 text-xs space-y-1.5 shadow-2xs">
+                <div className="flex items-center gap-1.5 font-extrabold text-rose-800 dark:text-rose-200">
+                  <AlertOctagon className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0 animate-pulse" />
+                  <span>Alerte Clinique Constantes ({vitalsAlerts.length})</span>
+                </div>
+                {vitalsAlerts.map((alt) => (
+                  <div key={alt.id} className="text-[11px] text-rose-950 dark:text-rose-200 leading-tight">
+                    <span className="font-black text-rose-700 dark:text-rose-300">⚠️ {alt.badgeLabel} ({alt.valueDisplay}) :</span>{' '}
+                    <span>{alt.recommendation}</span>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+
           {latestVitals ? (
             <div className="mt-3.5 grid grid-cols-2 gap-2 text-xs">
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-100 dark:border-slate-800">
-                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Pression Artérielle</span>
-                <p className="text-base font-extrabold font-mono text-slate-900 dark:text-slate-100 mt-0.5 tabular-nums">
-                  {latestVitals.systolic}/{latestVitals.diastolic}{' '}
-                  <span className="text-[10px] font-normal text-slate-500 dark:text-slate-400">mmHg</span>
-                </p>
-              </div>
+              {(() => {
+                const vitalsAlerts = analyzePatientVitals(patient);
+                const hasBpAlert = vitalsAlerts.some((a) => a.category === 'blood_pressure');
+                const hasPulseAlert = vitalsAlerts.some((a) => a.category === 'pulse');
+                const hasSpo2Alert = vitalsAlerts.some((a) => a.category === 'oxygen_saturation');
 
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-100 dark:border-slate-800">
-                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Pouls de Repos</span>
-                <p className="text-base font-extrabold font-mono text-slate-900 dark:text-slate-100 mt-0.5 tabular-nums">
-                  {latestVitals.pulseBpm}{' '}
-                  <span className="text-[10px] font-normal text-slate-500 dark:text-slate-400">bpm</span>
-                </p>
-              </div>
+                return (
+                  <>
+                    <div className={`rounded-xl p-2.5 border transition-colors ${
+                      hasBpAlert
+                        ? 'bg-rose-50 dark:bg-rose-950/50 border-rose-300 dark:border-rose-800 text-rose-950 dark:text-rose-100'
+                        : 'bg-slate-50 dark:bg-slate-800/60 border-slate-100 dark:border-slate-800'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Pression Artérielle</span>
+                        {hasBpAlert && <AlertOctagon className="h-3 w-3 text-rose-600 animate-pulse" />}
+                      </div>
+                      <p className={`text-base font-extrabold font-mono mt-0.5 tabular-nums ${hasBpAlert ? 'text-rose-600 dark:text-rose-300' : 'text-slate-900 dark:text-slate-100'}`}>
+                        {latestVitals.systolic}/{latestVitals.diastolic}{' '}
+                        <span className="text-[10px] font-normal text-slate-500 dark:text-slate-400">mmHg</span>
+                      </p>
+                    </div>
 
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-100 dark:border-slate-800">
-                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Température</span>
-                <p className="text-base font-extrabold font-mono text-slate-900 dark:text-slate-100 mt-0.5 tabular-nums">
-                  {latestVitals.temperatureC}°C
-                </p>
-              </div>
+                    <div className={`rounded-xl p-2.5 border transition-colors ${
+                      hasPulseAlert
+                        ? 'bg-rose-50 dark:bg-rose-950/50 border-rose-300 dark:border-rose-800 text-rose-950 dark:text-rose-100'
+                        : 'bg-slate-50 dark:bg-slate-800/60 border-slate-100 dark:border-slate-800'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Pouls de Repos</span>
+                        {hasPulseAlert && <AlertOctagon className="h-3 w-3 text-rose-600 animate-pulse" />}
+                      </div>
+                      <p className={`text-base font-extrabold font-mono mt-0.5 tabular-nums ${hasPulseAlert ? 'text-rose-600 dark:text-rose-300' : 'text-slate-900 dark:text-slate-100'}`}>
+                        {latestVitals.pulseBpm}{' '}
+                        <span className="text-[10px] font-normal text-slate-500 dark:text-slate-400">bpm</span>
+                      </p>
+                    </div>
 
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-100 dark:border-slate-800">
-                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Saturation SpO₂</span>
-                <p className="text-base font-extrabold font-mono text-slate-900 dark:text-slate-100 mt-0.5 tabular-nums">
-                  {latestVitals.oxygenSaturation}%
-                </p>
-              </div>
+                    <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-100 dark:border-slate-800">
+                      <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Température</span>
+                      <p className="text-base font-extrabold font-mono text-slate-900 dark:text-slate-100 mt-0.5 tabular-nums">
+                        {latestVitals.temperatureC}°C
+                      </p>
+                    </div>
 
-              <div className="col-span-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-                <span className="text-slate-500 dark:text-slate-400 font-medium">Poids & Taille :</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-slate-100 tabular-nums">
-                  {latestVitals.weightKg} kg · {latestVitals.heightCm} cm{' '}
-                  <span className="text-slate-500 dark:text-slate-400 font-normal">(IMC {latestVitals.bmi})</span>
-                </span>
-              </div>
+                    <div className={`rounded-xl p-2.5 border transition-colors ${
+                      hasSpo2Alert
+                        ? 'bg-rose-50 dark:bg-rose-950/50 border-rose-300 dark:border-rose-800 text-rose-950 dark:text-rose-100'
+                        : 'bg-slate-50 dark:bg-slate-800/60 border-slate-100 dark:border-slate-800'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Saturation SpO₂</span>
+                        {hasSpo2Alert && <AlertOctagon className="h-3 w-3 text-rose-600 animate-pulse" />}
+                      </div>
+                      <p className={`text-base font-extrabold font-mono mt-0.5 tabular-nums ${hasSpo2Alert ? 'text-rose-600 dark:text-rose-300' : 'text-slate-900 dark:text-slate-100'}`}>
+                        {latestVitals.oxygenSaturation}%
+                      </p>
+                    </div>
+
+                    <div className="col-span-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                      <span className="text-slate-500 dark:text-slate-400 font-medium">Poids & Taille :</span>
+                      <span className="font-mono font-bold text-slate-900 dark:text-slate-100 tabular-nums">
+                        {latestVitals.weightKg} kg · {latestVitals.heightCm} cm{' '}
+                        <span className="text-slate-500 dark:text-slate-400 font-normal">(IMC {latestVitals.bmi})</span>
+                      </span>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           ) : (
             <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 italic">Aucune constante enregistrée.</p>
@@ -532,8 +634,35 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
             </button>
           </div>
 
-          <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block">
-            Patient : <span className="font-bold text-slate-900 dark:text-slate-100">{patient.familyName.toUpperCase()} {patient.givenName}</span>
+          <div className="flex items-center gap-2.5">
+            <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden md:block">
+              Patient : <span className="font-bold text-slate-900 dark:text-slate-100">{patient.familyName.toUpperCase()} {patient.givenName}</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleExportPdf}
+              disabled={isExportingPdf}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold shadow-xs hover:shadow-md transition-all cursor-pointer"
+              title="Exporter l'ensemble du dossier patient au format PDF certifié HDS"
+            >
+              {pdfExportSuccess ? (
+                <>
+                  <Check className="h-3.5 w-3.5 text-white" />
+                  <span>PDF Prêt !</span>
+                </>
+              ) : isExportingPdf ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
+                  <span>Génération...</span>
+                </>
+              ) : (
+                <>
+                  <FileDown className="h-3.5 w-3.5" />
+                  <span>Export Dossier PDF</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
 
@@ -562,6 +691,17 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
               </div>
 
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleExportPdf}
+                  disabled={isExportingPdf}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 transition-colors cursor-pointer"
+                  title="Télécharger le compte-rendu médical officiel en PDF"
+                >
+                  <FileDown className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span>PDF Dossier</span>
+                </button>
+
                 <span
                   className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg border ${
                     isSigned
@@ -784,6 +924,31 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
               </div>
 
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleExportPdf}
+                  disabled={isExportingPdf}
+                  className="flex items-center gap-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                  title="Exporter le compte-rendu médical et le dossier patient en PDF"
+                >
+                  {pdfExportSuccess ? (
+                    <>
+                      <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>PDF Téléchargé !</span>
+                    </>
+                  ) : isExportingPdf ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-600 dark:text-emerald-400" />
+                      <span>Génération...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FileDown className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>Exporter en PDF</span>
+                    </>
+                  )}
+                </button>
+
                 {!isSigned && canEditClinical && (
                   <>
                     <button
@@ -813,12 +978,47 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
       {/* ======================================================== */}
       <div className="col-span-12 lg:col-span-3 space-y-4">
         {/* Actions Rapides */}
-        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical space-y-2 transition-colors">
-          <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-slate-100">
-            Actions Cliniques
-          </h3>
+        <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-clinical space-y-2.5 transition-colors">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+              Actions Cliniques
+            </h3>
+            <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+              Certifié HDS
+            </span>
+          </div>
 
-          <div className="space-y-2 pt-1">
+          <div className="space-y-2.5 pt-1">
+            {/* Bouton d'Action Principal : Exporter le Dossier en PDF */}
+            <button
+              type="button"
+              onClick={handleExportPdf}
+              disabled={isExportingPdf}
+              className="w-full flex items-center justify-between rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-800 p-3 text-xs font-bold text-white shadow-md shadow-emerald-500/25 transition-all cursor-pointer group"
+              title="Exporter l'intégralité du dossier patient (notes SOAP, ordonnances, antécédents, constantes) en PDF conforme HDS"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 backdrop-blur-xs group-hover:scale-105 transition-transform shrink-0">
+                  {pdfExportSuccess ? (
+                    <Check className="h-4 w-4 text-white" />
+                  ) : isExportingPdf ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-white" />
+                  ) : (
+                    <FileDown className="h-4 w-4 text-white" />
+                  )}
+                </div>
+                <div className="text-left">
+                  <span className="block text-xs font-extrabold tracking-tight leading-tight">
+                    {pdfExportSuccess ? 'Dossier PDF Téléchargé !' : isExportingPdf ? 'Génération du PDF...' : 'Exporter le Dossier (PDF)'}
+                  </span>
+                  <span className="block text-[10px] text-emerald-100 font-medium leading-none mt-0.5">
+                    Notes, prescriptions & antécédents
+                  </span>
+                </div>
+              </div>
+              <ArrowRight className="h-4 w-4 text-emerald-200 group-hover:translate-x-0.5 transition-transform shrink-0" />
+            </button>
+
             {canPrescribe && (
               <button
                 type="button"

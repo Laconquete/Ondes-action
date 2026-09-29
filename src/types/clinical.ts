@@ -317,3 +317,20 @@ export interface BreakGlassEvent {
   expiresAt: string;
   active: boolean;
 }
+
+export interface DoctorNotification {
+  id: string;
+  timestamp: string;
+  doctorId: string;
+  patientId: string;
+  patientName: string;
+  patientMrn: string;
+  ticketNumber: string;
+  roomCode: string;
+  appointmentTime?: string;
+  type: 'patient_arrival' | 'urgent_walk_in' | 'queue_update';
+  title: string;
+  message: string;
+  read: boolean;
+}
+
