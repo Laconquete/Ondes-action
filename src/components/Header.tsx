@@ -31,8 +31,8 @@ import { usePWAInstall } from '../hooks/usePWAInstall';
 import { useTheme } from '../context/ThemeContext';
 
 interface HeaderProps {
-  activeTab: 'portal' | 'workspace' | 'schedule' | 'patients' | 'followups' | 'messaging' | 'audit';
-  setActiveTab: (tab: 'portal' | 'workspace' | 'schedule' | 'patients' | 'followups' | 'messaging' | 'audit') => void;
+  activeTab: 'portal' | 'workspace' | 'schedule' | 'patients' | 'followups' | 'messaging' | 'audit' | 'nursing';
+  setActiveTab: (tab: 'portal' | 'workspace' | 'schedule' | 'patients' | 'followups' | 'messaging' | 'audit' | 'nursing') => void;
   currentUser: AppUser;
   allUsers: AppUser[];
   onSwitchUser: (user: AppUser) => void;
@@ -185,6 +185,13 @@ export const Header: React.FC<HeaderProps> = ({
       accentColor: 'text-purple-600 dark:text-purple-400',
     },
     {
+      id: 'nursing' as const,
+      label: 'Soins Infirmiers',
+      description: 'Carnet de soins, MAR & checklist directives',
+      icon: Activity,
+      accentColor: 'text-rose-600 dark:text-rose-400',
+    },
+    {
       id: 'audit',
       label: 'Audit HDS',
       description: 'Journal immuable & traçabilité RGPD',
@@ -296,7 +303,7 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
               <div className="absolute left-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
                 <div className="w-72 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl">
-                  {navigationItems.filter(i => i.id === 'patients' || i.id === 'schedule' || i.id === 'followups').map((item) => {
+                  {navigationItems.filter(i => i.id === 'patients' || i.id === 'schedule' || i.id === 'followups' || i.id === 'nursing').map((item) => {
                     const Icon = item.icon;
                     const isActive = activeTab === item.id;
                     return (

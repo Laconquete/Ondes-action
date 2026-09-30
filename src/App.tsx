@@ -30,7 +30,8 @@ import { SecureMessagingView } from './components/SecureMessagingView';
 import { FollowUpManager } from './components/FollowUpManager';
 import { AuditTrailView } from './components/AuditTrailView';
 import { ReceptionDashboard } from './components/ReceptionDashboard';
-// Modales lazy-loadées — réduisent le bundle initial de ~80 kB (PrescriptionSafety 804 lignes + pdfExportService)
+import { NursingWorkspace } from './components/NursingWorkspace';
+// Modales lazy-loadées — réduisent le bundle initial
 const PrescriptionSafetyModal = lazy(() =>
   import('./components/PrescriptionSafetyModal').then((m) => ({ default: m.PrescriptionSafetyModal }))
 );
@@ -43,12 +44,6 @@ const PatientSearchModal = lazy(() =>
 const OfflineSyncModal = lazy(() =>
   import('./components/OfflineSyncModal').then((m) => ({ default: m.OfflineSyncModal }))
 );
-const ReceptionCheckInModal = lazy(() =>
-  import('./components/ReceptionCheckInModal').then((m) => ({ default: m.ReceptionCheckInModal }))
-);
-const AppointmentConflictDialog = lazy(() =>
-  import('./components/AppointmentConflictDialog').then((m) => ({ default: m.AppointmentConflictDialog }))
-);
 // Nouveaux imports : authentification réelle + audit cryptographique
 import { useAuthStore } from './stores/authStore';
 // Hooks extraits (refactor god-component)
@@ -58,6 +53,7 @@ import { usePatientData } from './hooks/usePatientData';
 import { useAuditLog } from './hooks/useAuditLog';
 import { useOutbox } from './hooks/useOutbox';
 import { useBreakGlass } from './hooks/useBreakGlass';
+import { useNursingCare } from './hooks/useNursingCare';
 
 // Loader pour les modales lazy-loadées (affiché pendant le chargement du chunk)
 const ModalLoader: React.FC = () => (
@@ -163,8 +159,11 @@ export default function App() {
 
   // Active navigation tab
   const [activeTab, setActiveTab] = useState<
-    'portal' | 'workspace' | 'schedule' | 'patients' | 'followups' | 'messaging' | 'audit'
+    'portal' | 'workspace' | 'schedule' | 'patients' | 'followups' | 'messaging' | 'audit' | 'nursing'
   >('portal');
+
+  // === Nursing Care (carnet de soins infirmier) ===
+  const nursingCare = useNursingCare({ currentUser, onAudit: logAudit });
 
   // Active patient (derived)
   const activePatient = useMemo(() => {
@@ -517,6 +516,19 @@ export default function App() {
 
         {activeTab === 'audit' && (
           <AuditTrailView auditEvents={auditEvents} />
+        )}
+
+        {activeTab === 'nursing' && (
+          <NursingWorkspace
+            currentUser={currentUser}
+            carePlans={nursingCare.carePlans}
+            tasks={nursingCare.tasks}
+            administrations={nursingCare.administrations}
+            patients={patients}
+            onExecuteTask={nursingCare.executeTask}
+            onSkipTask={nursingCare.skipTask}
+            onRecordAdministration={nursingCare.recordAdministration}
+          />
         )}
       </main>
 
