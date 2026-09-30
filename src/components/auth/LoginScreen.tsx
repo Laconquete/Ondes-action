@@ -105,6 +105,9 @@ export const LoginScreen: React.FC = () => {
     } else if (result.error) {
       if (result.error.includes('network') || result.error.includes('Réseau')) {
         toast.warning('Hors-ligne', 'Basculez sur l\'authentification locale ci-dessous.');
+      } else if (result.error.includes('invalides') || result.error.includes('incorrect')) {
+        // Si Supabase Auth échoue (pas encore d'utilisateurs créés), suggérer le mode démo
+        toast.error('Échec de connexion', 'Identifiants Supabase invalides. Utilisez le bouton "Connexion démo" ci-dessous ou créez l\'utilisateur dans Supabase Dashboard.');
       } else {
         toast.error('Échec de connexion', result.error);
       }
@@ -354,20 +357,23 @@ export const LoginScreen: React.FC = () => {
             </>
           )}
 
-          {/* Démo */}
+          {/* Démo — TOUJOURS visible, même en mode Supabase */}
           <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
             <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
-              Mode démonstration
+              {useSupabaseAuth ? 'Essai en mode démo' : 'Mode démonstration'}
             </p>
             <button
               onClick={handleDemoLogin}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 underline"
+              className="inline-flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 text-xs font-bold transition-colors border border-slate-300 dark:border-slate-600"
             >
-              Connexion en tant que Dr. Nadia Martin (démo)
+              🔓 Connexion démo (Dr. Nadia Martin)
             </button>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5">
-              Identifiants démo : <code className="font-mono">nadia.martin</code> / <code className="font-mono">demo</code>
-            </p>
+            {useSupabaseAuth && (
+              <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-2 leading-relaxed">
+                ⚠ Si vous n'avez pas encore créé d'utilisateurs dans Supabase Dashboard,
+                utilisez la connexion démo pour tester l'application.
+              </p>
+            )}
           </div>
         </div>
 
