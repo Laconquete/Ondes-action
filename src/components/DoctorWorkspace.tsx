@@ -5,6 +5,7 @@ import {
   Calendar,
   CheckCircle2,
   FileEdit,
+  FileText,
   History,
   Lock,
   Unlock,
@@ -38,6 +39,7 @@ import {
 import { PatientVitalsTrends } from './PatientVitalsTrends';
 import { TransferPatientDialog } from './TransferPatientDialog';
 import { exportPatientDossierPdf } from '../services/pdfExportService';
+import { exportPatientFichePdf } from '../services/patientFicheExportService';
 import { analyzePatientVitals } from '../services/clinicalAlertsEngine';
 import { usePatientReservation } from '../hooks/usePatientReservation';
 
@@ -691,6 +693,30 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
                   <span>Export Dossier PDF</span>
                 </>
               )}
+            </button>
+
+            {/* Bouton Fiche Patient (formulaire médical style) */}
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  exportPatientFichePdf({
+                    patient,
+                    clinicalNote,
+                    addenda,
+                    activeMedications,
+                    vitalsHistory: patient.vitalsHistory,
+                    currentUser,
+                  });
+                } catch (err) {
+                  console.error('Erreur export fiche patient:', err);
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-bold transition-all cursor-pointer"
+              title="Fiche de données patient (formulaire médical A4)"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              <span>Fiche Patient</span>
             </button>
           </div>
         </div>
