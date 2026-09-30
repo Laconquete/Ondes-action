@@ -1,0 +1,23 @@
+{
+  "name": "netpharplus-poste-clinique-devops",
+  "version": "1.0.0",
+  "description": "Config Electron + GitHub Actions + Vercel pour OneDesk (NetPhar+ — Poste Clinique)",
+  "private": true,
+  "license": "UNLICENSED",
+  "author": "NetPhar+",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron-forge start --platform=win32",
+    "make": "electron-forge make --platform=win32 --arch=x64",
+    "package": "electron-forge package --platform=win32 --arch=x64",
+    "inno": "iscc build/installer.iss"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-forge": "^7.6.0",
+    "@electron-forge/cli": "^7.6.0",
+    "@electron-forge/maker-squirrel": "^7.6.0",
+    "@electron-forge/maker-wix": "^7.6.0",
+    "@electron-forge/plugin-fuses": "^7.6.0"
+  }
+}
