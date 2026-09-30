@@ -38,6 +38,7 @@ interface AuthState {
   tenantName: string | null;
 
   login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  loginWithSupabase: (email: string, password: string) => Promise<{ success: boolean; error?: string; needsAdminActivation?: boolean; needsTenantAssignment?: boolean }>;
   loginWithGoogle: () => Promise<{ success: boolean; error?: string; isOffline?: boolean }>;
   completeGoogleLogin: (user: AppUser) => Promise<void>;
   logout: () => Promise<void>;
@@ -188,6 +189,73 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      loginWithSupabase: async (email, password) => {
+        set({ isLoading: true, error: null });
+
+        try {
+          const { signInWithSupabase } = await import('../services/supabaseAuthService');
+          const result = await signInWithSupabase(email, password);
+
+          if (!result.success) {
+            set({ isLoading: false, error: result.error || 'Échec de connexion.' });
+            return {
+              success: false,
+              error: result.error,
+              needsAdminActivation: result.needsAdminActivation,
+              needsTenantAssignment: result.needsTenantAssignment,
+            };
+          }
+
+          if (!result.user || !result.profile) {
+            set({ isLoading: false, error: 'Profil utilisateur manquant.' });
+            return { success: false, error: 'Profil utilisateur manquant.' };
+          }
+
+          // Configurer le tenant à partir du profil
+          get().configureTenant(
+            result.profile.tenantId,
+            result.profile.tenantName || 'Clinique OneDesk'
+          );
+
+          // Créer une session locale (pour l'UI + break-glass + syncWorker)
+          const { tokenHash } = await generateSessionToken();
+          const expiresAt = new Date(
+            Date.now() + SESSION_DURATION_HOURS * 60 * 60 * 1000
+          ).toISOString();
+          const sessionId = `sess_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+
+          await db.localSessions.add({
+            id: sessionId,
+            userId: result.user.id,
+            tenantId: result.profile.tenantId,
+            tokenHash,
+            expiresAt,
+            createdAt: new Date().toISOString(),
+            machineCode: localStorage.getItem('machine_code') || undefined,
+          });
+
+          set({
+            currentUser: result.user,
+            session: {
+              user: result.user,
+              sessionId,
+              tokenHash,
+              expiresAt,
+            },
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+            tenantId: result.profile.tenantId,
+            tenantName: result.profile.tenantName || 'Clinique OneDesk',
+          });
+
+          return { success: true };
+        } catch (err) {
+          set({ isLoading: false, error: 'Erreur technique Supabase Auth.' });
+          return { success: false, error: 'Erreur technique.' };
+        }
+      },
+
       loginWithGoogle: async () => {
         set({ isLoading: true, error: null });
         try {
@@ -257,6 +325,15 @@ export const useAuthStore = create<AuthState>()(
             revokedAt: new Date().toISOString(),
           });
         }
+
+        // Déconnecter aussi Supabase Auth (efface le JWT du localStorage)
+        try {
+          const { signOutSupabase } = await import('../services/supabaseAuthService');
+          await signOutSupabase();
+        } catch {
+          // Silencieux : Supabase non configuré ou déjà déconnecté
+        }
+
         set({
           currentUser: null,
           session: null,
@@ -268,10 +345,52 @@ export const useAuthStore = create<AuthState>()(
 
       checkSession: async () => {
         const { session } = get();
+
+        // Pas de session locale → essayer Supabase Auth (auto-reconnect)
         if (!session) {
+          // Tenter de récupérer une session Supabase cachée (offline-first)
+          try {
+            const { getCurrentSupabaseSession } = await import('../services/supabaseAuthService');
+            const result = await getCurrentSupabaseSession();
+            if (result?.success && result.user && result.profile) {
+              // Configurer le tenant + créer une session locale
+              get().configureTenant(
+                result.profile.tenantId,
+                result.profile.tenantName || 'Clinique OneDesk'
+              );
+              const { tokenHash } = await generateSessionToken();
+              const expiresAt = new Date(
+                Date.now() + SESSION_DURATION_HOURS * 60 * 60 * 1000
+              ).toISOString();
+              const sessionId = `sess_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+
+              await db.localSessions.add({
+                id: sessionId,
+                userId: result.user.id,
+                tenantId: result.profile.tenantId,
+                tokenHash,
+                expiresAt,
+                createdAt: new Date().toISOString(),
+              });
+
+              set({
+                currentUser: result.user,
+                session: { user: result.user, sessionId, tokenHash, expiresAt },
+                isAuthenticated: true,
+                error: null,
+                tenantId: result.profile.tenantId,
+                tenantName: result.profile.tenantName || 'Clinique OneDesk',
+              });
+              return;
+            }
+          } catch {
+            // Silencieux : Supabase non configuré ou session expirée
+          }
           set({ isAuthenticated: false, currentUser: null });
           return;
         }
+
+        // Session locale existante → vérifier expiration
         if (new Date(session.expiresAt) < new Date()) {
           await get().logout();
           set({ error: 'Session expirée. Veuillez vous reconnecter.' });

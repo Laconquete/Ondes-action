@@ -63,14 +63,18 @@ async function ensureDemoUserExists(): Promise<void> {
 }
 
 export const LoginScreen: React.FC = () => {
-  const { login, loginWithGoogle, isLoading, error, clearError, tenantId, tenantName, configureTenant } = useAuthStore();
+  const { login, loginWithSupabase, loginWithGoogle, isLoading, error, clearError, tenantId, tenantName, configureTenant } = useAuthStore();
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showTenantConfig, setShowTenantConfig] = useState(false);
   const [newTenantId, setNewTenantId] = useState('');
   const [initError, setInitError] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
+
+  // Détermine le mode d'authentification : Supabase (email) ou Local (username)
+  const useSupabaseAuth = isGoogleAuthAvailable(); // = Supabase configuré + online
 
   // Initialisation au premier rendu : s'assurer qu'un utilisateur de démo existe
   useEffect(() => {
@@ -87,15 +91,23 @@ export const LoginScreen: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim() || !password) {
+    const identifier = (useSupabaseAuth ? email : username).trim();
+    if (!identifier || !password) {
       toast.warning('Champs requis', 'Veuillez saisir votre identifiant et mot de passe.');
       return;
     }
-    const result = await login(username.trim(), password);
+    const result = useSupabaseAuth
+      ? await loginWithSupabase(identifier, password)
+      : await login(identifier, password);
+
     if (result.success) {
       toast.success('Connexion réussie', `Bienvenue, ${useAuthStore.getState().currentUser?.displayName}.`);
     } else if (result.error) {
-      toast.error('Échec de connexion', result.error);
+      if (result.error.includes('network') || result.error.includes('Réseau')) {
+        toast.warning('Hors-ligne', 'Basculez sur l\'authentification locale ci-dessous.');
+      } else {
+        toast.error('Échec de connexion', result.error);
+      }
     }
   };
 
@@ -217,27 +229,33 @@ export const LoginScreen: React.FC = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Username */}
+            {/* Email ou Identifiant selon le mode d'auth */}
             <div>
-              <label htmlFor="login-username" className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
-                Identifiant
+              <label htmlFor="login-identifier" className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+                {useSupabaseAuth ? 'Email professionnel' : 'Identifiant'}
               </label>
               <div className="relative">
                 <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <input
-                  id="login-username"
-                  type="text"
-                  value={username}
+                  id="login-identifier"
+                  type={useSupabaseAuth ? 'email' : 'text'}
+                  value={useSupabaseAuth ? email : username}
                   onChange={(e) => {
-                    setUsername(e.target.value);
+                    if (useSupabaseAuth) setEmail(e.target.value);
+                    else setUsername(e.target.value);
                     if (error) clearError();
                   }}
-                  autoComplete="username"
+                  autoComplete={useSupabaseAuth ? 'email' : 'username'}
                   className="w-full pl-10 pr-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors"
-                  placeholder="prénom.nom"
+                  placeholder={useSupabaseAuth ? 'dr.martin@clinique.fr' : 'prénom.nom'}
                   required
                 />
               </div>
+              {useSupabaseAuth && (
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
+                  Authentification sécurisée via Supabase Auth (RLS native)
+                </p>
+              )}
             </div>
 
             {/* Password */}

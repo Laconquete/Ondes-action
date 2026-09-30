@@ -40,15 +40,17 @@ export function getSupabase(): SupabaseClient | null {
   try {
     cachedClient = createClient(url, anonKey, {
       auth: {
-        // On gère l'auth nous-mêmes (authStore). Supabase Auth n'est pas utilisé
-        // pour éviter la dépendance GoTrue. Le JWT du tenant_id est injecté
-        // manuellement via les headers lors des requêtes sync.
-        persistSession: false,
-        autoRefreshToken: false,
+        // IMPORTANT : on active la persistance de session pour permettre
+        // l'usage offline (JWT caché en localStorage, auto-refresh quand online).
+        // Supabase Auth gère le refresh automatiquement.
+        persistSession: true,
+        autoRefreshToken: true,
+        // On garde le storage par défaut (localStorage) pour la persistance offline.
+        // En production Electron, on utilisera un storage sécurisé (electron-store).
+        detectSessionInUrl: true, // Pour le callback OAuth Google
       },
       realtime: {
         // Désactivé pour simplifier — on utilise du polling (30s) plutôt que WebSocket.
-        // Le temps réel sera activé dans une prochaine itération si nécessaire.
         params: { eventsPerSecond: 1 },
       },
       global: {
@@ -58,7 +60,7 @@ export function getSupabase(): SupabaseClient | null {
       },
     });
 
-    console.info('[supabaseClient] Client Supabase initialisé. Sync activé.');
+    console.info('[supabaseClient] Client Supabase initialisé. Auth + sync activés.');
     return cachedClient;
   } catch (err) {
     console.error('[supabaseClient] Échec d\'initialisation:', err);
