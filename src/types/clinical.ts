@@ -310,6 +310,7 @@ export interface AuditEvent {
 
 export interface OutboxItem {
   id: string;
+  tenantId?: string; // Multi-tenant : rempli par clinicalStore lors de l'écriture locale
   aggregateType: string;
   aggregateId: string;
   operationType: string;
@@ -317,7 +318,9 @@ export interface OutboxItem {
   baseVersion: number;
   idempotencyKey: string;
   createdAt: string;
-  status: 'pending' | 'applied' | 'conflict';
+  status: 'pending' | 'applied' | 'failed' | 'conflict';
+  appliedAt?: string; // Rempli quand l'item a été poussé avec succès vers Supabase
+  errorMessage?: string; // Rempli en cas d'échec (pour debug et retry)
 }
 
 export interface BreakGlassEvent {

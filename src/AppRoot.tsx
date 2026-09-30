@@ -3,6 +3,8 @@ import App from './App.tsx';
 import { LoginScreen } from './components/auth/LoginScreen.tsx';
 import { useAuthStore, hashPasswordForSeed } from './stores/authStore.ts';
 import { db, LocalUser } from './services/localDatabase.ts';
+import { startSyncWorker, stopSyncWorker } from './services/syncWorker.ts';
+import { isSupabaseConfigured } from './services/supabaseClient.ts';
 
 /**
  * AppRoot — Point d'entrée racine avec authentification obligatoire.
@@ -137,12 +139,34 @@ export const AppRoot: React.FC = () => {
     };
   }, []);
 
-  // Souscrit aux changements d'authentification
+  // Souscrit aux changements d'authentification + démarre le syncWorker
   useEffect(() => {
     const unsub = useAuthStore.subscribe((state) => {
-      setStatus(state.isAuthenticated ? 'authenticated' : 'unauthenticated');
+      const newStatus = state.isAuthenticated ? 'authenticated' : 'unauthenticated';
+      setStatus(newStatus);
+
+      // Démarre le syncWorker quand l'utilisateur s'authentifie (si Supabase est configuré)
+      if (newStatus === 'authenticated' && state.tenantId) {
+        if (isSupabaseConfigured()) {
+          startSyncWorker(state.tenantId);
+        }
+      } else {
+        // Arrête le syncWorker à la déconnexion
+        stopSyncWorker();
+      }
     });
     return unsub;
+  }, []);
+
+  // Démarre aussi le syncWorker au montage si déjà authentifié (session persistée)
+  useEffect(() => {
+    const { isAuthenticated, tenantId } = useAuthStore.getState();
+    if (isAuthenticated && tenantId && isSupabaseConfigured()) {
+      startSyncWorker(tenantId);
+    }
+    return () => {
+      stopSyncWorker();
+    };
   }, []);
 
   // Écran d'initialisation (très bref — quelques ms)

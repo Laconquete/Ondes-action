@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom/vitest';
 import { vi } from 'vitest';
+import 'fake-indexeddb/auto';
 
 // Polyfill crypto.subtle for jsdom (Node 22 already has it, but we ensure it)
 if (!globalThis.crypto) {
