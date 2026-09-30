@@ -35,8 +35,20 @@ export interface AllergyMatchResult {
 export function normalizeAtcCode(code: string | undefined | null): string | null {
   if (!code) return null;
   const trimmed = code.trim().toUpperCase();
-  // Format ATC : LLLDN[N] — au minimum 3 caractères (1 lettre + 2 chiffres pour le niveau thérapeutique)
-  if (!/^[A-Z][0-9]{2}[A-Z]?[0-9]{0,2}$/.test(trimmed)) {
+  // Format ATC officiel (WHO) :
+  //   Niveau 1 (anatomique)       : 1 lettre            ex: J
+  //   Niveau 2 (thérapeutique)    : 1 lettre + 2 chiffres ex: J01
+  //   Niveau 3 (pharmacologique)  : + 1 lettre            ex: J01C
+  //   Niveau 4 (sous-groupe)      : + 1 lettre            ex: J01CA
+  //   Niveau 5 (substance)        : + 2 chiffres          ex: J01CA04
+  // Soit : [A-Z][0-9]{2}[A-Z]{0,2}[0-9]{0,2}
+  // On accepte aussi bien les codes complets que les préfixes partiels.
+  if (!/^[A-Z][0-9]{2}(?:[A-Z]{1,2})?(?:[0-9]{2})?$/.test(trimmed)) {
+    // Permettre aussi le préfixe court (niveau 2 : J01, niveau 3 : J01C, niveau 4 : J01CA)
+    if (/^[A-Z][0-9]{2}$/.test(trimmed)) return trimmed;
+    if (/^[A-Z][0-9]{2}[A-Z]$/.test(trimmed)) return trimmed;
+    if (/^[A-Z][0-9]{2}[A-Z]{2}$/.test(trimmed)) return trimmed;
+    if (/^[A-Z][0-9]{2}[A-Z]{2}[0-9]{2}$/.test(trimmed)) return trimmed;
     return null;
   }
   return trimmed;

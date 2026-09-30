@@ -41,6 +41,11 @@ import {
 } from 'lucide-react';
 import { Patient, VitalSignSet } from '../types/clinical';
 import { useTheme } from '../context/ThemeContext';
+// Sous-composants extraits (refactor — non-régression : API publique inchangée)
+import { VitalsTooltip } from './PatientVitalsTrends/VitalsTooltip';
+import { VitalsEmptyState } from './PatientVitalsTrends/VitalsEmptyState';
+import { getBpStatus, getPulseStatus, getBmiStatus } from './PatientVitalsTrends/clinicalStatus';
+import { exportVitalsCsv } from './PatientVitalsTrends/exportVitalsCsv';
 
 export type MetricView = 'bp_weight' | 'bp' | 'weight' | 'heartRate' | 'all';
 export type TimeRange = 'all' | '1year' | '6months' | '3months';
@@ -216,274 +221,23 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
   }, [chartData]);
 
   // Clinical evaluation helpers
-  const getBpStatus = (sys?: number, dia?: number) => {
-    if (!sys || !dia)
-      return {
-        label: 'Non mesuré',
-        color: 'text-slate-800 dark:text-slate-200',
-        bg: 'bg-slate-100 dark:bg-slate-800',
-        dot: 'bg-slate-500',
-      };
-    if (sys >= 140 || dia >= 90) {
-      return {
-        label: 'HTA Stade 1 (≥140/90)',
-        color: 'text-red-900 dark:text-red-200',
-        bg: 'bg-red-100 dark:bg-red-950/80 border border-red-300 dark:border-red-700',
-        dot: 'bg-red-600',
-      };
-    }
-    if (sys >= 130 || dia >= 85) {
-      return {
-        label: 'Normale Haute (130-139)',
-        color: 'text-amber-900 dark:text-amber-200',
-        bg: 'bg-amber-100 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-700',
-        dot: 'bg-amber-600',
-      };
-    }
-    if (sys < 90 || dia < 60) {
-      return {
-        label: 'Hypotension (<90/60)',
-        color: 'text-purple-900 dark:text-purple-200',
-        bg: 'bg-purple-100 dark:bg-purple-950/80 border border-purple-300 dark:border-purple-700',
-        dot: 'bg-purple-600',
-      };
-    }
-    return {
-      label: 'Cible Optimale (<130/80)',
-      color: 'text-emerald-950 dark:text-emerald-200',
-      bg: 'bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700',
-      dot: 'bg-emerald-600',
-    };
-  };
+  // Les fonctions getBpStatus, getPulseStatus, getBmiStatus sont maintenant importées
+  // depuis ./PatientVitalsTrends/clinicalStatus (extraction pour réduire la taille du composant).
+  // Réexportées ici pour préserver l'API interne (utilisées plus bas dans le rendu).
+  // (alias locaux pour minimiser les modifications du corps du composant)
+  const handleExportCsv = () => exportVitalsCsv(chartData, patient);
 
-  const getPulseStatus = (pulse?: number) => {
-    if (!pulse)
-      return {
-        label: 'Non mesuré',
-        color: 'text-slate-800 dark:text-slate-200',
-        bg: 'bg-slate-100 dark:bg-slate-800',
-        dot: 'bg-slate-500',
-      };
-    if (pulse > 100)
-      return {
-        label: 'Tachycardie (>100)',
-        color: 'text-amber-950 dark:text-amber-200',
-        bg: 'bg-amber-100 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-700',
-        dot: 'bg-amber-600',
-      };
-    if (pulse < 60)
-      return {
-        label: 'Bradycardie (<60)',
-        color: 'text-indigo-950 dark:text-indigo-200',
-        bg: 'bg-indigo-100 dark:bg-indigo-950/80 border border-indigo-300 dark:border-indigo-700',
-        dot: 'bg-indigo-600',
-      };
-    return {
-      label: 'Sinusal Régulier',
-      color: 'text-emerald-950 dark:text-emerald-200',
-      bg: 'bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700',
-      dot: 'bg-emerald-600',
-    };
-  };
-
-  const getBmiStatus = (bmi?: number) => {
-    if (!bmi)
-      return {
-        label: 'N/D',
-        color: 'text-slate-800 dark:text-slate-200',
-        bg: 'bg-slate-100 dark:bg-slate-800',
-      };
-    if (bmi < 18.5)
-      return {
-        label: 'Poids faible (<18.5)',
-        color: 'text-indigo-950 dark:text-indigo-200',
-        bg: 'bg-indigo-100 dark:bg-indigo-950/80',
-      };
-    if (bmi < 25)
-      return {
-        label: 'Corpulence normale (18.5-24.9)',
-        color: 'text-emerald-950 dark:text-emerald-200',
-        bg: 'bg-emerald-100 dark:bg-emerald-950/80',
-      };
-    if (bmi < 30)
-      return {
-        label: 'Surpoids (25-29.9)',
-        color: 'text-amber-950 dark:text-amber-200',
-        bg: 'bg-amber-100 dark:bg-amber-950/80',
-      };
-    return {
-      label: 'Obésité (≥30)',
-      color: 'text-red-950 dark:text-red-200',
-      bg: 'bg-red-100 dark:bg-red-950/80',
-    };
-  };
-
-  const handleExportCsv = () => {
-    if (chartData.length === 0) return;
-    const headers = [
-      'Date',
-      'Heure',
-      'Systolique (mmHg)',
-      'Diastolique (mmHg)',
-      'Pouls (bpm)',
-      'Poids (kg)',
-      'Taille (cm)',
-      'IMC',
-      'Température (°C)',
-      'SpO2 (%)',
-      'Professionnel',
-    ];
-    const rows = chartData.map((d) => [
-      new Date(d.measuredAt).toLocaleDateString('fr-FR'),
-      new Date(d.measuredAt).toLocaleTimeString('fr-FR'),
-      d.systolic || '',
-      d.diastolic || '',
-      d.pulseBpm || '',
-      d.weightKg || '',
-      d.heightCm || '',
-      d.bmi || '',
-      d.temperatureC || '',
-      d.oxygenSaturation || '',
-      `"${d.measuredBy}"`,
-    ]);
-    const csvContent =
-      'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute(
-      'download',
-      `constantes_${patient.familyName}_${patient.medicalRecordNumber}.csv`
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  // Custom Glass Tooltip with sharp, high-contrast borders and texts
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      const bpInterp = getBpStatus(data.systolic, data.diastolic);
-      return (
-        <div className="border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 p-4 shadow-2xl backdrop-blur-md text-xs space-y-2.5 min-w-[250px] text-slate-900 dark:text-slate-100 z-50">
-          <div className="border-b border-slate-200 dark:border-slate-800 pb-2 flex items-center justify-between">
-            <span className="font-extrabold text-slate-900 dark:text-slate-100 text-sm">
-              {data.fullDateLabel}
-            </span>
-            <span className="h-2.5 w-2.5 rounded-full bg-blue-600 animate-ping" />
-          </div>
-
-          <div className="space-y-2">
-            {data.systolic && data.diastolic && (
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-800 dark:text-slate-200 flex items-center gap-1.5 font-bold">
-                    <span className="h-2.5 w-2.5 rounded-full bg-blue-600 ring-2 ring-blue-300 dark:ring-blue-900" />
-                    Pression Artérielle :
-                  </span>
-                  <span className="font-mono font-extrabold text-slate-950 dark:text-white text-base tabular-nums">
-                    {data.systolic}/{data.diastolic}{' '}
-                    <span className="text-xs text-slate-600 dark:text-slate-300 font-semibold">
-                      mmHg
-                    </span>
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-xs text-slate-700 dark:text-slate-300 pl-4 pt-1">
-                  <span>Pression pulsée : {data.pulsePressure} mmHg</span>
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 ${bpInterp.color} ${bpInterp.bg}`}
-                  >
-                    {bpInterp.label}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {data.weightKg && (
-              <div className="flex items-center justify-between pt-1.5 border-t border-slate-200 dark:border-slate-800">
-                <span className="text-slate-800 dark:text-slate-200 flex items-center gap-1.5 font-bold">
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-600 ring-2 ring-emerald-300 dark:ring-emerald-900" />
-                  Poids corporel :
-                </span>
-                <span className="font-mono font-extrabold text-slate-950 dark:text-white text-sm tabular-nums">
-                  {data.weightKg} kg {data.bmi ? `· IMC ${data.bmi}` : ''}
-                </span>
-              </div>
-            )}
-
-            {data.pulseBpm && (
-              <div className="flex items-center justify-between pt-1.5 border-t border-slate-200 dark:border-slate-800">
-                <span className="text-slate-800 dark:text-slate-200 flex items-center gap-1.5 font-bold">
-                  <span className="h-2.5 w-2.5 rounded-full bg-rose-600 ring-2 ring-rose-300 dark:ring-rose-900" />
-                  Fréquence Cardiaque :
-                </span>
-                <span className="font-mono font-extrabold text-slate-950 dark:text-white text-sm tabular-nums">
-                  {data.pulseBpm}{' '}
-                  <span className="text-xs text-slate-600 dark:text-slate-300 font-semibold">
-                    bpm
-                  </span>
-                </span>
-              </div>
-            )}
-
-            {data.oxygenSaturation && (
-              <div className="flex items-center justify-between pt-1.5 border-t border-slate-200 dark:border-slate-800">
-                <span className="text-slate-800 dark:text-slate-200 flex items-center gap-1.5 font-bold">
-                  <span className="h-2.5 w-2.5 rounded-full bg-cyan-600 ring-2 ring-cyan-300 dark:ring-cyan-900" />
-                  Saturation SpO₂ :
-                </span>
-                <span className="font-mono font-extrabold text-slate-950 dark:text-white text-sm tabular-nums">
-                  {data.oxygenSaturation}%
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div className="border-t border-slate-200 dark:border-slate-800 pt-2 text-[11px] text-slate-700 dark:text-slate-300 flex items-center justify-between">
-            <span className="font-medium">Mesuré par :</span>
-            <span className="font-bold text-slate-900 dark:text-slate-100">{data.measuredBy}</span>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
+  // Le tooltip custom est désormais <VitalsTooltip /> (importé).
+  // On garde un alias local pour minimiser les modifications dans les props Recharts.
+  const CustomTooltip = VitalsTooltip;
 
   if (chartData.length === 0) {
     return (
-      <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-8 text-center space-y-3 shadow-xs">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300">
-          <Activity className="h-6 w-6" />
-        </div>
-        <div className="space-y-1">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-            Aucune constante pour cette période ({timeRange === '6months' ? '6 derniers mois' : timeRange})
-          </h3>
-          <p className="text-xs text-slate-600 dark:text-slate-300 max-w-sm mx-auto">
-            Basculez sur « Tout » pour afficher l'historique complet ou saisissez une nouvelle mesure.
-          </p>
-        </div>
-        <div className="flex items-center justify-center gap-2 pt-1">
-          <button
-            type="button"
-            onClick={() => setTimeRange('all')}
-            className="border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:bg-slate-200"
-          >
-            Afficher tout l'historique
-          </button>
-          {onAddVitalsClick && (
-            <button
-              type="button"
-              onClick={onAddVitalsClick}
-              className="inline-flex items-center gap-1.5 bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700 transition-all cursor-pointer"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Saisir une mesure</span>
-            </button>
-          )}
-        </div>
-      </div>
+      <VitalsEmptyState
+        timeRange={timeRange}
+        onShowAllHistory={() => setTimeRange('all')}
+        onAddVitalsClick={onAddVitalsClick}
+      />
     );
   }
 
