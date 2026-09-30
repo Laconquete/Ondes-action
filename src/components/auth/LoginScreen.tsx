@@ -171,11 +171,18 @@ export const LoginScreen: React.FC = () => {
       <div className="w-full max-w-md">
         {/* Branding */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center h-16 w-16 bg-blue-600 text-white shadow-xl shadow-blue-500/20 mb-4">
-            <Stethoscope className="h-8 w-8" />
+          <div className="inline-flex items-center justify-center h-20 w-20 shadow-xl shadow-blue-500/20 mb-4">
+            <img
+              src="/logo-FOAVICON .png"
+              alt="OneDesk"
+              className="h-full w-full object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
           </div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-            NetPhar<span className="text-blue-600">+</span>
+            OneDesk
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Poste de travail clinique sécurisé · HDS

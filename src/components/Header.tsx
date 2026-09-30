@@ -231,7 +231,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-2.5 sm:gap-3 shrink min-w-0">
             <div className="relative h-12 w-12 sm:h-14 sm:w-14 shrink-0">
               <img
-                src="/logo.png"
+                src="/logo-FOAVICON .png"
                 alt="OneDesk"
                 className="h-full w-full object-contain"
                 onError={(e) => {
