@@ -42,11 +42,37 @@ import { BreakGlassModal } from './components/BreakGlassModal';
 import { PatientSearchModal } from './components/PatientSearchModal';
 import { OfflineSyncModal } from './components/OfflineSyncModal';
 import { ReceptionCheckInModal } from './components/ReceptionCheckInModal';
+// Nouveaux imports : authentification réelle + audit cryptographique
+import { useAuthStore } from './stores/authStore';
+import { useAuditStore } from './stores/auditStore';
+
+// Tenant par défaut pour les événements d'audit (mode démo)
+const DEFAULT_TENANT_ID = 'demo-tenant-001';
 
 export default function App() {
-  // Current user & authentication
-  const [currentUser, setCurrentUser] = useState<AppUser>(INITIAL_USERS[0]);
+  // ============= AUTHENTIFICATION RÉELLE =============
+  // L'utilisateur connecté provient désormais de l'authStore (LoginScreen + PBKDF2).
+  // On garde un state local `legacyUserOverride` uniquement pour préserver la compatibilité
+  // avec l'ancien <select> du Header (qui appelle handleSwitchUser). En pratique, dès que
+  // l'utilisateur passe par LoginScreen, authStore.currentUser est la source de vérité.
+  const authStoreUser = useAuthStore((s) => s.currentUser);
+  const authStoreLogout = useAuthStore((s) => s.logout);
+  const auditStoreLog = useAuditStore((s) => s.log);
+
+  const [legacyUserOverride, setLegacyUserOverride] = useState<AppUser | null>(null);
+
+  // Utilisateur effectif : priorité à l'override legacy (si l'utilisateur a cliqué sur le <select>),
+  // sinon à l'authStore, sinon fallback sur INITIAL_USERS[0] (ne devrait jamais arriver car
+  // AppRoot garantit l'authentification avant de rendre <App />).
+  const currentUser: AppUser = legacyUserOverride ?? authStoreUser ?? INITIAL_USERS[0];
   const [allUsers] = useState<AppUser[]>(INITIAL_USERS);
+
+  // Synchronisation : si l'utilisateur se déconnecte via authStore, on nettoie l'override legacy
+  useEffect(() => {
+    if (!authStoreUser) {
+      setLegacyUserOverride(null);
+    }
+  }, [authStoreUser]);
 
   // Active navigation tab
   const [activeTab, setActiveTab] = useState<
@@ -159,6 +185,11 @@ export default function App() {
   }, [currentUser.role, isBreakGlassActive]);
 
   // Append immutable audit log helper
+  // DOUBLE JOURNALISATION pour garantir la non-régression :
+  //  1. L'ancien système (state React + hash DJB2) continue d'alimenter l'UI AuditTrailView existante.
+  //  2. Le nouveau système (auditStore.log + SHA-256 chaîné via Web Crypto) persiste en IndexedDB
+  //     et constitue le journal légal HDS-conforme. Une fois la nouvelle UI branchée, l'ancien
+  //     pourra être supprimé.
   const logAudit = useCallback(
     (
       action: string,
@@ -172,14 +203,15 @@ export default function App() {
       } = {}
     ) => {
       const now = new Date().toISOString();
+
+      // --- ANCIEN SYSTÈME (préserve l'UI existante — à déprécier après migration) ---
       const rawString = `${now}:${currentUser.id}:${action}:${details.resourceId || ''}:${details.patientId || ''}`;
-      // Simple deterministic hash calculation for client audit trail demo
       let hash = 0;
       for (let i = 0; i < rawString.length; i++) {
         hash = (hash << 5) - hash + rawString.charCodeAt(i);
         hash |= 0;
       }
-      const eventHash = `sha256_${Math.abs(hash).toString(16).padStart(12, '0')}`;
+      const legacyEventHash = `sha256_${Math.abs(hash).toString(16).padStart(12, '0')}`;
 
       const newEvent: AuditEvent = {
         id: `aud_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -194,12 +226,30 @@ export default function App() {
         patientName: details.patientName,
         outcome: details.outcome || 'allowed',
         reasonText: details.reasonText,
-        eventHash,
+        eventHash: legacyEventHash,
       };
-
       setAuditEvents((prev) => [newEvent, ...prev]);
+
+      // --- NOUVEAU SYSTÈME (chaîne SHA-256 cryptographique, persistant, HDS-conforme) ---
+      // Appel asynchrone — on ne bloque pas l'UI. Les erreurs sont loggées en console
+      // mais ne cassent pas l'action utilisateur.
+      void auditStoreLog(
+        action,
+        resourceType,
+        { id: currentUser.id, name: currentUser.displayName, role: currentUser.role },
+        DEFAULT_TENANT_ID,
+        {
+          resourceId: details.resourceId,
+          patientId: details.patientId,
+          patientName: details.patientName,
+          outcome: details.outcome,
+          reasonText: details.reasonText,
+        }
+      ).catch((err) => {
+        console.error('[logAudit] Failed to persist cryptographically chained event:', err);
+      });
     },
-    [currentUser]
+    [currentUser, auditStoreLog]
   );
 
   // Queue mutation to outbox when offline or simulating offline sync
@@ -233,9 +283,11 @@ export default function App() {
     });
   };
 
-  // Switch role / user
+  // Switch role / user (legacy — appelé par le <select> du Header)
+  // En production, ce mécanisme est DEPRECATED : la bascule de profil doit passer par
+  // logout + LoginScreen. On le conserve pour la compatibilité ascendante.
   const handleSwitchUser = (user: AppUser) => {
-    setCurrentUser(user);
+    setLegacyUserOverride(user);
     logAudit('USER_LOGIN', 'session', {
       reasonText: `Connexion active du profil ${user.displayName} (${user.role})`,
     });

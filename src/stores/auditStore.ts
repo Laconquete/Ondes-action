@@ -5,6 +5,7 @@ import {
   computeAuditEventHash,
   getLastEventHash,
   generateSecureId,
+  validateAuditChain,
 } from '../services/cryptoAuditService';
 
 /**
@@ -138,8 +139,6 @@ export const useAuditStore = create<AuditState>((set, get) => ({
   },
 
   validateChain: async (tenantId) => {
-    // Lazy import pour éviter la dépendance circulaire
-    const { validateAuditChain } = await import('../services/cryptoAuditService');
     const events = await db.auditEvents.where('tenantId').equals(tenantId).toArray();
     const result = await validateAuditChain(events as AuditEvent[], tenantId);
     set({

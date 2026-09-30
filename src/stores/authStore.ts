@@ -82,6 +82,12 @@ async function hashPassword(password: string, salt: string): Promise<string> {
     .join('');
 }
 
+/**
+ * Export de hashPassword pour permettre au seed démo de hasher les mots de passe
+ * de la même manière que l'authStore. Garantit la cohérence des hashes.
+ */
+export { hashPassword as hashPasswordForSeed };
+
 async function generateSessionToken(): Promise<{ token: string; tokenHash: string }> {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
