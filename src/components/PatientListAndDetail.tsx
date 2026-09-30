@@ -578,15 +578,35 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
                             )}
                           </td>
 
-                          {/* Assigned Doctor */}
+                          {/* Assigned Doctor + Reservation Status */}
                           <td className="p-3.5">
-                            {pat.primaryDoctorName ? (
-                              <span className="inline-flex items-center gap-1 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-900 text-indigo-800 dark:text-indigo-300 px-2 py-0.5 text-[10px] font-semibold">
-                                {pat.primaryDoctorName.replace('Dr. ', '')}
-                              </span>
-                            ) : (
-                              <span className="text-slate-400 text-[11px]">Non assigné</span>
-                            )}
+                            <div className="flex items-center gap-1.5">
+                              {pat.primaryDoctorName ? (
+                                <span className="inline-flex items-center gap-1 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-900 text-indigo-800 dark:text-indigo-300 px-2 py-0.5 text-[10px] font-semibold">
+                                  {pat.primaryDoctorName.replace('Dr. ', '')}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 text-[11px]">Non assigné</span>
+                              )}
+                              {/* Badge "Réservé" avec cadenas au survol */}
+                              {pat.isReserved && (
+                                <span
+                                  className="inline-flex items-center gap-1 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 text-[10px] font-bold cursor-help"
+                                  title={`🔒 Réservé par ${pat.reservedByName || 'un médecin'}${pat.reservedReason ? '\nMotif : ' + pat.reservedReason : ''}`}
+                                >
+                                  🔒
+                                </span>
+                              )}
+                              {/* Badge "Transfert en attente" */}
+                              {pat.pendingTransferToId && (
+                                <span
+                                  className="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 text-blue-800 dark:text-blue-300 px-1.5 py-0.5 text-[10px] font-bold animate-pulse"
+                                  title={`Transfert en attente vers ${pat.pendingTransferToName}`}
+                                >
+                                  →
+                                </span>
+                              )}
+                            </div>
                           </td>
 
                           {/* Actions */}

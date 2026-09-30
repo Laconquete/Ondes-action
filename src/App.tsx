@@ -235,6 +235,14 @@ export default function App() {
     });
   };
 
+  // Déconnexion : appelle authStore.logout (détruit session locale + Supabase Auth)
+  const handleLogout = async () => {
+    logAudit('USER_LOGOUT', 'session', {
+      reasonText: `Déconnexion de ${currentUser.displayName}`,
+    });
+    await authStoreLogout();
+  };
+
   // Alias pour compatibilité JSX
   const handleAddPatient = addPatient;
   const handleUpdatePatientDoctor = updatePatientDoctor;
@@ -381,6 +389,7 @@ export default function App() {
         currentUser={currentUser}
         allUsers={allUsers}
         onSwitchUser={handleSwitchUser}
+        onLogout={handleLogout}
         isOnline={isOnline}
         onToggleOnline={() => { /* Toggle is now handled by useNetworkStatus (browser events) */ }}
         outboxCount={outbox.filter((o) => o.status === 'pending').length}

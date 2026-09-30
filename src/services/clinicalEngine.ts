@@ -254,17 +254,35 @@ function formatTime(d: Date): string {
 
 /**
  * Matrice d'habilitations RBAC & ABAC contextuelle
+ *
+ * Rôles :
+ *  - doctor            : médecin standard, peut réserver/transférer/libérer ses patients
+ *  - nurse             : infirmier, saisit les constantes + pré-SOAP (pas de prescription)
+ *  - receptionist      : accueil, ne voit AUCUNE donnée clinique (RGPD)
+ *  - auditor           : audit HDS, lecture seule sur l'audit trail
+ *  - security_admin    : admin SI, gère les licences + sécurité
+ *  - medical_director  : médecin directeur, peut déverrouiller un patient réservé (break-glass auto)
+ *
+ * Break-glass : dérogation d'urgence, active toutes les permissions cliniques temporairement (30min)
  */
 export function evaluateUserPermissions(role: UserRole, isBreakGlassActive = false) {
+  // Le médecin directeur a les mêmes droits que le médecin + peut voir les patients réservés
+  const isDoctor = role === 'doctor' || role === 'medical_director';
+
   // Règle RGPD / CNIL : l'accueil ne doit jamais avoir accès aux notes, diagnostics ou prescriptions
   const canViewClinical =
-    isBreakGlassActive || role === 'doctor' || role === 'nurse' || role === 'auditor';
-  const canEditClinical = isBreakGlassActive || role === 'doctor' || role === 'nurse';
-  const canPrescribe = role === 'doctor'; // Seul le médecin peut prescrire
-  const canManageSchedule = role === 'doctor' || role === 'receptionist' || role === 'nurse';
-  const canViewAudit = role === 'auditor' || role === 'security_admin';
+    isBreakGlassActive || isDoctor || role === 'nurse' || role === 'auditor';
+  const canEditClinical = isBreakGlassActive || isDoctor || role === 'nurse';
+  const canPrescribe = isDoctor; // Seul le médecin (et directeur) peut prescrire
+  const canManageSchedule = isDoctor || role === 'receptionist' || role === 'nurse';
+  const canViewAudit = role === 'auditor' || role === 'security_admin' || role === 'medical_director';
   const canManageSecurity = role === 'security_admin';
-  const canBreakGlass = role === 'doctor' || role === 'nurse';
+  const canBreakGlass = isDoctor || role === 'nurse';
+
+  // Permissions spécifiques au directeur médical
+  const canOverrideReservedPatient = role === 'medical_director'; // Déverrouiller un patient réservé
+  const canViewAllPatients = role === 'medical_director'; // Voir tous les patients (même réservés)
+  const canTransferPatient = isDoctor; // Transférer/libérer un patient
 
   return {
     canViewClinical,
@@ -274,5 +292,8 @@ export function evaluateUserPermissions(role: UserRole, isBreakGlassActive = fal
     canViewAudit,
     canManageSecurity,
     canBreakGlass,
+    canOverrideReservedPatient,
+    canViewAllPatients,
+    canTransferPatient,
   };
 }

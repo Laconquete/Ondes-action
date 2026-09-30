@@ -2,7 +2,7 @@
  * Clinique OneDesk — Modèles de données cliniques, RBAC & Synchronisation
  */
 
-export type UserRole = 'doctor' | 'nurse' | 'receptionist' | 'auditor' | 'security_admin';
+export type UserRole = 'doctor' | 'nurse' | 'receptionist' | 'auditor' | 'security_admin' | 'medical_director';
 
 export interface AppUser {
   id: string;
@@ -89,7 +89,25 @@ export interface Patient {
   primaryDoctorName?: string;
   lastVisitDate?: string;
   tags?: string[];
+  // === Réservation du patient ===
+  // Si isReserved=true, seul le médecin "reservedById" peut consulter/modifier le dossier.
+  // Les autres médecins voient un cadenas 🔒 dans la liste avec le nom du médecin titulaire.
+  // Le médecin directeur (medical_director) peut déverrouiller temporairement (break-glass).
+  isReserved?: boolean;
+  reservedById?: string; // ID du médecin qui a réservé le patient
+  reservedByName?: string;
+  reservedReason?: string; // Motif de la réservation (ex: "Suivi cardiologique long terme")
+  reservedAt?: string; // Date de la réservation
+  // === Transfert de dossier ===
+  // Quand un médecin transfère un patient, le transfert est en "pending" jusqu'à acceptation
+  // du médecin receveur. Le médecin titulaire reçoit une notification avec badge clignotant.
+  pendingTransferToId?: string;
+  pendingTransferToName?: string;
 }
+
+// === Rôles utilisateurs ===
+// "medical_director" = médecin directeur, peut déverrouiller un patient réservé (break-glass)
+// Voir la définition de UserRole en haut du fichier.
 
 export type AppointmentStatus =
   | 'booked'
