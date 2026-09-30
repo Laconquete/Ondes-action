@@ -10,10 +10,9 @@ import {
   Building2,
   AlertTriangle,
 } from 'lucide-react';
-import { useAuthStore } from '../../stores/authStore';
+import { useAuthStore, hashPasswordForSeed } from '../../stores/authStore';
 import { toast } from '../../stores/toastStore';
 import { db, LocalUser } from '../../services/localDatabase';
-import { computeSha256 } from '../../services/cryptoAuditService';
 import { isGoogleAuthAvailable } from '../../services/googleAuthService';
 
 /**
@@ -33,13 +32,19 @@ import { isGoogleAuthAvailable } from '../../services/googleAuthService';
  *  - Pas de dépendance réseau
  */
 
-// Démo : création d'un compte médecin local si la base est vide
+// Démo : création d'un compte médecin local si la base est vide ou si l'utilisateur démo n'existe pas
 async function ensureDemoUserExists(): Promise<void> {
-  const existing = await db.localUsers.count();
-  if (existing > 0) return;
+  // Vérifier si l'utilisateur démo existe déjà
+  const existingDemo = await db.localUsers
+    .where('username')
+    .equals('nadia.martin')
+    .first();
 
+  if (existingDemo) return;
+
+  // Si pas trouvé, le créer avec le bon hash PBKDF2
   const salt = Math.random().toString(36).substring(2, 12);
-  const passwordHash = await computeSha256(`demo${salt}`); // Hash du mot de passe "demo"
+  const passwordHash = await hashPasswordForSeed('demo', salt); // PBKDF2 100k itérations
 
   const demoUser: LocalUser = {
     id: 'usr_nadia_martin',
@@ -56,7 +61,8 @@ async function ensureDemoUserExists(): Promise<void> {
     salt,
   };
 
-  await db.localUsers.add(demoUser);
+  // put() = insert or replace (évite l'erreur si l'ID existe déjà avec un autre username)
+  await db.localUsers.put(demoUser);
 
   // Configure le tenant démo automatiquement
   useAuthStore.getState().configureTenant('demo-tenant-001', 'Clinique Démo OneDesk');
@@ -115,15 +121,27 @@ export const LoginScreen: React.FC = () => {
   };
 
   const handleDemoLogin = async () => {
-    setUsername('nadia.martin');
-    setPassword('demo');
-    // Petite latence pour laisser le state se propager
-    setTimeout(async () => {
-      const result = await login('nadia.martin', 'demo');
-      if (result.success) {
+    // Garantir que l'utilisateur démo existe avec le bon hash PBKDF2
+    await ensureDemoUserExists();
+
+    // Configurer le tenant démo
+    useAuthStore.getState().configureTenant('demo-tenant-001', 'Clinique Démo OneDesk');
+
+    // Tenter le login avec l'auth locale (jamais Supabase pour la démo)
+    const result = await login('nadia.martin', 'demo');
+    if (result.success) {
+      toast.success('Connexion démo', 'Vous êtes connecté en tant que Dr. Nadia Martin.');
+    } else {
+      // Si ça échoue encore, forcer la recréation du user démo
+      await db.localUsers.delete('usr_nadia_martin');
+      await ensureDemoUserExists();
+      const retry = await login('nadia.martin', 'demo');
+      if (retry.success) {
         toast.success('Connexion démo', 'Vous êtes connecté en tant que Dr. Nadia Martin.');
+      } else {
+        toast.error('Erreur démo', 'Impossible de se connecter en mode démo. Rechargez la page.');
       }
-    }, 100);
+    }
   };
 
   const handleGoogleLogin = async () => {

@@ -133,14 +133,11 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
 
         try {
-          if (!get().tenantId) {
-            return { success: false, error: 'Aucun tenant configuré. Contactez l\'administrateur.' };
-          }
-          const tenantId = get().tenantId!;
-
+          // Pour le login local, on cherche par username SANS filtrer sur le tenant
+          // (le user démo a tenantId='demo-tenant-001' mais le tenant peut être différent)
           const user = await db.localUsers
-            .where('[tenantId+username]')
-            .equals([tenantId, username.toLowerCase()])
+            .where('username')
+            .equals(username.toLowerCase())
             .first();
 
           if (!user || !user.isActive) {
@@ -164,7 +161,7 @@ export const useAuthStore = create<AuthState>()(
           await db.localSessions.add({
             id: sessionId,
             userId: user.id,
-            tenantId,
+            tenantId: user.tenantId,
             tokenHash,
             expiresAt,
             createdAt: new Date().toISOString(),
