@@ -47,6 +47,7 @@ interface HeaderProps {
   notifications?: DoctorNotification[];
   onSelectNotification?: (notification: DoctorNotification) => void;
   onOpenReceptionCheckIn?: () => void;
+  tenantName?: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -66,6 +67,7 @@ export const Header: React.FC<HeaderProps> = ({
   notifications = [],
   onSelectNotification,
   onOpenReceptionCheckIn,
+  tenantName,
 }) => {
   const { isInstallable, install } = usePWAInstall();
   const { isDark, toggleTheme } = useTheme();
@@ -227,28 +229,23 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Main Top Header Bar */}
         <div className="mx-auto flex h-16 items-center justify-between px-4 sm:px-6 max-w-[1600px] w-full gap-2 sm:gap-4">
-          {/* Brand & Clinic Title — Logo officiel OneDesk (grand, à gauche) */}
-          <div className="flex items-center gap-2.5 sm:gap-3 shrink min-w-0">
-            <div className="relative h-12 w-12 sm:h-14 sm:w-14 shrink-0">
+          {/* Brand & Logo officiel OneDesk — logo-concept-02.png contient déjà le nom */}
+          <div className="flex items-center gap-2 shrink min-w-0">
+            <div className="relative h-12 sm:h-16 shrink-0">
               <img
-                src="/logo-FOAVICON .png"
-                alt="OneDesk"
-                className="h-full w-full object-contain"
+                src="/logo-concept-02.png"
+                alt="OneDesk Clinique"
+                className="h-full w-auto object-contain max-w-[180px]"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
               />
               <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full border-2 border-white dark:border-slate-900 bg-emerald-500" />
             </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-white font-sans truncate">
-                  OneDesk
-                </span>
-              </div>
-              <div className="hidden md:flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 truncate">
+            <div className="hidden lg:block min-w-0">
+              <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 truncate">
                 <Building2 className="h-3 w-3 text-slate-400 dark:text-slate-500 shrink-0" />
-                <span className="truncate">Poste de Travail Clinique</span>
+                <span className="truncate">{tenantName || 'Poste de Travail Clinique'}</span>
                 <span>·</span>
                 <span className="font-mono font-medium text-slate-600 dark:text-slate-300 tabular-nums shrink-0">
                   {currentTime || '00:00:00'}
