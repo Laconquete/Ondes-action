@@ -220,15 +220,14 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Main Top Header Bar */}
         <div className="mx-auto flex h-16 items-center justify-between px-4 sm:px-6 max-w-[1600px] w-full gap-2 sm:gap-4">
-          {/* Brand & Clinic Title — Logo officiel OneDesk */}
+          {/* Brand & Clinic Title — Logo officiel OneDesk (grand, à gauche) */}
           <div className="flex items-center gap-2.5 sm:gap-3 shrink min-w-0">
-            <div className="relative h-9 w-9 sm:h-10 sm:w-10 shrink-0">
+            <div className="relative h-12 w-12 sm:h-14 sm:w-14 shrink-0">
               <img
                 src="/logo.png"
                 alt="OneDesk"
                 className="h-full w-full object-contain"
                 onError={(e) => {
-                  // Fallback : si le logo ne charge pas, on masque l'image
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
               />
@@ -236,7 +235,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-sm sm:text-base font-extrabold tracking-tight text-slate-900 dark:text-white font-sans truncate">
+                <span className="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-white font-sans truncate">
                   OneDesk
                 </span>
               </div>
