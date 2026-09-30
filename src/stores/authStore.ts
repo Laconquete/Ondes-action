@@ -38,6 +38,8 @@ interface AuthState {
   tenantName: string | null;
 
   login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  loginWithGoogle: () => Promise<{ success: boolean; error?: string; isOffline?: boolean }>;
+  completeGoogleLogin: (user: AppUser) => Promise<void>;
   logout: () => Promise<void>;
   checkSession: () => Promise<void>;
   clearError: () => void;
@@ -184,6 +186,68 @@ export const useAuthStore = create<AuthState>()(
           set({ isLoading: false, error: 'Erreur technique d\'authentification.' });
           return { success: false, error: 'Erreur technique.' };
         }
+      },
+
+      loginWithGoogle: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          if (!get().tenantId) {
+            return { success: false, error: 'Aucun tenant configuré.' };
+          }
+          // Import dynamique pour éviter dépendance circulaire
+          const { signInWithGoogle } = await import('../services/googleAuthService');
+          const result = await signInWithGoogle(get().tenantId!);
+
+          if (result.isOffline) {
+            set({ isLoading: false, error: result.error });
+            return { success: false, isOffline: true, error: result.error };
+          }
+          if (!result.success) {
+            // La redirection Google est en cours — on garde isLoading=true
+            // jusqu'au retour de redirection
+            if (result.error?.includes('Redirection')) {
+              return { success: false, error: result.error };
+            }
+            set({ isLoading: false, error: result.error });
+            return { success: false, error: result.error };
+          }
+          // Succès immédiat (rare avec signInWithOAuth, mais possible)
+          if (result.user) {
+            await get().completeGoogleLogin(result.user);
+          }
+          return { success: true };
+        } catch (err) {
+          set({ isLoading: false, error: 'Erreur Google OAuth.' });
+          return { success: false, error: 'Erreur Google OAuth.' };
+        }
+      },
+
+      completeGoogleLogin: async (user) => {
+        const { tokenHash } = await generateSessionToken();
+        const expiresAt = new Date(
+          Date.now() + SESSION_DURATION_HOURS * 60 * 60 * 1000
+        ).toISOString();
+        const sessionId = `sess_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+        const tenantId = get().tenantId || 'unknown';
+
+        await db.localSessions.add({
+          id: sessionId,
+          userId: user.id,
+          tenantId,
+          tokenHash,
+          expiresAt,
+          createdAt: new Date().toISOString(),
+        });
+
+        await db.localUsers.update(user.id, { lastLoginAt: new Date().toISOString() });
+
+        set({
+          currentUser: user,
+          session: { user, sessionId, tokenHash, expiresAt },
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        });
       },
 
       logout: async () => {

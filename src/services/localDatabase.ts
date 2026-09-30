@@ -33,6 +33,7 @@ export interface LocalUser {
   id: string;
   tenantId: string;
   username: string;
+  email?: string; // Présent si Google OAuth utilisé
   displayName: string;
   role: string;
   department: string;
@@ -41,9 +42,12 @@ export interface LocalUser {
   rppsCode?: string;
   isActive: boolean;
   lastLoginAt?: string;
-  // Hash bcrypt-like (SHA-256 + salt côté client — pas un vrai bcrypt mais suffisant pour démo offline)
+  // Hash PBKDF2 (100k itérations via Web Crypto) — secure offline auth
   passwordHash: string;
   salt: string;
+  // Champs Google OAuth (second facteur optionnel — préserve l'offline-first)
+  googleId?: string; // Si lié à un compte Google
+  avatarUrl?: string; // URL de l'avatar Google
 }
 
 export interface LocalSession {

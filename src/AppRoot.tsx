@@ -120,15 +120,32 @@ export const AppRoot: React.FC = () => {
         await useAuthStore.getState().checkSession();
         if (cancelled) return;
 
-        const { isAuthenticated } = useAuthStore.getState();
-        setStatus(isAuthenticated ? 'authenticated' : 'unauthenticated');
+        // Vérifie si on revient d'une redirection Google OAuth
+        const { tenantId, isAuthenticated } = useAuthStore.getState();
+        if (!isAuthenticated && tenantId) {
+          try {
+            const { handleGoogleRedirect } = await import('./services/googleAuthService');
+            const result = await handleGoogleRedirect(tenantId);
+            if (result.success && result.user) {
+              await useAuthStore.getState().completeGoogleLogin(result.user);
+              if (cancelled) return;
+              setStatus('authenticated');
+              return;
+            }
+          } catch {
+            // Silencieux : pas de session Google active, c'est normal
+          }
+        }
+
+        if (cancelled) return;
+        const { isAuthenticated: stillAuth } = useAuthStore.getState();
+        setStatus(stillAuth ? 'authenticated' : 'unauthenticated');
       } catch (err) {
         console.error('[AppRoot] Initialization failed:', err);
         if (!cancelled) {
           setInitError(
             err instanceof Error ? err.message : 'Erreur inconnue d\'initialisation'
           );
-          // En cas d'erreur, on bascule en mode non-authentifié plutôt que de planter
           setStatus('unauthenticated');
         }
       }
