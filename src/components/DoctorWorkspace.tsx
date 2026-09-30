@@ -7,6 +7,8 @@ import {
   FileEdit,
   History,
   Lock,
+  Unlock,
+  ArrowRightLeft,
   Pill,
   Plus,
   ShieldAlert,
@@ -34,8 +36,10 @@ import {
   VitalSignSet,
 } from '../types/clinical';
 import { PatientVitalsTrends } from './PatientVitalsTrends';
+import { TransferPatientDialog } from './TransferPatientDialog';
 import { exportPatientDossierPdf } from '../services/pdfExportService';
 import { analyzePatientVitals } from '../services/clinicalAlertsEngine';
+import { usePatientReservation } from '../hooks/usePatientReservation';
 
 interface DoctorWorkspaceProps {
   patient: Patient;
@@ -54,6 +58,16 @@ interface DoctorWorkspaceProps {
   onOpenFollowUpModal: () => void;
   canEditClinical: boolean;
   canPrescribe: boolean;
+  // Réservation / transfert de patient
+  allDoctors?: AppUser[];
+  onUpdatePatient?: (patientId: string, updates: Partial<Patient>) => void;
+  onAudit?: (action: string, resourceType: string, details: {
+    resourceId?: string;
+    patientId?: string;
+    patientName?: string;
+    outcome?: 'allowed' | 'denied' | 'challenged';
+    reasonText?: string;
+  }) => void;
 }
 
 export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
@@ -73,10 +87,25 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
   onOpenFollowUpModal,
   canEditClinical,
   canPrescribe,
+  allDoctors = [],
+  onUpdatePatient,
+  onAudit,
 }) => {
   // Center column view tab: 'soap' (consultation) vs 'trends' (Recharts historical data)
   const [activeCenterTab, setActiveCenterTab] = useState<'soap' | 'trends'>('soap');
   const [, setVitalsVersion] = useState(0);
+
+  // Transfer dialog state
+  const [showTransferDialog, setShowTransferDialog] = useState(false);
+  const [showReserveDialog, setShowReserveDialog] = useState(false);
+  const [reserveReason, setReserveReason] = useState('');
+
+  // Patient reservation hook (reserve / release / transfer)
+  const reservation = usePatientReservation({
+    currentUser,
+    onUpdatePatient: onUpdatePatient || (() => {}),
+    onAudit,
+  });
 
   // Quick vital sign recording modal toggle
   const [isRecordingVitals, setIsRecordingVitals] = useState(false);
@@ -1056,6 +1085,96 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
               </div>
               <ArrowRight className="h-3.5 w-3.5 text-slate-400" />
             </button>
+
+            {/* === Boutons Réservation / Transfert (visibles si onUpdatePatient fourni) === */}
+            {onUpdatePatient && (
+              <>
+                {/* Patient réservé → afficher "Libérer" + "Transférer" */}
+                {patient.isReserved && patient.reservedById === currentUser.id ? (
+                  <>
+                    {/* Statut réservé */}
+                    <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-[11px] text-amber-800 dark:text-amber-300">
+                      <Lock className="h-3.5 w-3.5 shrink-0" />
+                      <span className="font-bold">
+                        Patient réservé{patient.reservedReason ? ` : ${patient.reservedReason}` : ''}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowTransferDialog(true)}
+                      className="w-full flex items-center justify-between border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-2.5 text-xs font-semibold text-blue-800 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <ArrowRightLeft className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <span>Transférer le patient</span>
+                      </div>
+                      <ArrowRight className="h-3.5 w-3.5 text-blue-400" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => reservation.releasePatient(patient.id)}
+                      className="w-full flex items-center justify-between border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 p-2.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Unlock className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                        <span>Libérer le patient</span>
+                      </div>
+                      <ArrowRight className="h-3.5 w-3.5 text-emerald-400" />
+                    </button>
+                  </>
+                ) : patient.isReserved && patient.reservedById !== currentUser.id ? (
+                  /* Patient réservé par un autre médecin → afficher qui */
+                  <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-400">
+                    <Lock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                    <span>
+                      Réservé par <strong className="text-slate-900 dark:text-slate-100">{patient.reservedByName}</strong>
+                      {patient.reservedReason ? ` — ${patient.reservedReason}` : ''}
+                    </span>
+                  </div>
+                ) : currentUser.role === 'doctor' || currentUser.role === 'medical_director' ? (
+                  /* Patient non réservé → bouton "Réserver" */
+                  <button
+                    type="button"
+                    onClick={() => setShowReserveDialog(true)}
+                    className="w-full flex items-center justify-between border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-2.5 text-xs font-semibold text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Lock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                      <span>Réserver le patient</span>
+                    </div>
+                    <ArrowRight className="h-3.5 w-3.5 text-amber-400" />
+                  </button>
+                ) : null}
+
+                {/* Patient en attente de transfert vers moi → bouton Accepter/Refuser */}
+                {patient.pendingTransferToId === currentUser.id && (
+                  <div className="p-3 border border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30 space-y-2">
+                    <div className="flex items-center gap-2 text-[11px] font-bold text-blue-800 dark:text-blue-300">
+                      <ArrowRightLeft className="h-4 w-4" />
+                      <span>Transfert en attente — acceptez pour devenir le médecin titulaire</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => reservation.acceptTransfer(patient)}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-1.5 text-xs font-bold transition-colors"
+                      >
+                        ✓ Accepter
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => reservation.declineTransfer(patient)}
+                        className="flex-1 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 py-1.5 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                      >
+                        ✗ Refuser
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
 
@@ -1149,6 +1268,76 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Dialogue de transfert de patient */}
+      {showTransferDialog && (
+        <TransferPatientDialog
+          patient={patient}
+          currentUser={currentUser}
+          doctors={allDoctors}
+          onTransfer={reservation.transferPatient}
+          onRelease={reservation.releasePatient}
+          onClose={() => setShowTransferDialog(false)}
+        />
+      )}
+
+      {/* Dialogue de réservation (saisie du motif) */}
+      {showReserveDialog && (
+        <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl animate-fadeInScale">
+            <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50">
+              <div className="flex items-center gap-2.5">
+                <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                  Réserver le patient
+                </h2>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 ml-7">
+                {patient.familyName} {patient.givenName} sera réservé à votre nom.
+              </p>
+            </div>
+            <div className="p-5">
+              <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+                Motif de réservation
+              </label>
+              <textarea
+                value={reserveReason}
+                onChange={(e) => setReserveReason(e.target.value)}
+                placeholder="ex: Suivi cardiologique long terme, patient vulnérable..."
+                rows={3}
+                className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-amber-500 focus:outline-none resize-none"
+                autoFocus
+              />
+              <div className="flex gap-2 mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (reserveReason.trim()) {
+                      reservation.reservePatient(patient, reserveReason.trim());
+                      setReserveReason('');
+                      setShowReserveDialog(false);
+                    }
+                  }}
+                  disabled={!reserveReason.trim()}
+                  className="flex-1 bg-amber-600 hover:bg-amber-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white py-2 text-xs font-bold transition-colors"
+                >
+                  🔒 Réserver
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowReserveDialog(false);
+                    setReserveReason('');
+                  }}
+                  className="flex-1 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 py-2 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -123,6 +123,7 @@ export default function App() {
     setClinicalNotes,
     setNotifications,
     addPatient,
+    updatePatient,
     updatePatientDoctor,
     saveNoteDraft: handleSaveNoteDraft,
     signNote: handleSignNote,
@@ -446,6 +447,9 @@ export default function App() {
             onOpenFollowUpModal={() => setActiveTab('followups')}
             canEditClinical={permissions.canEditClinical}
             canPrescribe={permissions.canPrescribe}
+            allDoctors={allUsers.filter((u) => u.role === 'doctor' || u.role === 'medical_director')}
+            onUpdatePatient={updatePatient}
+            onAudit={logAudit}
           />
         )}
 
