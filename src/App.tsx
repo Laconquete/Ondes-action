@@ -29,6 +29,7 @@ import { PatientListAndDetail } from './components/PatientListAndDetail';
 import { SecureMessagingView } from './components/SecureMessagingView';
 import { FollowUpManager } from './components/FollowUpManager';
 import { AuditTrailView } from './components/AuditTrailView';
+import { ReceptionDashboard } from './components/ReceptionDashboard';
 // Modales lazy-loadées — réduisent le bundle initial de ~80 kB (PrescriptionSafety 804 lignes + pdfExportService)
 const PrescriptionSafetyModal = lazy(() =>
   import('./components/PrescriptionSafetyModal').then((m) => ({ default: m.PrescriptionSafetyModal }))
@@ -261,7 +262,7 @@ export default function App() {
     targetDoctorName: string;
     roomCode: string;
     reason: string;
-    isWalkIn: boolean;
+    isWalkIn?: boolean;
     priority: number;
   }) => {
     const patientName = `${params.patient.familyName} ${params.patient.givenName}`;
@@ -580,17 +581,35 @@ export default function App() {
 
       {/* Reception Check-In Desk Modal (lazy) */}
       {modals.isReceptionCheckInOpen && (
-        <Suspense fallback={<ModalLoader />}>
-          <ReceptionCheckInModal
-            isOpen={modals.isReceptionCheckInOpen}
-            onClose={() => modals.closeReceptionCheckIn()}
-            patients={patients}
-            appointments={appointments}
-            doctors={allUsers.filter((u) => u.role === 'doctor')}
-            onCheckInPatient={handleReceptionCheckIn}
-            onAddNewPatientAndCheckIn={handleAddNewPatientAndCheckIn}
-          />
-        </Suspense>
+        <ReceptionDashboard
+          queueTickets={queueTickets}
+          appointments={appointments}
+          patients={patients}
+          doctors={allUsers.filter((u) => u.role === 'doctor' || u.role === 'medical_director')}
+          currentUser={currentUser}
+          onCallTicket={handleCallQueueTicket}
+          onAssignDoctor={(ticketId, doctorId, doctorName) => {
+            // Mettre à jour le RDV avec le nouveau médecin
+            const ticket = queueTickets.find((t) => t.id === ticketId);
+            if (ticket) {
+              setAppointments((prev) =>
+                prev.map((a) =>
+                  a.id === ticket.appointmentId
+                    ? { ...a, practitionerId: doctorId, practitionerName: doctorName }
+                    : a
+                )
+              );
+              logAudit('PATIENT_REASSIGN', 'appointment', {
+                resourceId: ticket.appointmentId,
+                patientId: ticket.patientId,
+                patientName: ticket.patientName,
+                reasonText: `Patient réorienté vers ${doctorName}`,
+              });
+            }
+          }}
+          onCheckIn={(params) => handleReceptionCheckIn({ ...params, isWalkIn: true })}
+          onClose={() => modals.closeReceptionCheckIn()}
+        />
       )}
     </div>
   );
