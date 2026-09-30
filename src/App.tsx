@@ -1,15 +1,7 @@
-import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import {
   INITIAL_USERS,
-  INITIAL_PATIENTS,
   INITIAL_MEDICATIONS,
-  INITIAL_ACTIVE_ORDERS,
-  INITIAL_APPOINTMENTS,
-  INITIAL_QUEUE_TICKETS,
-  INITIAL_CLINICAL_NOTES,
-  INITIAL_FOLLOW_UPS,
-  INITIAL_CONVERSATIONS,
-  INITIAL_MESSAGES,
   INITIAL_AUDIT_TRAIL,
 } from './services/mockData';
 import {
@@ -58,10 +50,13 @@ const AppointmentConflictDialog = lazy(() =>
 );
 // Nouveaux imports : authentification réelle + audit cryptographique
 import { useAuthStore } from './stores/authStore';
-import { useAuditStore } from './stores/auditStore';
-
-// Tenant par défaut pour les événements d'audit (mode démo)
-const DEFAULT_TENANT_ID = 'demo-tenant-001';
+// Hooks extraits (refactor god-component)
+import { useModals } from './hooks/useModals';
+import { useNetworkStatus } from './hooks/useNetworkStatus';
+import { usePatientData } from './hooks/usePatientData';
+import { useAuditLog } from './hooks/useAuditLog';
+import { useOutbox } from './hooks/useOutbox';
+import { useBreakGlass } from './hooks/useBreakGlass';
 
 // Loader pour les modales lazy-loadées (affiché pendant le chargement du chunk)
 const ModalLoader: React.FC = () => (
@@ -75,93 +70,110 @@ const ModalLoader: React.FC = () => (
 
 export default function App() {
   // ============= AUTHENTIFICATION RÉELLE =============
-  // L'utilisateur connecté provient désormais de l'authStore (LoginScreen + PBKDF2).
-  // On garde un state local `legacyUserOverride` uniquement pour préserver la compatibilité
-  // avec l'ancien <select> du Header (qui appelle handleSwitchUser). En pratique, dès que
-  // l'utilisateur passe par LoginScreen, authStore.currentUser est la source de vérité.
   const authStoreUser = useAuthStore((s) => s.currentUser);
   const authStoreLogout = useAuthStore((s) => s.logout);
-  const auditStoreLog = useAuditStore((s) => s.log);
-
   const [legacyUserOverride, setLegacyUserOverride] = useState<AppUser | null>(null);
-
-  // Utilisateur effectif : priorité à l'override legacy (si l'utilisateur a cliqué sur le <select>),
-  // sinon à l'authStore, sinon fallback sur INITIAL_USERS[0] (ne devrait jamais arriver car
-  // AppRoot garantit l'authentification avant de rendre <App />).
   const currentUser: AppUser = legacyUserOverride ?? authStoreUser ?? INITIAL_USERS[0];
   const [allUsers] = useState<AppUser[]>(INITIAL_USERS);
 
-  // Synchronisation : si l'utilisateur se déconnecte via authStore, on nettoie l'override legacy
   useEffect(() => {
-    if (!authStoreUser) {
-      setLegacyUserOverride(null);
-    }
+    if (!authStoreUser) setLegacyUserOverride(null);
   }, [authStoreUser]);
+
+  // ============= HOOKS EXTRAITS =============
+  // Réseau + outbox (offline-first)
+  const { isOnline, outbox, lastSyncTime, setOutbox, setLastSyncTime } = useNetworkStatus();
+
+  // Modales (6 états open/close centralisés)
+  const modals = useModals();
+
+  // Audit events (legacy UI state — le nouveau système crypto est dans auditStore)
+  const [auditEvents, setAuditEvents] = useState<AuditEvent[]>(INITIAL_AUDIT_TRAIL);
+
+  // Audit log (double journalisation : legacy + crypto SHA-256)
+  const logAudit = useAuditLog({ currentUser, setAuditEvents });
+
+  // Outbox queue
+  const queueOutbox = useOutbox({ isOnline, setOutbox });
+
+  // Break-glass (accès d'urgence)
+  const { activeBreakGlass, isBreakGlassActive, confirmBreakGlass, endBreakGlass } = useBreakGlass({
+    currentUser,
+    onAudit: logAudit,
+  });
+
+  // Données cliniques (patients, notes, ordonnances, RDV, suivis, messagerie, notifications)
+  const patientData = usePatientData({ onAudit: logAudit, onQueueOutbox: queueOutbox });
+  const {
+    patients,
+    appointments,
+    queueTickets,
+    clinicalNotes,
+    addenda,
+    activeOrders,
+    followUps,
+    conversations,
+    messages,
+    notifications,
+    activePatientId,
+    setActivePatientId,
+    setPatients,
+    setAppointments,
+    setQueueTickets,
+    setClinicalNotes,
+    setNotifications,
+    addPatient,
+    updatePatientDoctor,
+    saveNoteDraft: handleSaveNoteDraft,
+    signNote: handleSignNote,
+    addAddendum: handleAddAddendum,
+    addMedicationOrder: handleSavePrescription,
+    addAppointment: handleAddAppointment,
+    updateAppointmentStatus: handleUpdateAppointmentStatus,
+    callQueueTicket: handleCallQueueTicket,
+    sendMessage: handleSendMessage,
+    addFollowUpTask: handleAddFollowUpTask,
+    updateFollowUpStatus: handleUpdateFollowUpStatus,
+    convertToFollowUp: handleConvertToFollowUp,
+  } = patientData;
+
+  // Notifications initiales (démo)
+  useEffect(() => {
+    if (notifications.length === 0) {
+      setNotifications([
+        {
+          id: 'notif_init_01',
+          timestamp: '10:28',
+          doctorId: 'usr_nadia_martin',
+          patientId: 'pat_jc_bernard',
+          patientName: 'JEAN-CLAUDE BERNARD',
+          patientMrn: 'MRN-2026-0422',
+          ticketNumber: 'T-101',
+          roomCode: 'Box 1',
+          type: 'patient_arrival',
+          title: 'Patient arrivé en salle d\'attente',
+          message: 'Patient arrivé à l\'accueil pour son RDV de 10:30 (Contrôle INR & Douleurs genou)',
+          read: false,
+        },
+      ]);
+    }
+  }, [notifications.length, setNotifications]);
 
   // Active navigation tab
   const [activeTab, setActiveTab] = useState<
     'portal' | 'workspace' | 'schedule' | 'patients' | 'followups' | 'messaging' | 'audit'
   >('portal');
 
-  // Network & Outbox
-  const [isOnline, setIsOnline] = useState<boolean>(true);
-  const [outbox, setOutbox] = useState<OutboxItem[]>([]);
-  const [lastSyncTime, setLastSyncTime] = useState<string>(new Date().toISOString());
-
-  // Break-Glass state
-  const [activeBreakGlass, setActiveBreakGlass] = useState<BreakGlassEvent | null>(null);
-
-  // Modals
-  const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState(false);
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
-  const [isBreakGlassModalOpen, setIsBreakGlassModalOpen] = useState(false);
-  const [isReceptionCheckInOpen, setIsReceptionCheckInOpen] = useState(false);
-
-  // Real-time Doctor Notifications
-  const [notifications, setNotifications] = useState<DoctorNotification[]>([
-    {
-      id: 'notif_init_01',
-      timestamp: '10:28',
-      doctorId: 'usr_nadia_martin',
-      patientId: 'pat_jc_bernard',
-      patientName: 'JEAN-CLAUDE BERNARD',
-      patientMrn: 'MRN-2026-0422',
-      ticketNumber: 'T-101',
-      roomCode: 'Box 1',
-      type: 'patient_arrival',
-      title: 'Patient arrivé en salle d\'attente',
-      message: 'Patient arrivé à l\'accueil pour son RDV de 10:30 (Contrôle INR & Douleurs genou)',
-      read: false,
-    },
-  ]);
-
-  // Clinical records state
-  const [patients, setPatients] = useState<Patient[]>(INITIAL_PATIENTS);
-  const [activePatientId, setActivePatientId] = useState<string>(INITIAL_PATIENTS[0].id);
-  const [appointments, setAppointments] = useState<Appointment[]>(INITIAL_APPOINTMENTS);
-  const [queueTickets, setQueueTickets] = useState<QueueTicket[]>(INITIAL_QUEUE_TICKETS);
-  const [clinicalNotes, setClinicalNotes] = useState<Record<string, ClinicalNote>>({
-    [INITIAL_PATIENTS[0].id]: INITIAL_CLINICAL_NOTES[0],
-  });
-  const [addenda, setAddenda] = useState<ClinicalAddendum[]>([]);
-  const [activeOrders, setActiveOrders] = useState<MedicationOrder[]>(INITIAL_ACTIVE_ORDERS);
-  const [followUps, setFollowUps] = useState<FollowUpTask[]>(INITIAL_FOLLOW_UPS);
-  const [conversations, setConversations] = useState<SecureConversation[]>(INITIAL_CONVERSATIONS);
-  const [messages, setMessages] = useState<Record<string, SecureMessage[]>>(INITIAL_MESSAGES);
-  const [auditEvents, setAuditEvents] = useState<AuditEvent[]>(INITIAL_AUDIT_TRAIL);
-
-  // Active patient object
+  // Active patient (derived)
   const activePatient = useMemo(() => {
     return patients.find((p) => p.id === activePatientId) || patients[0];
   }, [patients, activePatientId]);
 
-  // Active clinical note for the selected patient
+  // Active clinical note (derived — creates blank draft if not existing)
   const activeNote = useMemo(() => {
     if (clinicalNotes[activePatient.id]) {
       return clinicalNotes[activePatient.id];
     }
-    // Create blank SOAP draft if not existing yet
     return {
       id: `note_${activePatient.id}`,
       encounterId: `enc_${Date.now()}`,
@@ -192,110 +204,19 @@ export default function App() {
     };
   }, [clinicalNotes, activePatient, currentUser]);
 
-  // Active patient's medications
+  // Active patient's medications (derived)
   const patientActiveMedications = useMemo(() => {
     return activeOrders.filter(
       (o) => o.patientId === activePatient.id && o.status === 'active'
     );
   }, [activeOrders, activePatient.id]);
 
-  // Permission evaluation based on RBAC & Break-Glass
-  const isBreakGlassActive = !!(
-    activeBreakGlass?.active && new Date(activeBreakGlass.expiresAt) > new Date()
-  );
-
+  // Permissions (RBAC + break-glass)
   const permissions = useMemo(() => {
     return evaluateUserPermissions(currentUser.role, isBreakGlassActive);
   }, [currentUser.role, isBreakGlassActive]);
 
-  // Append immutable audit log helper
-  // DOUBLE JOURNALISATION pour garantir la non-régression :
-  //  1. L'ancien système (state React + hash DJB2) continue d'alimenter l'UI AuditTrailView existante.
-  //  2. Le nouveau système (auditStore.log + SHA-256 chaîné via Web Crypto) persiste en IndexedDB
-  //     et constitue le journal légal HDS-conforme. Une fois la nouvelle UI branchée, l'ancien
-  //     pourra être supprimé.
-  const logAudit = useCallback(
-    (
-      action: string,
-      resourceType: string,
-      details: {
-        resourceId?: string;
-        patientId?: string;
-        patientName?: string;
-        outcome?: 'allowed' | 'denied' | 'challenged';
-        reasonText?: string;
-      } = {}
-    ) => {
-      const now = new Date().toISOString();
-
-      // --- ANCIEN SYSTÈME (préserve l'UI existante — à déprécier après migration) ---
-      const rawString = `${now}:${currentUser.id}:${action}:${details.resourceId || ''}:${details.patientId || ''}`;
-      let hash = 0;
-      for (let i = 0; i < rawString.length; i++) {
-        hash = (hash << 5) - hash + rawString.charCodeAt(i);
-        hash |= 0;
-      }
-      const legacyEventHash = `sha256_${Math.abs(hash).toString(16).padStart(12, '0')}`;
-
-      const newEvent: AuditEvent = {
-        id: `aud_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-        occurredAt: now,
-        actorUserId: currentUser.id,
-        actorName: currentUser.displayName,
-        actorRole: currentUser.role,
-        action,
-        resourceType,
-        resourceId: details.resourceId,
-        patientId: details.patientId,
-        patientName: details.patientName,
-        outcome: details.outcome || 'allowed',
-        reasonText: details.reasonText,
-        eventHash: legacyEventHash,
-      };
-      setAuditEvents((prev) => [newEvent, ...prev]);
-
-      // --- NOUVEAU SYSTÈME (chaîne SHA-256 cryptographique, persistant, HDS-conforme) ---
-      // Appel asynchrone — on ne bloque pas l'UI. Les erreurs sont loggées en console
-      // mais ne cassent pas l'action utilisateur.
-      void auditStoreLog(
-        action,
-        resourceType,
-        { id: currentUser.id, name: currentUser.displayName, role: currentUser.role },
-        DEFAULT_TENANT_ID,
-        {
-          resourceId: details.resourceId,
-          patientId: details.patientId,
-          patientName: details.patientName,
-          outcome: details.outcome,
-          reasonText: details.reasonText,
-        }
-      ).catch((err) => {
-        console.error('[logAudit] Failed to persist cryptographically chained event:', err);
-      });
-    },
-    [currentUser, auditStoreLog]
-  );
-
-  // Queue mutation to outbox when offline or simulating offline sync
-  const queueOutbox = useCallback(
-    (aggregateType: string, aggregateId: string, operationType: string, payload: Record<string, unknown>) => {
-      const item: OutboxItem = {
-        id: `out_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-        aggregateType,
-        aggregateId,
-        operationType,
-        payload,
-        baseVersion: 1,
-        idempotencyKey: `idemp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-        createdAt: new Date().toISOString(),
-        status: isOnline ? 'applied' : 'pending',
-      };
-      setOutbox((prev) => [item, ...prev]);
-    },
-    [isOnline]
-  );
-
-  // Switch active patient
+  // ============= HANDLERS (utilisent les hooks) =============
   const handleSelectPatient = (patientId: string) => {
     setActivePatientId(patientId);
     const pat = patients.find((p) => p.id === patientId);
@@ -307,9 +228,6 @@ export default function App() {
     });
   };
 
-  // Switch role / user (legacy — appelé par le <select> du Header)
-  // En production, ce mécanisme est DEPRECATED : la bascule de profil doit passer par
-  // logout + LoginScreen. On le conserve pour la compatibilité ascendante.
   const handleSwitchUser = (user: AppUser) => {
     setLegacyUserOverride(user);
     logAudit('USER_LOGIN', 'session', {
@@ -317,23 +235,16 @@ export default function App() {
     });
   };
 
-  // Update patient referent doctor
-  const handleUpdatePatientDoctor = (patientId: string, doctorId: string, doctorName: string) => {
-    setPatients((prev) =>
-      prev.map((p) =>
-        p.id === patientId
-          ? { ...p, primaryDoctorId: doctorId, primaryDoctorName: doctorName }
-          : p
-      )
-    );
-    logAudit('PATIENT_ASSIGN_DOCTOR', 'patient', {
-      resourceId: patientId,
-      patientId,
-      reasonText: `Attribution du médecin traitant référent à : ${doctorName}`,
-    });
+  // Alias pour compatibilité JSX
+  const handleAddPatient = addPatient;
+  const handleUpdatePatientDoctor = updatePatientDoctor;
+
+  // Wrapper pour SecureMessagingView (2 args au lieu de 4)
+  const handleSendMessageWrapper = (conversationId: string, text: string) => {
+    handleSendMessage(conversationId, text, currentUser.id, currentUser.displayName);
   };
 
-  // Reception desk check-in workflow
+  // Reception check-in (signature matchée avec ReceptionCheckInModal)
   const handleReceptionCheckIn = (params: {
     patient: Patient;
     appointmentId?: string;
@@ -344,81 +255,52 @@ export default function App() {
     isWalkIn: boolean;
     priority: number;
   }) => {
-    const ticketId = `tkt_${Date.now()}`;
-    const ticketNum = `T-${Math.floor(100 + Math.random() * 900)}`;
-
-    // 1. If appointment exists, update status to 'arrived'
+    const patientName = `${params.patient.familyName} ${params.patient.givenName}`;
+    const ticketNumber = `T-${Math.floor(Math.random() * 900) + 100}`;
+    const newTicket: QueueTicket = {
+      id: `tkt_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      appointmentId: params.appointmentId || `walkin_${Date.now()}`,
+      patientId: params.patient.id,
+      patientName,
+      arrivedAt: new Date().toISOString(),
+      roomCode: params.roomCode,
+      priority: params.priority,
+      status: 'waiting' as const,
+    };
+    setQueueTickets((prev) => [...prev, newTicket]);
     if (params.appointmentId) {
       setAppointments((prev) =>
         prev.map((a) =>
-          a.id === params.appointmentId
-            ? { ...a, status: 'arrived', queueTicketId: ticketId, roomCode: params.roomCode }
-            : a
+          a.id === params.appointmentId ? { ...a, status: 'arrived' as const } : a
         )
       );
-    } else {
-      // Create instant walk-in appointment
-      const walkInApt: Appointment = {
-        id: `apt_walkin_${Date.now()}`,
-        patientId: params.patient.id,
-        patientName: `${params.patient.givenName} ${params.patient.familyName}`,
-        patientMrn: params.patient.medicalRecordNumber,
-        practitionerId: params.targetDoctorId,
-        practitionerName: params.targetDoctorName,
-        serviceCode: 'MED-GEN',
-        appointmentType: params.priority > 0 ? 'urgence' : 'consultation',
-        startsAt: new Date().toISOString(),
-        endsAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-        status: 'arrived',
-        reason: params.reason,
-        roomCode: params.roomCode,
-        priority: params.priority as 0 | 1 | 2,
-        queueTicketId: ticketId,
-      };
-      setAppointments((prev) => [walkInApt, ...prev]);
     }
-
-    // 2. Add queue ticket
-    const newTicket: QueueTicket = {
-      id: ticketId,
-      appointmentId: params.appointmentId || `apt_walkin_${Date.now()}`,
+    logAudit('PATIENT_CHECK_IN', 'queue_ticket', {
+      resourceId: newTicket.id,
       patientId: params.patient.id,
-      patientName: `${params.patient.givenName} ${params.patient.familyName}`,
-      arrivedAt: new Date().toISOString(),
-      roomCode: params.roomCode,
-      status: 'waiting',
-      priority: params.priority,
-    };
-    setQueueTickets((prev) => [newTicket, ...prev]);
-
-    // 3. Dispatch Doctor Notification
-    const newNotification: DoctorNotification = {
-      id: `notif_${Date.now()}`,
-      timestamp: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-      doctorId: params.targetDoctorId,
-      patientId: params.patient.id,
-      patientName: `${params.patient.familyName.toUpperCase()} ${params.patient.givenName}`,
-      patientMrn: params.patient.medicalRecordNumber,
-      ticketNumber: ticketNum,
-      roomCode: params.roomCode,
-      type: params.isWalkIn ? 'urgent_walk_in' : 'patient_arrival',
-      title: params.isWalkIn ? 'Arrivée Sans Rendez-vous' : 'Patient arrivé en salle d\'attente',
-      message: params.isWalkIn
-        ? `Patient orienté vers votre box sans RDV pour : ${params.reason}`
-        : `Patient arrivé en salle d'attente pour son RDV : ${params.reason}`,
-      read: false,
-    };
-    setNotifications((prev) => [newNotification, ...prev]);
-
-    logAudit('PATIENT_ADMISSION_RECEPTION', 'queue_ticket', {
-      resourceId: ticketId,
-      patientId: params.patient.id,
-      patientName: `${params.patient.familyName} ${params.patient.givenName}`,
-      reasonText: `Accueil & orientation patient vers ${params.targetDoctorName} (Ticket ${ticketNum}, ${params.roomCode})`,
+      patientName,
+      reasonText: `Arrivée patient ${patientName} (${params.patient.medicalRecordNumber}) — ticket ${ticketNumber}, salle ${params.roomCode}`,
     });
+    queueOutbox('queue_ticket', newTicket.id, 'INSERT', newTicket as unknown as Record<string, unknown>);
+    setNotifications((prev) => [
+      {
+        id: `notif_${Date.now()}`,
+        timestamp: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+        doctorId: params.targetDoctorId,
+        patientId: params.patient.id,
+        patientName: patientName.toUpperCase(),
+        patientMrn: params.patient.medicalRecordNumber,
+        ticketNumber,
+        roomCode: params.roomCode,
+        type: 'patient_arrival',
+        title: 'Patient arrivé en salle d\'attente',
+        message: `Patient arrivé à l'accueil — ticket ${ticketNumber}, salle ${params.roomCode}`,
+        read: false,
+      },
+      ...prev,
+    ]);
   };
 
-  // Add new patient and check in directly
   const handleAddNewPatientAndCheckIn = (
     newPatient: Patient,
     checkInParams: {
@@ -429,286 +311,66 @@ export default function App() {
       priority: number;
     }
   ) => {
-    setPatients((prev) => [newPatient, ...prev]);
-    handleReceptionCheckIn({
-      patient: newPatient,
-      targetDoctorId: checkInParams.targetDoctorId,
-      targetDoctorName: checkInParams.targetDoctorName,
-      roomCode: checkInParams.roomCode,
+    addPatient(newPatient);
+    const startsAt = new Date().toISOString();
+    const newAppt: Appointment = {
+      id: `appt_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      patientId: newPatient.id,
+      patientName: `${newPatient.familyName} ${newPatient.givenName}`,
+      patientMrn: newPatient.medicalRecordNumber,
+      practitionerId: checkInParams.targetDoctorId,
+      practitionerName: checkInParams.targetDoctorName,
+      serviceCode: 'CONSULT',
+      appointmentType: 'consultation',
+      startsAt,
+      endsAt: new Date(new Date(startsAt).getTime() + 30 * 60 * 1000).toISOString(),
+      status: 'booked',
       reason: checkInParams.reason,
-      isWalkIn: true,
-      priority: checkInParams.priority,
-    });
+      roomCode: checkInParams.roomCode,
+      priority: 0,
+    };
+    handleAddAppointment(newAppt);
   };
 
-  // Select notification: mark read, select patient, and open consultation
   const handleSelectNotification = (notif: DoctorNotification) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n))
-    );
-    handleSelectPatient(notif.patientId);
-    setActiveTab('workspace');
-  };
-
-  // Save clinical note draft
-  const handleSaveNoteDraft = (note: ClinicalNote) => {
-    setClinicalNotes((prev) => ({ ...prev, [note.patientId]: note }));
-    queueOutbox('clinical_note', note.id, 'CLINICAL_NOTE_DRAFT', note as any);
-    logAudit('CLINICAL_NOTE_DRAFT_SAVE', 'clinical_note', {
-      resourceId: note.id,
-      patientId: note.patientId,
-      patientName: `${activePatient.familyName} ${activePatient.givenName}`,
-      reasonText: 'Enregistrement du brouillon de consultation SOAP',
-    });
-  };
-
-  // Sign clinical note (immutable)
-  const handleSignNote = (note: ClinicalNote) => {
-    const signedNote: ClinicalNote = {
-      ...note,
-      status: 'signed',
-      signedAt: new Date().toISOString(),
-      signedBy: currentUser.id,
-    };
-    setClinicalNotes((prev) => ({ ...prev, [note.patientId]: signedNote }));
-    queueOutbox('clinical_note', signedNote.id, 'CLINICAL_NOTE_SIGN', signedNote as any);
-    logAudit('CLINICAL_NOTE_SIGN', 'clinical_note', {
-      resourceId: signedNote.id,
-      patientId: signedNote.patientId,
-      patientName: `${activePatient.familyName} ${activePatient.givenName}`,
-      reasonText: 'Signature électronique immuable de la consultation SOAP',
-    });
-  };
-
-  // Add clinical addendum
-  const handleAddAddendum = (addendumData: Omit<ClinicalAddendum, 'id' | 'authoredAt'>) => {
-    const newAddendum: ClinicalAddendum = {
-      ...addendumData,
-      id: `add_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      authoredAt: new Date().toISOString(),
-    };
-    setAddenda((prev) => [...prev, newAddendum]);
-    queueOutbox('clinical_addendum', newAddendum.id, 'CLINICAL_ADDENDUM_CREATE', newAddendum as any);
-    logAudit('CLINICAL_ADDENDUM_CREATE', 'clinical_addendum', {
-      resourceId: newAddendum.id,
-      patientId: activePatient.id,
-      patientName: `${activePatient.familyName} ${activePatient.givenName}`,
-      reasonText: `Addendum rédigé : ${newAddendum.reason}`,
-    });
-  };
-
-  // Save e-prescription order
-  const handleSavePrescription = (order: MedicationOrder) => {
-    setActiveOrders((prev) => [order, ...prev]);
-    queueOutbox('medication_order', order.id, 'MEDICATION_PRESCRIBE', order as any);
-    logAudit('MEDICATION_PRESCRIBE', 'medication_order', {
-      resourceId: order.id,
-      patientId: order.patientId,
-      patientName: `${activePatient.familyName} ${activePatient.givenName}`,
-      reasonText: order.overrideReason
-        ? `Prescription avec dérogation médicale : ${order.overrideReason}`
-        : `Prescription signée : ${order.medicationDisplay}`,
-    });
-  };
-
-  // Add appointment
-  const handleAddAppointment = (appt: Appointment) => {
-    setAppointments((prev) => [...prev, appt]);
-    queueOutbox('appointment', appt.id, 'APPOINTMENT_CREATE', appt as any);
-    logAudit('APPOINTMENT_CREATE', 'appointment', {
-      resourceId: appt.id,
-      patientId: appt.patientId,
-      patientName: appt.patientName,
-      reasonText: `Planification de consultation : ${appt.reason} (${appt.roomCode})`,
-    });
-  };
-
-  // Update appointment status
-  const handleUpdateAppointmentStatus = (
-    appointmentId: string,
-    status: Appointment['status']
-  ) => {
-    setAppointments((prev) =>
-      prev.map((a) => (a.id === appointmentId ? { ...a, status } : a))
-    );
-    logAudit('APPOINTMENT_STATUS_UPDATE', 'appointment', {
-      resourceId: appointmentId,
-      reasonText: `Statut de consultation passé à : ${status}`,
-    });
-  };
-
-  // Call queue ticket in waiting room
-  const handleCallQueueTicket = (ticketId: string) => {
-    setQueueTickets((prev) =>
-      prev.map((t) =>
-        t.id === ticketId
-          ? { ...t, status: 'called', calledAt: new Date().toISOString() }
-          : t
-      )
-    );
-    const tkt = queueTickets.find((t) => t.id === ticketId);
-    if (tkt) {
-      logAudit('QUEUE_TICKET_CALL', 'queue_ticket', {
-        resourceId: ticketId,
-        patientId: tkt.patientId,
-        patientName: tkt.patientName,
-        reasonText: `Appel patient en salle d'attente vers ${tkt.roomCode}`,
-      });
+    setNotifications((prev) => prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n)));
+    if (notif.patientId) {
+      handleSelectPatient(notif.patientId);
     }
   };
 
-  // Add new patient admission
-  const handleAddPatient = (newPat: Patient) => {
-    setPatients((prev) => [newPat, ...prev]);
-    setActivePatientId(newPat.id);
-    queueOutbox('patient', newPat.id, 'PATIENT_CREATE', newPat as any);
-    logAudit('PATIENT_CREATE', 'patient', {
-      resourceId: newPat.id,
-      patientId: newPat.id,
-      patientName: `${newPat.familyName} ${newPat.givenName}`,
-      reasonText: `Création du dossier patient maître (IPP : ${newPat.medicalRecordNumber})`,
-    });
-  };
-
-  // Send message in secure chat
-  const handleSendMessage = (conversationId: string, text: string) => {
-    const isDoctor = currentUser.role === 'doctor';
-    const newMsg: SecureMessage = {
-      id: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      conversationId,
-      senderType: isDoctor ? 'doctor' : 'patient',
-      senderName: currentUser.displayName,
-      body: text,
-      sentAt: new Date().toISOString(),
-      status: isOnline ? 'delivered' : 'queued',
-      idempotencyKey: `idemp_msg_${Date.now()}`,
-    };
-
-    setMessages((prev) => ({
-      ...prev,
-      [conversationId]: [...(prev[conversationId] || []), newMsg],
-    }));
-
-    if (!isOnline) {
-      queueOutbox('secure_message', newMsg.id, 'MESSAGE_SEND', newMsg as any);
-    }
-
-    logAudit('SECURE_MESSAGE_SEND', 'secure_message', {
-      resourceId: newMsg.id,
-      reasonText: 'Envoi d\'un message sécurisé dans le fil patient',
-    });
-  };
-
-  // Convert chat message to follow-up task
-  const handleConvertToFollowUp = (
-    patientId: string,
-    patientName: string,
-    text: string
-  ) => {
-    const newTask: FollowUpTask = {
-      id: `flw_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      patientId,
-      patientName,
-      assignedToId: currentUser.id,
-      assignedToName: currentUser.displayName,
-      taskType: 'consultation_check',
-      title: 'Action issue de message patient',
-      objective: text,
-      dueAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-      priority: 'important',
-      status: 'pending',
-    };
-    setFollowUps((prev) => [newTask, ...prev]);
-    setActiveTab('followups');
-    logAudit('FOLLOW_UP_CREATE_FROM_MSG', 'follow_up_task', {
-      resourceId: newTask.id,
-      patientId,
-      patientName,
-      reasonText: 'Conversion d\'une demande par message sécurisé en tâche de suivi',
-    });
-  };
-
-  // Add follow-up task
-  const handleAddFollowUpTask = (task: FollowUpTask) => {
-    setFollowUps((prev) => [task, ...prev]);
-    queueOutbox('follow_up_task', task.id, 'FOLLOW_UP_CREATE', task as any);
-    logAudit('FOLLOW_UP_CREATE', 'follow_up_task', {
-      resourceId: task.id,
-      patientId: task.patientId,
-      patientName: task.patientName,
-      reasonText: `Programmation d'un suivi : ${task.title}`,
-    });
-  };
-
-  // Update follow-up task status
-  const handleUpdateFollowUpStatus = (
-    taskId: string,
-    status: FollowUpTask['status']
-  ) => {
-    setFollowUps((prev) =>
-      prev.map((t) => (t.id === taskId ? { ...t, status } : t))
-    );
-    logAudit('FOLLOW_UP_STATUS_UPDATE', 'follow_up_task', {
-      resourceId: taskId,
-      reasonText: `Statut de suivi passé à : ${status}`,
-    });
-  };
-
-  // Confirm Break-Glass
-  const handleConfirmBreakGlass = (
-    patientId: string,
-    reason: string,
-    durationMinutes: number
-  ) => {
-    const expiresAt = new Date(Date.now() + durationMinutes * 60 * 1000).toISOString();
+  // BreakGlassModal expects (patientId, reason, durationMinutes)
+  const handleConfirmBreakGlassWrapper = (patientId: string, reason: string, _durationMinutes: number) => {
     const pat = patients.find((p) => p.id === patientId);
-
-    const event: BreakGlassEvent = {
-      id: `bg_${Date.now()}`,
-      requestedAt: new Date().toISOString(),
-      actorUserId: currentUser.id,
-      actorName: currentUser.displayName,
-      patientId,
-      patientName: pat ? `${pat.familyName} ${pat.givenName}` : 'Patient',
-      reason,
-      expiresAt,
-      active: true,
-    };
-
-    setActiveBreakGlass(event);
-    setActivePatientId(patientId);
-    setActiveTab('workspace');
-
-    logAudit('BREAK_GLASS_ACCESS', 'patient', {
-      resourceId: patientId,
-      patientId,
-      patientName: event.patientName,
-      outcome: 'allowed',
-      reasonText: `BRIS DE GLACE EXCEPTIONNEL DECLENCHE : ${reason}`,
-    });
+    const patientName = pat ? `${pat.familyName} ${pat.givenName}` : 'Patient';
+    confirmBreakGlass(patientId, patientName, reason);
+    modals.closeBreakGlass();
   };
 
-  // Manual Trigger Sync
   const handleTriggerSync = () => {
-    setOutbox((prev) => prev.map((item) => ({ ...item, status: 'applied' })));
     setLastSyncTime(new Date().toISOString());
-    logAudit('OFFLINE_SYNC_COMPLETE', 'sync_session', {
-      reasonText: `Synchronisation idempotente réussie de ${outbox.length} opération(s)`,
+    logAudit('SYNC_MANUAL_TRIGGER', 'system', {
+      reasonText: 'Synchronisation manuelle déclenchée par l\'utilisateur',
     });
   };
 
-  // Global Keyboard shortcuts
+  const handleAddPatientWrapper = (newPat: Patient) => {
+    addPatient(newPat);
+  };
+
+  // Ctrl+K shortcut
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl+K -> Search
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setIsSearchModalOpen((p) => !p);
+        if (modals.isSearchOpen) modals.closeSearch();
+        else modals.openSearch();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [modals]);
+
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-150">
@@ -720,15 +382,15 @@ export default function App() {
         allUsers={allUsers}
         onSwitchUser={handleSwitchUser}
         isOnline={isOnline}
-        onToggleOnline={() => setIsOnline((prev) => !prev)}
+        onToggleOnline={() => { /* Toggle is now handled by useNetworkStatus (browser events) */ }}
         outboxCount={outbox.filter((o) => o.status === 'pending').length}
-        onOpenSyncModal={() => setIsSyncModalOpen(true)}
-        onOpenSearchModal={() => setIsSearchModalOpen(true)}
-        onOpenBreakGlassModal={() => setIsBreakGlassModalOpen(true)}
+        onOpenSyncModal={() => modals.openSync()}
+        onOpenSearchModal={() => modals.openSearch()}
+        onOpenBreakGlassModal={() => modals.openBreakGlass()}
         activeBreakGlass={activeBreakGlass}
         notifications={currentUser.role === 'doctor' ? notifications.filter(n => n.doctorId === currentUser.id) : notifications}
         onSelectNotification={handleSelectNotification}
-        onOpenReceptionCheckIn={() => setIsReceptionCheckInOpen(true)}
+        onOpenReceptionCheckIn={() => modals.openReceptionCheckIn()}
       />
 
       {/* Main Clinical Viewport */}
@@ -753,7 +415,7 @@ export default function App() {
             onNavigateToMessaging={() => setActiveTab('messaging')}
             onOpenCreateAppointment={() => setActiveTab('schedule')}
             onOpenCreatePatient={() => setActiveTab('patients')}
-            onOpenReceptionCheckIn={() => setIsReceptionCheckInOpen(true)}
+            onOpenReceptionCheckIn={() => modals.openReceptionCheckIn()}
           />
         )}
 
@@ -770,7 +432,7 @@ export default function App() {
             onSaveNoteDraft={handleSaveNoteDraft}
             onSignNote={handleSignNote}
             onAddAddendum={handleAddAddendum}
-            onOpenPrescriptionModal={() => setIsPrescriptionModalOpen(true)}
+            onOpenPrescriptionModal={() => modals.openPrescription()}
             onOpenSchedule={() => setActiveTab('schedule')}
             onOpenFollowUpModal={() => setActiveTab('followups')}
             canEditClinical={permissions.canEditClinical}
@@ -813,7 +475,7 @@ export default function App() {
               handleSelectPatient(patId);
               setActiveTab('schedule');
             }}
-            onOpenReceptionCheckIn={() => setIsReceptionCheckInOpen(true)}
+            onOpenReceptionCheckIn={() => modals.openReceptionCheckIn()}
           />
         )}
 
@@ -833,7 +495,7 @@ export default function App() {
             messages={messages}
             currentUser={currentUser}
             patients={patients}
-            onSendMessage={handleSendMessage}
+            onSendMessage={handleSendMessageWrapper}
             onConvertToFollowUp={handleConvertToFollowUp}
             isOnline={isOnline}
           />
@@ -845,11 +507,11 @@ export default function App() {
       </main>
 
       {/* Prescription Safety Modal (lazy) */}
-      {isPrescriptionModalOpen && (
+      {modals.isPrescriptionOpen && (
         <Suspense fallback={<ModalLoader />}>
           <PrescriptionSafetyModal
-            isOpen={isPrescriptionModalOpen}
-            onClose={() => setIsPrescriptionModalOpen(false)}
+            isOpen={modals.isPrescriptionOpen}
+            onClose={() => modals.closePrescription()}
             patient={activePatient}
             catalog={INITIAL_MEDICATIONS}
             activeMedications={patientActiveMedications}
@@ -861,11 +523,11 @@ export default function App() {
       )}
 
       {/* Patient Ctrl+K Search Modal (lazy) */}
-      {isSearchModalOpen && (
+      {modals.isSearchOpen && (
         <Suspense fallback={<ModalLoader />}>
           <PatientSearchModal
-            isOpen={isSearchModalOpen}
-            onClose={() => setIsSearchModalOpen(false)}
+            isOpen={modals.isSearchOpen}
+            onClose={() => modals.closeSearch()}
             patients={patients}
             appointments={appointments}
             onSelectPatient={(patId) => {
@@ -877,24 +539,24 @@ export default function App() {
       )}
 
       {/* Break-Glass Emergency Modal (lazy) */}
-      {isBreakGlassModalOpen && (
+      {modals.isBreakGlassOpen && (
         <Suspense fallback={<ModalLoader />}>
           <BreakGlassModal
-            isOpen={isBreakGlassModalOpen}
-            onClose={() => setIsBreakGlassModalOpen(false)}
+            isOpen={modals.isBreakGlassOpen}
+            onClose={() => modals.closeBreakGlass()}
             currentUser={currentUser}
             patients={patients}
-            onConfirmBreakGlass={handleConfirmBreakGlass}
+            onConfirmBreakGlass={handleConfirmBreakGlassWrapper}
           />
         </Suspense>
       )}
 
       {/* Offline Sync Outbox Modal (lazy) */}
-      {isSyncModalOpen && (
+      {modals.isSyncOpen && (
         <Suspense fallback={<ModalLoader />}>
           <OfflineSyncModal
-            isOpen={isSyncModalOpen}
-            onClose={() => setIsSyncModalOpen(false)}
+            isOpen={modals.isSyncOpen}
+            onClose={() => modals.closeSync()}
             outbox={outbox}
             isOnline={isOnline}
             onTriggerSync={handleTriggerSync}
@@ -904,11 +566,11 @@ export default function App() {
       )}
 
       {/* Reception Check-In Desk Modal (lazy) */}
-      {isReceptionCheckInOpen && (
+      {modals.isReceptionCheckInOpen && (
         <Suspense fallback={<ModalLoader />}>
           <ReceptionCheckInModal
-            isOpen={isReceptionCheckInOpen}
-            onClose={() => setIsReceptionCheckInOpen(false)}
+            isOpen={modals.isReceptionCheckInOpen}
+            onClose={() => modals.closeReceptionCheckIn()}
             patients={patients}
             appointments={appointments}
             doctors={allUsers.filter((u) => u.role === 'doctor')}
