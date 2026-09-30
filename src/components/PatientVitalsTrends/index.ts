@@ -20,5 +20,8 @@ export type { MetricView, TimeRange, PatientVitalsTrendsProps } from './types';
 // Sous-composants atomiques (réutilisables individuellement si besoin futur)
 export { VitalsTooltip } from './VitalsTooltip';
 export { VitalsEmptyState } from './VitalsEmptyState';
+export { FiltersBar } from './FiltersBar';
+export { KpiCards } from './KpiCards';
+export { MetricSwitcher } from './MetricSwitcher';
 export { getBpStatus, getPulseStatus, getBmiStatus } from './clinicalStatus';
 export { exportVitalsCsv } from './exportVitalsCsv';

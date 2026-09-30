@@ -44,6 +44,9 @@ import { useTheme } from '../context/ThemeContext';
 // Sous-composants extraits (refactor — non-régression : API publique inchangée)
 import { VitalsTooltip } from './PatientVitalsTrends/VitalsTooltip';
 import { VitalsEmptyState } from './PatientVitalsTrends/VitalsEmptyState';
+import { FiltersBar } from './PatientVitalsTrends/FiltersBar';
+import { KpiCards } from './PatientVitalsTrends/KpiCards';
+import { MetricSwitcher } from './PatientVitalsTrends/MetricSwitcher';
 import { getBpStatus, getPulseStatus, getBmiStatus } from './PatientVitalsTrends/clinicalStatus';
 import { exportVitalsCsv } from './PatientVitalsTrends/exportVitalsCsv';
 
@@ -247,7 +250,18 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* 1. Header Toolbar with Filter & Contrast Switch */}
+      <FiltersBar
+        timeRange={timeRange}
+        highContrast={highContrast}
+        showThresholds={showThresholds}
+        measurementsCount={stats?.count}
+        onTimeRangeChange={setTimeRange}
+        onToggleHighContrast={() => setHighContrast((v) => !v)}
+        onToggleShowThresholds={() => setShowThresholds((v) => !v)}
+        onExportCsv={handleExportCsv}
+        onAddVitalsClick={onAddVitalsClick}
+        hideHeaderCard={hideHeaderCard}
+      />
       {!hideHeaderCard && (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-slate-200/90 dark:border-slate-800 shadow-clinical transition-colors">
           <div>
@@ -373,246 +387,17 @@ export const PatientVitalsTrends: React.FC<PatientVitalsTrendsProps> = ({
         </div>
       )}
 
-      {/* 2. Key Metrics Snapshot Cards (Tension & Poids Prominently Featured) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-        {/* Card 1 : Tension Artérielle */}
-        <div
-          onClick={() => setMetricView('bp')}
-          className={`cursor-pointer border p-4 transition-all shadow-clinical ${
-            metricView === 'bp'
-              ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 ring-2 ring-blue-500/20'
-              : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-              <span className="flex h-6 w-6 items-center justify-center bg-blue-600 text-white font-bold">
-                <Activity className="h-3.5 w-3.5" />
-              </span>
-              Pression Artérielle (TA)
-            </span>
-            <span
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold ${latestBpStatus.color} ${latestBpStatus.bg}`}
-            >
-              <span className={`h-1.5 w-1.5 rounded-full ${latestBpStatus.dot}`} />
-              {latestBpStatus.label}
-            </span>
-          </div>
+      <KpiCards
+        stats={stats}
+        timeRange={timeRange}
+        metricView={metricView}
+        latestBpStatus={latestBpStatus}
+        latestPulseStatus={latestPulseStatus}
+        latestBmiStatus={latestBmiStatus}
+        onSelectMetric={setMetricView}
+      />
 
-          <div className="mt-3 flex items-baseline justify-between">
-            <div>
-              <span className="font-mono text-3xl font-extrabold text-slate-950 dark:text-white tracking-tight tabular-nums">
-                {stats?.latest.systolic}/{stats?.latest.diastolic}
-              </span>
-              <span className="ml-1 text-xs text-slate-600 dark:text-slate-300 font-mono font-bold">
-                mmHg
-              </span>
-            </div>
-            {stats?.avgSys && stats?.avgDia && (
-              <div className="text-right">
-                <span className="block text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
-                  Moyenne {timeRange === '6months' ? '6 mois' : 'période'}
-                </span>
-                <span className="font-mono font-bold text-slate-800 dark:text-slate-200 tabular-nums">
-                  {stats.avgSys}/{stats.avgDia} mmHg
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 flex items-center justify-between">
-            <span>Pression pulsée : <strong className="text-slate-900 dark:text-slate-100 font-bold">{stats?.latest.pulsePressure || '—'} mmHg</strong></span>
-            <span className="text-blue-600 dark:text-blue-400 font-bold hover:underline">
-              Courbe &rarr;
-            </span>
-          </div>
-        </div>
-
-        {/* Card 2 : Poids & Évolution Pondérale */}
-        <div
-          onClick={() => setMetricView('weight')}
-          className={`cursor-pointer border p-4 transition-all shadow-clinical ${
-            metricView === 'weight'
-              ? 'border-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/40 ring-2 ring-emerald-500/20'
-              : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-              <span className="flex h-6 w-6 items-center justify-center bg-emerald-600 text-white font-bold">
-                <Scale className="h-3.5 w-3.5" />
-              </span>
-              Poids & Indice Corporel (IMC)
-            </span>
-            <span
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold ${latestBmiStatus.color} ${latestBmiStatus.bg}`}
-            >
-              IMC {stats?.latest.bmi || '—'}
-            </span>
-          </div>
-
-          <div className="mt-3 flex items-baseline justify-between">
-            <div>
-              <span className="font-mono text-3xl font-extrabold text-slate-950 dark:text-white tracking-tight tabular-nums">
-                {stats?.latest.weightKg || '—'}
-              </span>
-              <span className="ml-1 text-xs text-slate-600 dark:text-slate-300 font-mono font-bold">
-                kg
-              </span>
-            </div>
-            {stats && stats.weightDelta !== null && stats.weightDelta !== undefined && (
-              <div
-                className={`flex items-center gap-1 text-xs font-mono font-extrabold px-2.5 py-1 ${
-                  stats.weightDelta > 0
-                    ? 'text-amber-950 dark:text-amber-200 bg-amber-100 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-700'
-                    : stats.weightDelta < 0
-                    ? 'text-emerald-950 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700'
-                    : 'text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800'
-                }`}
-              >
-                {stats.weightDelta > 0 ? (
-                  <TrendingUp className="h-3.5 w-3.5" />
-                ) : stats.weightDelta < 0 ? (
-                  <TrendingDown className="h-3.5 w-3.5" />
-                ) : (
-                  <Minus className="h-3.5 w-3.5" />
-                )}
-                <span>
-                  {stats.weightDelta > 0 ? `+${stats.weightDelta}` : stats.weightDelta} kg sur 6 mois
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 flex items-center justify-between">
-            <span>Taille : <strong className="text-slate-900 dark:text-slate-100 font-bold">{stats?.latest.heightCm} cm</strong></span>
-            <span className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline">
-              Courbe &rarr;
-            </span>
-          </div>
-        </div>
-
-        {/* Card 3 : Pouls (Fréquence Cardiaque) */}
-        <div
-          onClick={() => setMetricView('heartRate')}
-          className={`cursor-pointer border p-4 transition-all shadow-clinical ${
-            metricView === 'heartRate'
-              ? 'border-rose-600 bg-rose-50/50 dark:bg-rose-950/40 ring-2 ring-rose-500/20'
-              : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-              <span className="flex h-6 w-6 items-center justify-center bg-rose-600 text-white font-bold">
-                <Heart className="h-3.5 w-3.5" />
-              </span>
-              Fréquence Cardiaque
-            </span>
-            <span
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold ${latestPulseStatus.color} ${latestPulseStatus.bg}`}
-            >
-              <span className={`h-1.5 w-1.5 rounded-full ${latestPulseStatus.dot}`} />
-              {latestPulseStatus.label}
-            </span>
-          </div>
-
-          <div className="mt-3 flex items-baseline justify-between">
-            <div>
-              <span className="font-mono text-3xl font-extrabold text-slate-950 dark:text-white tracking-tight tabular-nums">
-                {stats?.latest.pulseBpm || '—'}
-              </span>
-              <span className="ml-1 text-xs text-slate-600 dark:text-slate-300 font-mono font-bold">
-                bpm
-              </span>
-            </div>
-            {stats?.avgPulse && (
-              <div className="text-right">
-                <span className="block text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
-                  Moyenne {timeRange === '6months' ? '6 mois' : 'période'}
-                </span>
-                <span className="font-mono font-bold text-slate-800 dark:text-slate-200 tabular-nums">
-                  {stats.avgPulse} bpm
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 flex items-center justify-between">
-            <span>Plage : <strong className="text-slate-900 dark:text-slate-100 font-bold">{stats?.minPulse} - {stats?.maxPulse} bpm</strong></span>
-            <span className="text-rose-600 dark:text-rose-400 font-bold hover:underline">
-              Courbe &rarr;
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Metric Switcher Segmented Tabs */}
-      <div className="flex items-center gap-1.5 border-b border-slate-200 dark:border-slate-800 pb-2.5 overflow-x-auto">
-        <button
-          type="button"
-          onClick={() => setMetricView('bp_weight')}
-          className={`flex items-center gap-2 px-3.5 py-2 text-xs font-bold transition-all shrink-0 cursor-pointer ${
-            metricView === 'bp_weight'
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-              : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <Sparkles className="h-4 w-4" />
-          <span>Tension & Poids (Vue Recommandée 6 mois)</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setMetricView('bp')}
-          className={`flex items-center gap-2 px-3.5 py-2 text-xs font-bold transition-all shrink-0 cursor-pointer ${
-            metricView === 'bp'
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-              : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <Activity className="h-4 w-4" />
-          <span>Tension Artérielle seule</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setMetricView('weight')}
-          className={`flex items-center gap-2 px-3.5 py-2 text-xs font-bold transition-all shrink-0 cursor-pointer ${
-            metricView === 'weight'
-              ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
-              : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <Scale className="h-4 w-4" />
-          <span>Poids & IMC seul</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setMetricView('heartRate')}
-          className={`flex items-center gap-2 px-3.5 py-2 text-xs font-bold transition-all shrink-0 cursor-pointer ${
-            metricView === 'heartRate'
-              ? 'bg-rose-600 text-white shadow-md shadow-rose-500/20'
-              : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <Heart className="h-4 w-4" />
-          <span>Fréquence Cardiaque</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setMetricView('all')}
-          className={`flex items-center gap-2 px-3.5 py-2 text-xs font-bold transition-all shrink-0 cursor-pointer ${
-            metricView === 'all'
-              ? 'bg-slate-900 dark:bg-slate-700 text-white shadow-md shadow-slate-900/20'
-              : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <Layers className="h-4 w-4" />
-          <span>Vue Panoramique Complète</span>
-        </button>
-      </div>
+      <MetricSwitcher metricView={metricView} onChange={setMetricView} />
 
       {/* 4. Main Chart Canvas Card with High Contrast */}
       <div className="border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-clinical transition-colors">
