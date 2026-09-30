@@ -369,3 +369,116 @@ export interface DoctorNotification {
   read: boolean;
 }
 
+// ============================================================
+// CARNET DE SOINS INFIRMIER (MAR électronique + Checklist directives)
+// ============================================================
+
+/**
+ * Plan de soins infirmier — créé par le médecin, exécuté par l'infirmier.
+ *
+ * Workflow :
+ *  1. Le médecin consulte le patient → crée un NursingCarePlan avec des directives
+ *  2. Le médecin "confie" le patient à l'infirmier (status: 'active')
+ *  3. L'infirmier voit le plan + la checklist des tâches à effectuer
+ *  4. L'infirmier coche chaque tâche effectuée + enregistre les administrations
+ *  5. Le médecin peut consulter l'avancement (tâches ✓/○/✗)
+ */
+export interface NursingCarePlan {
+  id: string;
+  patientId: string;
+  patientName: string;
+  encounterId?: string;
+  // Médecin prescripteur du plan
+  prescribedBy: string; // userId du médecin
+  prescribedByName: string;
+  prescribedAt: string;
+  // Infirmier assigné (peut être null = any nurse)
+  assignedToNurseId?: string;
+  assignedToNurseName?: string;
+  // Diagnostic / motif du plan
+  diagnosis: string;
+  // Directives générales (texte libre)
+  instructions: string;
+  // Statut du plan
+  status: 'active' | 'completed' | 'cancelled';
+  // Dates
+  startDate: string;
+  endDate?: string; // Prévue ou effective
+  // Priorité
+  priority: 'routine' | 'important' | 'urgent';
+}
+
+/**
+ * Tâche de soins — élément de la checklist du plan.
+ *
+ * Types de tâches :
+ *  - medication : administrer un médicament (lié à une prescription)
+ *  - vitals_check : prise de constantes (TA, pouls, SpO2, etc.)
+ *  - biology : prélèvement biologique (NFS, CRP, etc.)
+ *  - procedure : soin technique (pansement, injection, perfusion, etc.)
+ *  - observation : surveillance clinique (état de conscience, douleur, etc.)
+ *  - education : éducation thérapeutique (expliquer le traitement au patient)
+ *  - other : autre (mobilisation, hydratation, etc.)
+ */
+export interface NursingTask {
+  id: string;
+  carePlanId: string;
+  patientId: string;
+  // Type de tâche
+  type: 'medication' | 'vitals_check' | 'biology' | 'procedure' | 'observation' | 'education' | 'other';
+  // Description de la directive (ex: "Surveillance TA toutes les 4h")
+  label: string;
+  description?: string;
+  // Pour les médicaments : lien vers la prescription
+  medicationOrderId?: string;
+  medicationDisplay?: string;
+  dosage?: string;
+  route?: string;
+  // Fréquence
+  frequency?: string; // ex: "Toutes les 4h", "Une fois", "Avant repas"
+  // Statut d'exécution
+  status: 'pending' | 'in_progress' | 'done' | 'skipped' | 'overdue';
+  // Exécution (rempli par l'infirmier)
+  executedBy?: string;
+  executedByName?: string;
+  executedAt?: string;
+  // Résultat / observation de l'infirmier (ex: "TA = 135/85, patient calme")
+  result?: string;
+  // Si skipped → motif obligatoire
+  skipReason?: string;
+  // Priorité
+  priority: 'routine' | 'important' | 'urgent';
+  // Planification
+  scheduledAt?: string; // Heure prévue
+}
+
+/**
+ * Administration de médicament — enregistrement par l'infirmier.
+ *
+ * Concrétise l'exécution d'une tâche de type 'medication'.
+ * Permet de tracer exactement : qui a donné quoi, à quelle dose, par quelle voie, à quelle heure.
+ */
+export interface MedicationAdministration {
+  id: string;
+  patientId: string;
+  patientName: string;
+  carePlanId: string;
+  taskId?: string; // Lien vers la NursingTask si applicable
+  medicationOrderId?: string;
+  // Médicament
+  medicationDisplay: string;
+  genericName: string;
+  dosage: string; // Dose réellement administrée
+  route: string; // Voie (orale, IM, IV, SC, etc.)
+  // Administration
+  administeredBy: string; // userId infirmier
+  administeredByName: string;
+  administeredAt: string;
+  // Effet / observation post-administration
+  effectObserved?: string; // ex: "Douleur soulagée en 30min", "Pas d'effet secondaire"
+  sideEffects?: string; // ex: "Nausées transitoires"
+  // Statut
+  status: 'administered' | 'refused' | 'partial';
+  notes?: string;
+}
+
