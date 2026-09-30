@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import {
   INITIAL_USERS,
   INITIAL_PATIENTS,
@@ -34,20 +34,44 @@ import { DoctorPortalView } from './components/DoctorPortalView';
 import { DoctorWorkspace } from './components/DoctorWorkspace';
 import { DoctorSchedule } from './components/DoctorSchedule';
 import { PatientListAndDetail } from './components/PatientListAndDetail';
-import { PrescriptionSafetyModal } from './components/PrescriptionSafetyModal';
 import { SecureMessagingView } from './components/SecureMessagingView';
 import { FollowUpManager } from './components/FollowUpManager';
 import { AuditTrailView } from './components/AuditTrailView';
-import { BreakGlassModal } from './components/BreakGlassModal';
-import { PatientSearchModal } from './components/PatientSearchModal';
-import { OfflineSyncModal } from './components/OfflineSyncModal';
-import { ReceptionCheckInModal } from './components/ReceptionCheckInModal';
+// Modales lazy-loadées — réduisent le bundle initial de ~80 kB (PrescriptionSafety 804 lignes + pdfExportService)
+const PrescriptionSafetyModal = lazy(() =>
+  import('./components/PrescriptionSafetyModal').then((m) => ({ default: m.PrescriptionSafetyModal }))
+);
+const BreakGlassModal = lazy(() =>
+  import('./components/BreakGlassModal').then((m) => ({ default: m.BreakGlassModal }))
+);
+const PatientSearchModal = lazy(() =>
+  import('./components/PatientSearchModal').then((m) => ({ default: m.PatientSearchModal }))
+);
+const OfflineSyncModal = lazy(() =>
+  import('./components/OfflineSyncModal').then((m) => ({ default: m.OfflineSyncModal }))
+);
+const ReceptionCheckInModal = lazy(() =>
+  import('./components/ReceptionCheckInModal').then((m) => ({ default: m.ReceptionCheckInModal }))
+);
+const AppointmentConflictDialog = lazy(() =>
+  import('./components/AppointmentConflictDialog').then((m) => ({ default: m.AppointmentConflictDialog }))
+);
 // Nouveaux imports : authentification réelle + audit cryptographique
 import { useAuthStore } from './stores/authStore';
 import { useAuditStore } from './stores/auditStore';
 
 // Tenant par défaut pour les événements d'audit (mode démo)
 const DEFAULT_TENANT_ID = 'demo-tenant-001';
+
+// Loader pour les modales lazy-loadées (affiché pendant le chargement du chunk)
+const ModalLoader: React.FC = () => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm">
+    <div className="flex flex-col items-center gap-3 bg-white dark:bg-slate-900 p-6 shadow-2xl">
+      <div className="h-6 w-6 border-2 border-blue-600 border-t-transparent animate-spin" />
+      <p className="text-xs text-slate-600 dark:text-slate-400">Chargement…</p>
+    </div>
+  </div>
+);
 
 export default function App() {
   // ============= AUTHENTIFICATION RÉELLE =============
@@ -820,68 +844,78 @@ export default function App() {
         )}
       </main>
 
-      {/* Prescription Safety Modal */}
+      {/* Prescription Safety Modal (lazy) */}
       {isPrescriptionModalOpen && (
-        <PrescriptionSafetyModal
-          isOpen={isPrescriptionModalOpen}
-          onClose={() => setIsPrescriptionModalOpen(false)}
-          patient={activePatient}
-          catalog={INITIAL_MEDICATIONS}
-          activeMedications={patientActiveMedications}
-          currentUser={currentUser}
-          onSavePrescription={handleSavePrescription}
-          isOnline={isOnline}
-        />
+        <Suspense fallback={<ModalLoader />}>
+          <PrescriptionSafetyModal
+            isOpen={isPrescriptionModalOpen}
+            onClose={() => setIsPrescriptionModalOpen(false)}
+            patient={activePatient}
+            catalog={INITIAL_MEDICATIONS}
+            activeMedications={patientActiveMedications}
+            currentUser={currentUser}
+            onSavePrescription={handleSavePrescription}
+            isOnline={isOnline}
+          />
+        </Suspense>
       )}
 
-      {/* Patient Ctrl+K Search Modal */}
+      {/* Patient Ctrl+K Search Modal (lazy) */}
       {isSearchModalOpen && (
-        <PatientSearchModal
-          isOpen={isSearchModalOpen}
-          onClose={() => setIsSearchModalOpen(false)}
-          patients={patients}
-          appointments={appointments}
-          onSelectPatient={(patId) => {
-            handleSelectPatient(patId);
-            setActiveTab('workspace');
-          }}
-        />
+        <Suspense fallback={<ModalLoader />}>
+          <PatientSearchModal
+            isOpen={isSearchModalOpen}
+            onClose={() => setIsSearchModalOpen(false)}
+            patients={patients}
+            appointments={appointments}
+            onSelectPatient={(patId) => {
+              handleSelectPatient(patId);
+              setActiveTab('workspace');
+            }}
+          />
+        </Suspense>
       )}
 
-      {/* Break-Glass Emergency Modal */}
+      {/* Break-Glass Emergency Modal (lazy) */}
       {isBreakGlassModalOpen && (
-        <BreakGlassModal
-          isOpen={isBreakGlassModalOpen}
-          onClose={() => setIsBreakGlassModalOpen(false)}
-          currentUser={currentUser}
-          patients={patients}
-          onConfirmBreakGlass={handleConfirmBreakGlass}
-        />
+        <Suspense fallback={<ModalLoader />}>
+          <BreakGlassModal
+            isOpen={isBreakGlassModalOpen}
+            onClose={() => setIsBreakGlassModalOpen(false)}
+            currentUser={currentUser}
+            patients={patients}
+            onConfirmBreakGlass={handleConfirmBreakGlass}
+          />
+        </Suspense>
       )}
 
-      {/* Offline Sync Outbox Modal */}
+      {/* Offline Sync Outbox Modal (lazy) */}
       {isSyncModalOpen && (
-        <OfflineSyncModal
-          isOpen={isSyncModalOpen}
-          onClose={() => setIsSyncModalOpen(false)}
-          outbox={outbox}
-          isOnline={isOnline}
-          onTriggerSync={handleTriggerSync}
-          lastSyncTime={lastSyncTime}
-        />
+        <Suspense fallback={<ModalLoader />}>
+          <OfflineSyncModal
+            isOpen={isSyncModalOpen}
+            onClose={() => setIsSyncModalOpen(false)}
+            outbox={outbox}
+            isOnline={isOnline}
+            onTriggerSync={handleTriggerSync}
+            lastSyncTime={lastSyncTime}
+          />
+        </Suspense>
       )}
 
-      {/* Reception Check-In Desk Modal */}
+      {/* Reception Check-In Desk Modal (lazy) */}
       {isReceptionCheckInOpen && (
-        <ReceptionCheckInModal
-          isOpen={isReceptionCheckInOpen}
-          onClose={() => setIsReceptionCheckInOpen(false)}
-          patients={patients}
-          appointments={appointments}
-          doctors={allUsers.filter((u) => u.role === 'doctor')}
-          onCheckInPatient={handleReceptionCheckIn}
-          onAddNewPatientAndCheckIn={handleAddNewPatientAndCheckIn}
-        />
+        <Suspense fallback={<ModalLoader />}>
+          <ReceptionCheckInModal
+            isOpen={isReceptionCheckInOpen}
+            onClose={() => setIsReceptionCheckInOpen(false)}
+            patients={patients}
+            appointments={appointments}
+            doctors={allUsers.filter((u) => u.role === 'doctor')}
+            onCheckInPatient={handleReceptionCheckIn}
+            onAddNewPatientAndCheckIn={handleAddNewPatientAndCheckIn}
+          />
+        </Suspense>
       )}
     </div>
   );

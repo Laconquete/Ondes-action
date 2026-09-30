@@ -23,5 +23,6 @@ export { VitalsEmptyState } from './VitalsEmptyState';
 export { FiltersBar } from './FiltersBar';
 export { KpiCards } from './KpiCards';
 export { MetricSwitcher } from './MetricSwitcher';
+export { VitalsTable } from './VitalsTable';
 export { getBpStatus, getPulseStatus, getBmiStatus } from './clinicalStatus';
 export { exportVitalsCsv } from './exportVitalsCsv';
