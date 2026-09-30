@@ -1,11 +1,12 @@
 /**
- * Electron — Main Process OneDesk (NetPhar+ — Poste Clinique)
+ * Electron — Main Process OneDesk Clinique v1.0.0
  * --------------------------------------------------------------
+ * Branded : OneDesk Clinique · By Fabricefb / MyEventprod
  * Responsabilités :
  *   - Single-instance lock (empêche plusieurs lancements simultanés).
  *   - Création de la BrowserWindow 1440x900 (min 1024x700).
  *   - Menu applicatif (Fichier, Édition, Affichage, Aide).
- *   - Deep-link `netphar://` pour activation de licence.
+ *   - Deep-link `onedesk://` pour activation de licence.
  *   - Chargement du build Vite (file://) en prod, localhost:3000 en dev.
  *   - IPC : getMachineCode (SHA-256 UUID + MAC), getVersion, exit.
  *
@@ -24,7 +25,7 @@ const { execSync } = require('child_process');
 const { readFileSync } = require('fs');
 
 const isDev = !app.isPackaged && process.env.NODE_ENV !== 'production';
-const PROTOCOL = 'netphar';
+const PROTOCOL = 'onedesk';
 
 // ---------------------------------------------------------------------------
 // 1. Single-instance lock
@@ -126,7 +127,7 @@ function computeMachineCode() {
   if (cachedMachineCode) return cachedMachineCode;
   const uuid = getHardwareUUID();
   const mac = getFirstPhysicalMAC();
-  const raw = `${uuid}|${mac}|netpharplus:v1`;
+  const raw = `${uuid}|${mac}|onedesk:v1`;
   cachedMachineCode = crypto
     .createHash('sha256')
     .update(raw, 'utf8')

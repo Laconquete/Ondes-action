@@ -3,13 +3,13 @@
 @variant dark (&:where(.dark, .dark *));
 
 /* ============================================================
-   DESIGN TOKENS — Pharmacy Premium (NetPhar+)
-   Variables CSS centralisées, thémables, multi-tenant ready.
+   DESIGN TOKENS — OneDesk Clinique v1.0.0
+   Typographie professionnelle, animations soignées.
    ============================================================ */
 
 @layer base {
   :root {
-    /* Typographie */
+    /* Typographie — Plus Jakarta Sans (pro, moderne, lisible) */
     --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
 
@@ -137,7 +137,7 @@
 }
 
 /* ============================================================
-   ANIMATIONS — fade discret et soigné
+   ANIMATIONS — soignées, discrètes, professionnelles
    ============================================================ */
 
 @keyframes fadeIn {
@@ -146,18 +146,23 @@
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeInScale {
-  from { opacity: 0; transform: scale(0.96); }
+  from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
 }
 
 @keyframes slideInRight {
-  from { opacity: 0; transform: translateX(24px); }
+  from { opacity: 0; transform: translateX(32px); }
   to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideOutRight {
@@ -179,6 +184,7 @@
 .animate-fadeInUp { animation: fadeInUp var(--transition-normal) ease-out; }
 .animate-fadeInScale { animation: fadeInScale var(--transition-normal) ease-out; }
 .animate-slideInRight { animation: slideInRight var(--transition-normal) ease-out; }
+.animate-slideInDown { animation: slideInDown var(--transition-normal) ease-out; }
 .animate-slideOutRight { animation: slideOutRight var(--transition-fast) ease-in forwards; }
 
 /* ============================================================

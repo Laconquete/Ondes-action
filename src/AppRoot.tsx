@@ -5,6 +5,8 @@ import { useAuthStore, hashPasswordForSeed } from './stores/authStore.ts';
 import { db, LocalUser } from './services/localDatabase.ts';
 import { startSyncWorker, stopSyncWorker } from './services/syncWorker.ts';
 import { isSupabaseConfigured } from './services/supabaseClient.ts';
+import { useLicenseStore } from './stores/licenseStore.ts';
+import { LicenseActivationScreen } from './components/LicenseActivationScreen.tsx';
 
 /**
  * AppRoot — Point d'entrée racine avec authentification obligatoire.
@@ -101,18 +103,41 @@ async function ensureDemoSeed(): Promise<void> {
   }
 }
 
-type AppRootStatus = 'initializing' | 'authenticated' | 'unauthenticated';
+type AppRootStatus = 'initializing' | 'authenticated' | 'unauthenticated' | 'license_required';
 
 export const AppRoot: React.FC = () => {
   const [status, setStatus] = useState<AppRootStatus>('initializing');
   const [initError, setInitError] = useState<string | null>(null);
 
-  // Au montage : seed + vérification de session
+  // Au montage : seed + vérification de session + vérification licence
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
       try {
+        // 1. Vérifier la licence
+        await useLicenseStore.getState().verify();
+        if (cancelled) return;
+
+        const { license, isReadOnly, trialDaysLeft } = useLicenseStore.getState();
+
+        // Si pas de licence ET pas en période d'essai → écran d'activation
+        if (!license && !isReadOnly && trialDaysLeft <= 0) {
+          // Vérifier si un essai est déjà commencé
+          const trialStart = localStorage.getItem('onedesk_trial_start');
+          if (!trialStart) {
+            setStatus('license_required');
+            return;
+          }
+        }
+
+        // Si licence révoquée → écran d'activation (mode lecture seule)
+        if (license?.status === 'revoked' || (isReadOnly && !license && trialDaysLeft <= 0)) {
+          setStatus('license_required');
+          return;
+        }
+
+        // 2. Seed + vérification session
         await ensureDemoSeed();
         if (cancelled) return;
 
@@ -209,6 +234,11 @@ export const AppRoot: React.FC = () => {
     // On n'affiche l'erreur que si elle est critique (initialization vraiment échouée)
     // Mais on laisse quand même l'écran de login pour permettre une reprise
     console.warn('[AppRoot] Initialization error (non-blocking):', initError);
+  }
+
+  // Licence requise → écran d'activation
+  if (status === 'license_required') {
+    return <LicenseActivationScreen />;
   }
 
   // Non authentifié → écran de login
