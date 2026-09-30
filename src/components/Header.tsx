@@ -21,6 +21,7 @@ import {
   Menu,
   X,
   ChevronRight,
+  ChevronDown,
   Wifi,
   WifiOff,
 } from 'lucide-react';
@@ -243,49 +244,141 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Center: Desktop Navigation segmented bar (Visible only on xl+ screens) */}
-          <nav className="hidden xl:flex items-center gap-1 p-1 bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 shadow-inner">
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleSelectTab(item.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-white dark:bg-slate-700 text-blue-900 dark:text-blue-100 shadow-xs font-bold'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-700/60'
-                  }`}
-                >
-                  <Icon className={`h-3.5 w-3.5 ${item.accentColor}`} />
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
+          {/* Center: Compact Mega-Menu with hover submenus (xl+ screens) */}
+          <nav className="hidden xl:flex items-center gap-1">
+            {/* Groupe 1 : Espace Médecin */}
+            <div className="relative group">
+              <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                <Stethoscope className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <span>Espace Médecin</span>
+                <ChevronDown className="h-3 w-3 text-slate-400 group-hover:rotate-180 transition-transform" />
+              </button>
+              <div className="absolute left-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                <div className="w-64 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl">
+                  {navigationItems.filter(i => i.id === 'portal' || i.id === 'workspace').map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeTab === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleSelectTab(item.id)}
+                        className={`w-full flex items-start gap-2.5 px-4 py-3 text-left border-b border-slate-100 dark:border-slate-800 last:border-0 transition-colors ${
+                          isActive
+                            ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-900 dark:text-blue-100'
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200'
+                        }`}
+                      >
+                        <Icon className={`h-4 w-4 mt-0.5 ${item.accentColor}`} />
+                        <div>
+                          <div className="text-xs font-bold">{item.label}</div>
+                          <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{item.description}</div>
+                        </div>
+                        {isActive && <span className="ml-auto h-2 w-2 rounded-full bg-blue-600 mt-1" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Groupe 2 : Patients & Planning */}
+            <div className="relative group">
+              <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                <Users className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                <span>Patients</span>
+                <ChevronDown className="h-3 w-3 text-slate-400 group-hover:rotate-180 transition-transform" />
+              </button>
+              <div className="absolute left-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                <div className="w-72 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl">
+                  {navigationItems.filter(i => i.id === 'patients' || i.id === 'schedule' || i.id === 'followups').map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeTab === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleSelectTab(item.id)}
+                        className={`w-full flex items-start gap-2.5 px-4 py-3 text-left border-b border-slate-100 dark:border-slate-800 last:border-0 transition-colors ${
+                          isActive
+                            ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-900 dark:text-blue-100'
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200'
+                        }`}
+                      >
+                        <Icon className={`h-4 w-4 mt-0.5 ${item.accentColor}`} />
+                        <div>
+                          <div className="text-xs font-bold">{item.label}</div>
+                          <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{item.description}</div>
+                        </div>
+                        {isActive && <span className="ml-auto h-2 w-2 rounded-full bg-blue-600 mt-1" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Groupe 3 : Sécurité & Conformité */}
+            <div className="relative group">
+              <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                <Shield className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+                <span>Sécurité</span>
+                <ChevronDown className="h-3 w-3 text-slate-400 group-hover:rotate-180 transition-transform" />
+              </button>
+              <div className="absolute left-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                <div className="w-64 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl">
+                  {navigationItems.filter(i => i.id === 'messaging' || i.id === 'audit').map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeTab === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleSelectTab(item.id)}
+                        className={`w-full flex items-start gap-2.5 px-4 py-3 text-left border-b border-slate-100 dark:border-slate-800 last:border-0 transition-colors ${
+                          isActive
+                            ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-900 dark:text-blue-100'
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200'
+                        }`}
+                      >
+                        <Icon className={`h-4 w-4 mt-0.5 ${item.accentColor}`} />
+                        <div>
+                          <div className="text-xs font-bold">{item.label}</div>
+                          <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{item.description}</div>
+                        </div>
+                        {isActive && <span className="ml-auto h-2 w-2 rounded-full bg-blue-600 mt-1" />}
+                      </button>
+                    );
+                  })}
+                  <button
+                    onClick={onOpenBreakGlassModal}
+                    className="w-full flex items-start gap-2.5 px-4 py-3 text-left hover:bg-red-50 dark:hover:bg-red-950/30 text-red-700 dark:text-red-300 transition-colors border-t border-slate-100 dark:border-slate-800"
+                  >
+                    <ShieldAlert className="h-4 w-4 mt-0.5 text-red-600 dark:text-red-400" />
+                    <div>
+                      <div className="text-xs font-bold">Bris de glace</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Accès d'urgence dérogatoire</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
           </nav>
 
-          {/* Right Tools & Controls */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Desktop Reception Check-In desk shortcut */}
+          {/* Right Tools — Compact icon bar */}
+          <div className="flex items-center gap-1.5 shrink-0">
             {onOpenReceptionCheckIn && (
               <button
                 onClick={onOpenReceptionCheckIn}
-                className="hidden lg:flex items-center gap-1.5 border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-all shadow-2xs cursor-pointer"
-                title="Guichet Accueil & Admission d'un patient arrivé"
+                className="flex items-center justify-center h-9 w-9 border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-all cursor-pointer"
+                title="Guichet Accueil"
               >
-                <UserCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span>Accueil / Arrivée</span>
+                <UserCheck className="h-4 w-4" />
               </button>
             )}
 
-            {/* Real-time Doctor Notifications */}
             <div className="relative">
               <button
                 onClick={() => setIsNotificationsOpen((prev) => !prev)}
-                className="relative flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
-                title="Alertes d'arrivée en salle d'attente"
-                aria-label="Alertes salle d'attente"
+                className="relative flex items-center justify-center h-9 w-9 border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                title="Alertes salle d'attente"
               >
                 <Bell className="h-4 w-4" />
                 {notifications.filter((n) => !n.read).length > 0 && (
@@ -294,49 +387,31 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                 )}
               </button>
-
               {isNotificationsOpen && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-2xl z-50 transition-all animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute right-0 mt-2 w-80 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-2xl z-50">
                   <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
-                    <div className="flex items-center gap-2">
-                      <Bell className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                      <span className="font-bold text-xs text-slate-900 dark:text-slate-100">
-                        Salle d'Attente ({notifications.length})
-                      </span>
-                    </div>
+                    <span className="font-bold text-xs text-slate-900 dark:text-slate-100">Salle d'Attente ({notifications.length})</span>
                     <span className="text-[10px] text-slate-400">Temps réel</span>
                   </div>
-
                   <div className="mt-2.5 max-h-72 overflow-y-auto space-y-2">
                     {notifications.length === 0 ? (
-                      <div className="py-8 text-center text-xs text-slate-500">
-                        Aucune nouvelle arrivée en salle d'attente pour le moment.
-                      </div>
+                      <div className="py-8 text-center text-xs text-slate-500">Aucune arrivée.</div>
                     ) : (
-                      notifications.map((notif) => (
+                      notifications.slice(0, 8).map((notif) => (
                         <div
                           key={notif.id}
-                          onClick={() => {
-                            setIsNotificationsOpen(false);
-                            if (onSelectNotification) onSelectNotification(notif);
-                          }}
-                          className={`p-2.5 border cursor-pointer transition-all ${
-                            !notif.read
-                              ? 'bg-blue-50/80 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900/60'
-                              : 'bg-slate-50/60 dark:bg-slate-800/40 border-slate-100 dark:border-slate-800'
-                          } hover:border-blue-400`}
+                          onClick={() => onSelectNotification?.(notif)}
+                          className={`p-2.5 border cursor-pointer transition-colors ${
+                            notif.read
+                              ? 'border-slate-100 dark:border-slate-800 opacity-60'
+                              : 'border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/30 hover:bg-blue-50'
+                          }`}
                         >
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-xs text-slate-900 dark:text-slate-100">
-                              {notif.patientName}
-                            </span>
-                            <span className="font-mono text-[10px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/70 px-1.5 py-0.5 rounded">
-                              {notif.ticketNumber}
-                            </span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono text-[10px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/70 px-1.5 py-0.5">{notif.ticketNumber}</span>
+                            <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{notif.patientName}</span>
                           </div>
-                          <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">
-                            {notif.message}
-                          </p>
+                          <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">{notif.message}</p>
                           <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-500">
                             <span>Salle : {notif.roomCode}</span>
                             <span>{notif.timestamp}</span>
@@ -349,122 +424,96 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </div>
 
-            {/* Quick Search Button (Desktop) */}
             <button
               onClick={onOpenSearchModal}
-              className="hidden sm:flex items-center gap-1.5 border border-slate-200/90 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 px-2.5 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-all shadow-2xs cursor-pointer"
-              title="Recherche instantanée patient (Ctrl+K)"
+              className="flex items-center justify-center h-9 w-9 border border-slate-200/90 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              title="Recherche patient (Ctrl+K)"
             >
-              <Search className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
-              <span className="hidden md:inline font-medium">Rechercher</span>
-              <kbd className="hidden md:inline-block bg-white dark:bg-slate-900 px-1.5 py-0.5 text-[10px] font-mono text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 shadow-2xs">
-                ⌘K
-              </kbd>
+              <Search className="h-4 w-4" />
             </button>
 
-            {/* Global Theme Toggle: Light / Dark Mode (Always visible, compact) */}
             <button
               type="button"
               onClick={toggleTheme}
-              title={isDark ? 'Passer en mode jour (clair)' : 'Passer en mode nuit (faible luminosité clinique)'}
-              aria-label={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
-              className="flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 border border-slate-200/90 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-white dark:hover:bg-slate-700 transition-all shadow-2xs cursor-pointer shrink-0"
+              title={isDark ? 'Mode clair' : 'Mode sombre'}
+              className="flex items-center justify-center h-9 w-9 border border-slate-200/90 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
             >
-              {isDark ? (
-                <Sun className="h-4 w-4 text-amber-400 shrink-0" />
-              ) : (
-                <Moon className="h-4 w-4 text-indigo-600 shrink-0" />
+              {isDark ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-indigo-600" />}
+            </button>
+
+            <button
+              onClick={onToggleOnline}
+              title={isOnline ? 'En ligne' : 'Hors ligne'}
+              className="flex items-center justify-center h-9 w-9 border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
+            >
+              <span className="relative flex h-2.5 w-2.5">
+                {isOnline && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />}
+                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isOnline ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+              </span>
+            </button>
+
+            <button
+              onClick={onOpenSyncModal}
+              className="relative flex items-center justify-center h-9 w-9 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              title="Sync Outbox"
+            >
+              <Clock className="h-4 w-4" />
+              {outboxCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-white font-mono text-[10px] font-bold ring-2 ring-white dark:ring-slate-900">
+                  {outboxCount}
+                </span>
               )}
             </button>
 
-            {/* Desktop Network Simulator Badge */}
-            <button
-              onClick={onToggleOnline}
-              title={isOnline ? 'Connecté aux serveurs HDS - Cliquer pour simuler le mode hors ligne' : 'Mode hors ligne actif - Cliquer pour reconnecter'}
-              className={`hidden md:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold border transition-all shadow-2xs cursor-pointer ${
-                isOnline
-                  ? 'border-emerald-200 dark:border-emerald-800/70 bg-emerald-50/80 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40'
-                  : 'border-amber-300 dark:border-amber-800/70 bg-amber-50 dark:bg-amber-950/50 text-amber-950 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40'
-              }`}
-            >
-              <span className="relative flex h-2 w-2">
-                {isOnline && (
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                )}
-                <span
-                  className={`relative inline-flex rounded-full h-2 w-2 ${
-                    isOnline ? 'bg-emerald-500' : 'bg-amber-500'
-                  }`}
-                />
-              </span>
-              <span className="hidden lg:inline">
-                {isOnline ? 'En ligne' : 'Hors ligne'}
-              </span>
-            </button>
-
-            {/* Desktop Outbox Badge */}
-            <button
-              onClick={onOpenSyncModal}
-              className="hidden md:flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-2xs cursor-pointer"
-              title="File de synchronisation Outbox locale"
-            >
-              <Clock className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
-              <span className="font-mono text-xs font-bold text-slate-800 dark:text-slate-100 tabular-nums">
-                {outboxCount}
-              </span>
-            </button>
-
-            {/* Desktop Bris de Glace Button */}
-            <button
-              onClick={onOpenBreakGlassModal}
-              className="hidden xl:flex items-center gap-1.5 border border-red-200 dark:border-red-900/70 bg-red-50/80 dark:bg-red-950/50 px-2.5 py-1.5 text-xs font-bold text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 hover:border-red-300 transition-all shadow-2xs cursor-pointer"
-              title="Procédure d'urgence dérogatoire Bris de Glace"
-            >
-              <ShieldAlert className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
-              <span>Bris de glace</span>
-            </button>
-
-            {/* Desktop User Profile Selector Chip */}
-            <div className="hidden lg:flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center bg-slate-900 dark:bg-blue-600 text-white font-bold text-xs shadow-xs">
+            {/* User avatar with hover dropdown */}
+            <div className="relative group">
+              <button className="flex items-center gap-2 pl-1.5 pr-2 py-1 border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                <div className="flex h-7 w-7 items-center justify-center bg-blue-600 text-white font-bold text-[10px]">
                   {currentUser.displayName.split(' ').map((n) => n[0]).join('').slice(0, 2)}
                 </div>
-                <div className="text-left">
-                  <div className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate max-w-[120px]">
-                    {currentUser.displayName}
+                <ChevronDown className="h-3 w-3 text-slate-400 group-hover:rotate-180 transition-transform" />
+              </button>
+              <div className="absolute right-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                <div className="w-64 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl">
+                  <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+                    <div className="text-xs font-bold text-slate-900 dark:text-slate-100">{currentUser.displayName}</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{currentUser.department}</div>
+                    <span className={`inline-flex items-center px-2 py-0.5 mt-1.5 text-[10px] font-bold border ${roleInfo.bg}`}>
+                      {roleInfo.label}
+                    </span>
                   </div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-                    {currentUser.department.split('&')[0]}
+                  <div className="py-1">
+                    <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                      Changer de profil
+                    </div>
+                    {allUsers.slice(0, 6).map((u) => (
+                      <button
+                        key={u.id}
+                        onClick={() => onSwitchUser(u)}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-left text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${
+                          u.id === currentUser.id ? 'text-blue-700 dark:text-blue-300 font-bold' : 'text-slate-700 dark:text-slate-200'
+                        }`}
+                      >
+                        <span className="flex h-6 w-6 items-center justify-center bg-slate-100 dark:bg-slate-800 text-[9px] font-bold">
+                          {u.displayName.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+                        </span>
+                        <div className="min-w-0">
+                          <div className="truncate">{u.displayName}</div>
+                          <div className="text-[9px] text-slate-400 uppercase">{u.role}</div>
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
-
-              <select
-                aria-label="Changer de profil d'utilisateur"
-                value={currentUser.id}
-                onChange={(e) => {
-                  const selected = allUsers.find((u) => u.id === e.target.value);
-                  if (selected) onSwitchUser(selected);
-                }}
-                title="Changer de profil d'utilisateur pour tester les rôles RBAC"
-                className="border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 px-2 py-1 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-              >
-                {allUsers.map((u) => (
-                  <option key={u.id} value={u.id} className="dark:bg-slate-900 dark:text-slate-100">
-                    {u.displayName} ({u.role.toUpperCase()})
-                  </option>
-                ))}
-              </select>
             </div>
 
-            {/* Mobile / Tablet Hamburger Button (Replaces horizontal navigation completely on < xl) */}
             <button
               onClick={() => setIsDrawerOpen(true)}
-              aria-label="Ouvrir le menu de navigation"
-              className="xl:hidden flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer shrink-0"
+              aria-label="Ouvrir le menu"
+              className="xl:hidden flex items-center justify-center h-9 w-9 border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
             >
-              <Menu className="h-5 w-5 text-slate-800 dark:text-slate-100" />
+              <Menu className="h-5 w-5" />
             </button>
           </div>
         </div>
