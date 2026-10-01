@@ -73,6 +73,14 @@ const DEMO_USERS_SEED: Array<{
     department: 'Accueil & Admission',
     serviceCode: 'ACCUEIL',
   },
+  {
+    id: 'usr_fabrice_admin',
+    username: 'admin.fabrice',
+    displayName: 'Fabricefb (Admin)',
+    role: 'admin',
+    department: 'Direction Générale',
+    serviceCode: 'ADMIN',
+  },
 ];
 
 async function ensureDemoUserExists(): Promise<void> {
@@ -451,6 +459,12 @@ export const LoginScreen: React.FC = () => {
                 className="flex items-center justify-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2.5 py-2 text-[10px] font-bold border border-emerald-200 dark:border-emerald-800 transition-colors"
               >
                 🏥 Accueil Kalala
+              </button>
+              <button
+                onClick={() => handleDemoLogin('admin.fabrice')}
+                className="flex items-center justify-center gap-1.5 bg-red-50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-700 dark:text-red-300 px-2.5 py-2 text-[10px] font-bold border border-red-200 dark:border-red-800 transition-colors"
+              >
+                🛡️ Admin Fabricefb
               </button>
             </div>
             <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-2 text-center">
