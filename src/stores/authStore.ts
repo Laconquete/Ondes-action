@@ -60,6 +60,59 @@ interface AuthState {
 
 const SESSION_DURATION_HOURS = 8;
 const BREAK_GLASS_DURATION_MINUTES = 30;
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+
+/**
+ * Rate limiting : compte les tentatives de login échouées.
+ * Après MAX_LOGIN_ATTEMPTS échecs → blocage pendant LOCKOUT_DURATION_MS.
+ */
+interface RateLimitState {
+  attempts: number;
+  lockedUntil: number | null; // timestamp
+}
+
+function getRateLimitState(): RateLimitState {
+  const stored = localStorage.getItem('onedesk_rate_limit');
+  if (!stored) return { attempts: 0, lockedUntil: null };
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return { attempts: 0, lockedUntil: null };
+  }
+}
+
+function saveRateLimitState(state: RateLimitState): void {
+  localStorage.setItem('onedesk_rate_limit', JSON.stringify(state));
+}
+
+function checkRateLimit(): { blocked: boolean; remainingMs: number } {
+  const state = getRateLimitState();
+  if (state.lockedUntil && Date.now() < state.lockedUntil) {
+    return { blocked: true, remainingMs: state.lockedUntil - Date.now() };
+  }
+  // Reset si le délai de blocage est passé
+  if (state.lockedUntil && Date.now() >= state.lockedUntil) {
+    saveRateLimitState({ attempts: 0, lockedUntil: null });
+  }
+  return { blocked: false, remainingMs: 0 };
+}
+
+function recordFailedAttempt(): { locked: boolean; remainingMs: number } {
+  const state = getRateLimitState();
+  const newAttempts = state.attempts + 1;
+  if (newAttempts >= MAX_LOGIN_ATTEMPTS) {
+    const lockedUntil = Date.now() + LOCKOUT_DURATION_MS;
+    saveRateLimitState({ attempts: 0, lockedUntil });
+    return { locked: true, remainingMs: LOCKOUT_DURATION_MS };
+  }
+  saveRateLimitState({ attempts: newAttempts, lockedUntil: null });
+  return { locked: false, remainingMs: 0 };
+}
+
+function resetRateLimit(): void {
+  saveRateLimitState({ attempts: 0, lockedUntil: null });
+}
 
 async function hashPassword(password: string, salt: string): Promise<string> {
   const enc = new TextEncoder();
@@ -132,24 +185,43 @@ export const useAuthStore = create<AuthState>()(
       login: async (username, password) => {
         set({ isLoading: true, error: null });
 
+        // Rate limiting : vérifier si le compte est bloqué
+        const rateLimit = checkRateLimit();
+        if (rateLimit.blocked) {
+          const minutesLeft = Math.ceil(rateLimit.remainingMs / 60000);
+          const errorMsg = `Trop de tentatives échouées. Réessayez dans ${minutesLeft} minute(s).`;
+          set({ isLoading: false, error: errorMsg });
+          return { success: false, error: errorMsg };
+        }
+
         try {
           // Pour le login local, on cherche par username SANS filtrer sur le tenant
-          // (le user démo a tenantId='demo-tenant-001' mais le tenant peut être différent)
           const user = await db.localUsers
             .where('username')
             .equals(username.toLowerCase())
             .first();
 
           if (!user || !user.isActive) {
-            set({ isLoading: false, error: 'Identifiants invalides ou compte désactivé.' });
-            return { success: false, error: 'Identifiants invalides.' };
+            const { locked, remainingMs } = recordFailedAttempt();
+            const errorMsg = locked
+              ? `Trop de tentatives échouées. Compte bloqué pendant ${Math.ceil(remainingMs / 60000)} minutes.`
+              : `Identifiants invalides. ${MAX_LOGIN_ATTEMPTS - getRateLimitState().attempts} tentative(s) restante(s).`;
+            set({ isLoading: false, error: errorMsg });
+            return { success: false, error: errorMsg };
           }
 
           const passwordHash = await hashPassword(password, user.salt);
           if (passwordHash !== user.passwordHash) {
-            set({ isLoading: false, error: 'Identifiants invalides.' });
-            return { success: false, error: 'Identifiants invalides.' };
+            const { locked, remainingMs } = recordFailedAttempt();
+            const errorMsg = locked
+              ? `Trop de tentatives échouées. Compte bloqué pendant ${Math.ceil(remainingMs / 60000)} minutes.`
+              : `Identifiants invalides. ${MAX_LOGIN_ATTEMPTS - getRateLimitState().attempts} tentative(s) restante(s).`;
+            set({ isLoading: false, error: errorMsg });
+            return { success: false, error: errorMsg };
           }
+
+          // Login réussi → reset du rate limiting
+          resetRateLimit();
 
           const { token, tokenHash } = await generateSessionToken();
           const expiresAt = new Date(

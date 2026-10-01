@@ -109,30 +109,23 @@ export const AppRoot: React.FC = () => {
   const [status, setStatus] = useState<AppRootStatus>('initializing');
   const [initError, setInitError] = useState<string | null>(null);
 
-  // Au montage : seed + vérification de session + vérification licence
+  // Au montage : seed + vérification de session
+  // NOTE: L'écran de licence n'est affiché QUE si la licence est révoquée (isReadOnly=true).
+  // En mode démo (pas de licence), on passe directement au login.
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
       try {
-        // 1. Vérifier la licence
+        // 1. Vérifier la licence (non bloquant en mode démo)
         await useLicenseStore.getState().verify();
         if (cancelled) return;
 
-        const { license, isReadOnly, trialDaysLeft } = useLicenseStore.getState();
-
-        // Si pas de licence ET pas en période d'essai → écran d'activation
-        if (!license && !isReadOnly && trialDaysLeft <= 0) {
-          // Vérifier si un essai est déjà commencé
-          const trialStart = localStorage.getItem('onedesk_trial_start');
-          if (!trialStart) {
-            setStatus('license_required');
-            return;
-          }
-        }
+        const { license, isReadOnly } = useLicenseStore.getState();
 
         // Si licence révoquée → écran d'activation (mode lecture seule)
-        if (license?.status === 'revoked' || (isReadOnly && !license && trialDaysLeft <= 0)) {
+        // Mais en mode démo (pas de licence), on NE BLOQUE PAS — on va au login
+        if (license?.status === 'revoked' || (isReadOnly && license)) {
           setStatus('license_required');
           return;
         }
