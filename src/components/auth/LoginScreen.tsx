@@ -32,40 +32,80 @@ import { isGoogleAuthAvailable } from '../../services/googleAuthService';
  *  - Pas de dépendance réseau
  */
 
-// Démo : création d'un compte médecin local si la base est vide ou si l'utilisateur démo n'existe pas
-async function ensureDemoUserExists(): Promise<void> {
-  // Vérifier si l'utilisateur démo existe déjà
-  const existingDemo = await db.localUsers
-    .where('username')
-    .equals('nadia.martin')
-    .first();
-
-  if (existingDemo) return;
-
-  // Si pas trouvé, le créer avec le bon hash PBKDF2
-  const salt = Math.random().toString(36).substring(2, 12);
-  const passwordHash = await hashPasswordForSeed('demo', salt); // PBKDF2 100k itérations
-
-  const demoUser: LocalUser = {
-    id: 'usr_nadia_martin',
-    tenantId: 'demo-tenant-001',
-    username: 'nadia.martin',
-    displayName: 'Dr. Nadia Martin',
+// Démo : création des comptes locaux multi-rôles (médecin, infirmière, réceptionniste)
+const DEMO_USERS_SEED: Array<{
+  id: string;
+  username: string;
+  displayName: string;
+  role: string;
+  department: string;
+  serviceCode: string;
+}> = [
+  {
+    id: 'usr_nadia_mukendi',
+    username: 'dr.mukendi',
+    displayName: 'Dr. Nadia Mukendi',
     role: 'doctor',
     department: 'Médecine Générale & Urgences',
-    serviceCode: 'URG',
-    licenseNumber: '10003492811',
-    rppsCode: '10003492811',
-    isActive: true,
-    passwordHash,
-    salt,
-  };
+    serviceCode: 'MED-GEN',
+  },
+  {
+    id: 'usr_marc_tshibangu',
+    username: 'dr.tshibangu',
+    displayName: 'Dr. Marc Tshibangu',
+    role: 'doctor',
+    department: 'Cardiologie',
+    serviceCode: 'CARDIO',
+  },
+  {
+    id: 'usr_esther_mbuyi',
+    username: 'inf.mbuyi',
+    displayName: 'Esther Mbuyi (IDE)',
+    role: 'nurse',
+    department: 'Soins & Consultations',
+    serviceCode: 'SOINS',
+  },
+  {
+    id: 'usr_patrick_kalala',
+    username: 'acc.kalala',
+    displayName: 'Patrick Kalala',
+    role: 'receptionist',
+    department: 'Accueil & Admission',
+    serviceCode: 'ACCUEIL',
+  },
+];
 
-  // put() = insert or replace (évite l'erreur si l'ID existe déjà avec un autre username)
-  await db.localUsers.put(demoUser);
-
-  // Configure le tenant démo automatiquement
+async function ensureDemoUserExists(): Promise<void> {
+  // Configurer le tenant démo
   useAuthStore.getState().configureTenant('demo-tenant-001', 'Clinique Démo OneDesk');
+
+  // Créer tous les users démo s'ils n'existent pas
+  for (const seed of DEMO_USERS_SEED) {
+    const existing = await db.localUsers
+      .where('username')
+      .equals(seed.username)
+      .first();
+
+    if (existing) continue;
+
+    const salt = Math.random().toString(36).substring(2, 12);
+    const passwordHash = await hashPasswordForSeed('demo', salt);
+
+    const demoUser: LocalUser = {
+      id: seed.id,
+      tenantId: 'demo-tenant-001',
+      username: seed.username,
+      displayName: seed.displayName,
+      role: seed.role,
+      department: seed.department,
+      serviceCode: seed.serviceCode,
+      isActive: true,
+      passwordHash,
+      salt,
+    };
+
+    await db.localUsers.put(demoUser);
+  }
 }
 
 export const LoginScreen: React.FC = () => {
@@ -120,26 +160,32 @@ export const LoginScreen: React.FC = () => {
     }
   };
 
-  const handleDemoLogin = async () => {
-    // Garantir que l'utilisateur démo existe avec le bon hash PBKDF2
+  const handleDemoLogin = async (username?: string) => {
+    const targetUsername = username || 'dr.mukendi';
+    // Garantir que les utilisateurs démo existent
     await ensureDemoUserExists();
 
     // Configurer le tenant démo
     useAuthStore.getState().configureTenant('demo-tenant-001', 'Clinique Démo OneDesk');
 
-    // Tenter le login avec l'auth locale (jamais Supabase pour la démo)
-    const result = await login('nadia.martin', 'demo');
+    // Tenter le login avec l'auth locale
+    const result = await login(targetUsername, 'demo');
     if (result.success) {
-      toast.success('Connexion démo', 'Vous êtes connecté en tant que Dr. Nadia Martin.');
+      const user = useAuthStore.getState().currentUser;
+      toast.success('Connexion démo', `Bienvenue, ${user?.displayName || targetUsername}`);
     } else {
-      // Si ça échoue encore, forcer la recréation du user démo
-      await db.localUsers.delete('usr_nadia_martin');
-      await ensureDemoUserExists();
-      const retry = await login('nadia.martin', 'demo');
-      if (retry.success) {
-        toast.success('Connexion démo', 'Vous êtes connecté en tant que Dr. Nadia Martin.');
-      } else {
-        toast.error('Erreur démo', 'Impossible de se connecter en mode démo. Rechargez la page.');
+      // Retry : supprimer et recréer le user
+      const seed = DEMO_USERS_SEED.find((s) => s.username === targetUsername);
+      if (seed) {
+        await db.localUsers.delete(seed.id);
+        await ensureDemoUserExists();
+        const retry = await login(targetUsername, 'demo');
+        if (retry.success) {
+          const user = useAuthStore.getState().currentUser;
+          toast.success('Connexion démo', `Bienvenue, ${user?.displayName || targetUsername}`);
+        } else {
+          toast.error('Erreur démo', 'Impossible de se connecter. Rechargez la page.');
+        }
       }
     }
   };
@@ -375,21 +421,43 @@ export const LoginScreen: React.FC = () => {
             </>
           )}
 
-          {/* Démo — TOUJOURS visible, même en mode Supabase */}
-          <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
-              {useSupabaseAuth ? 'Essai en mode démo' : 'Mode démonstration'}
+          {/* Démo multi-rôles — TOUJOURS visible */}
+          <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider text-center">
+              {useSupabaseAuth ? 'Essai en mode démo (multi-rôles)' : 'Mode démonstration — multi-rôles'}
             </p>
-            <button
-              onClick={handleDemoLogin}
-              className="inline-flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 text-xs font-bold transition-colors border border-slate-300 dark:border-slate-600"
-            >
-              🔓 Connexion démo (Dr. Nadia Martin)
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => handleDemoLogin('dr.mukendi')}
+                className="flex items-center justify-center gap-1.5 bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2.5 py-2 text-[10px] font-bold border border-blue-200 dark:border-blue-800 transition-colors"
+              >
+                🩺 Dr. Mukendi
+              </button>
+              <button
+                onClick={() => handleDemoLogin('dr.tshibangu')}
+                className="flex items-center justify-center gap-1.5 bg-indigo-50 dark:bg-indigo-950/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-2.5 py-2 text-[10px] font-bold border border-indigo-200 dark:border-indigo-800 transition-colors"
+              >
+                💓 Dr. Tshibangu
+              </button>
+              <button
+                onClick={() => handleDemoLogin('inf.mbuyi')}
+                className="flex items-center justify-center gap-1.5 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 px-2.5 py-2 text-[10px] font-bold border border-rose-200 dark:border-rose-800 transition-colors"
+              >
+                💉 Infirmière Mbuyi
+              </button>
+              <button
+                onClick={() => handleDemoLogin('acc.kalala')}
+                className="flex items-center justify-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2.5 py-2 text-[10px] font-bold border border-emerald-200 dark:border-emerald-800 transition-colors"
+              >
+                🏥 Accueil Kalala
+              </button>
+            </div>
+            <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-2 text-center">
+              Mot de passe démo : <code className="font-mono bg-slate-100 dark:bg-slate-800 px-1">demo</code> — Noms congolais
+            </p>
             {useSupabaseAuth && (
-              <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-2 leading-relaxed">
-                ⚠ Si vous n'avez pas encore créé d'utilisateurs dans Supabase Dashboard,
-                utilisez la connexion démo pour tester l'application.
+              <p className="text-[9px] text-amber-600 dark:text-amber-400 mt-1.5 text-center leading-relaxed">
+                ⚠ Pas d'utilisateurs Supabase ? Utilisez un bouton démo ci-dessus.
               </p>
             )}
           </div>
