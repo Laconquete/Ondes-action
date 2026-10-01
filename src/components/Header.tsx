@@ -520,10 +520,28 @@ export const Header: React.FC<HeaderProps> = ({
                     </button>
                   )}
                   <div className="py-1">
+                    {/* En production : seul l'utilisateur courant est affiché (pas de changement de profil) */}
+                    {/* En démo : tous les users sont visibles pour tester les rôles */}
                     <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400">
-                      Changer de profil
+                      Mon compte
                     </div>
-                    {allUsers.slice(0, 6).map((u) => (
+                    {/* Affiche uniquement l'utilisateur courant */}
+                    <div className="flex items-center gap-2 px-3 py-2 text-xs text-blue-700 dark:text-blue-300 font-bold">
+                      <span className="flex h-6 w-6 items-center justify-center bg-slate-100 dark:bg-slate-800 text-[9px] font-bold">
+                        {currentUser.displayName.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="truncate">{currentUser.displayName}</div>
+                        <div className="text-[9px] text-slate-400 uppercase">{currentUser.role}</div>
+                      </div>
+                    </div>
+                    {/* Changement de profil seulement en mode démo (plus d'1 user) */}
+                    {allUsers.length > 1 && (
+                      <>
+                        <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400 border-t border-slate-100 dark:border-slate-800 mt-1">
+                          Changer de profil (démo)
+                        </div>
+                        {allUsers.filter((u) => u.id !== currentUser.id).slice(0, 5).map((u) => (
                       <button
                         key={u.id}
                         onClick={() => { onSwitchUser(u); const menu = document.querySelector('.dropdown-menu'); if (menu) menu.classList.add('hidden'); }}
@@ -540,6 +558,8 @@ export const Header: React.FC<HeaderProps> = ({
                         </div>
                       </button>
                     ))}
+                      </>
+                    )}
                   </div>
                   <button
                     onClick={() => { onLogout(); const menu = document.querySelector('.dropdown-menu'); if (menu) menu.classList.add('hidden'); }}

@@ -466,21 +466,56 @@ export default function App() {
         )}
 
         {activeTab === 'schedule' && (
-          <DoctorSchedule
-            appointments={appointments}
-            queueTickets={queueTickets}
-            patients={patients}
-            practitioners={allUsers.filter((u) => u.role === 'doctor')}
-            currentPractitionerId={currentUser.id}
-            onOpenConsultationForPatient={(patId) => {
-              handleSelectPatient(patId);
-              setActiveTab('workspace');
-            }}
-            onAddAppointment={handleAddAppointment}
-            onUpdateAppointmentStatus={handleUpdateAppointmentStatus}
-            onCallQueueTicket={handleCallQueueTicket}
-            canManageSchedule={permissions.canManageSchedule}
-          />
+          <div className="space-y-4">
+            {/* === RECEPTION DASHBOARD — affiché EN PREMIER === */}
+            {/* Visible par tous (médecins voient aussi la file d'attente) */}
+            <ReceptionDashboard
+              queueTickets={queueTickets}
+              appointments={appointments}
+              patients={patients}
+              doctors={allUsers.filter((u) => u.role === 'doctor' || u.role === 'medical_director')}
+              currentUser={currentUser}
+              onCallTicket={handleCallQueueTicket}
+              onAssignDoctor={(ticketId, doctorId, doctorName) => {
+                const ticket = queueTickets.find((t) => t.id === ticketId);
+                if (ticket) {
+                  setAppointments((prev) =>
+                    prev.map((a) =>
+                      a.id === ticket.appointmentId
+                        ? { ...a, practitionerId: doctorId, practitionerName: doctorName }
+                        : a
+                    )
+                  );
+                  logAudit('PATIENT_REASSIGN', 'appointment', {
+                    resourceId: ticket.appointmentId,
+                    patientId: ticket.patientId,
+                    patientName: ticket.patientName,
+                    reasonText: `Patient réorienté vers ${doctorName}`,
+                  });
+                }
+              }}
+              onCheckIn={handleReceptionCheckIn}
+            />
+
+            {/* === AGENDA CLINIQUE — affiché EN DESSOUS (médecins seulement) === */}
+            {permissions.canViewClinical && (
+              <DoctorSchedule
+                appointments={appointments}
+                queueTickets={queueTickets}
+                patients={patients}
+                practitioners={allUsers.filter((u) => u.role === 'doctor')}
+                currentPractitionerId={currentUser.id}
+                onOpenConsultationForPatient={(patId) => {
+                  handleSelectPatient(patId);
+                  setActiveTab('workspace');
+                }}
+                onAddAppointment={handleAddAppointment}
+                onUpdateAppointmentStatus={handleUpdateAppointmentStatus}
+                onCallQueueTicket={handleCallQueueTicket}
+                canManageSchedule={permissions.canManageSchedule}
+              />
+            )}
+          </div>
         )}
 
         {permissions.canViewClinical && activeTab === 'patients' && (
