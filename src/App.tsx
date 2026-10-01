@@ -160,10 +160,10 @@ export default function App() {
     }
   }, [notifications.length, setNotifications]);
 
-  // Active navigation tab
+  // Active navigation tab — par défaut : portal pour médecins, schedule pour réceptionnistes
   const [activeTab, setActiveTab] = useState<
     'portal' | 'workspace' | 'schedule' | 'patients' | 'followups' | 'messaging' | 'audit' | 'nursing'
-  >('portal');
+  >(currentUser.role === 'receptionist' ? 'schedule' : 'portal');
 
   // === Nursing Care (carnet de soins infirmier) ===
   const nursingCare = useNursingCare({ currentUser, onAudit: logAudit });
@@ -219,6 +219,13 @@ export default function App() {
   const permissions = useMemo(() => {
     return evaluateUserPermissions(currentUser.role, isBreakGlassActive);
   }, [currentUser.role, isBreakGlassActive]);
+
+  // Auto-redirect : si le réceptionniste essaie d'accéder à un onglet clinique, on le renvoie vers le schedule
+  useEffect(() => {
+    if (!permissions.canViewClinical && !['schedule'].includes(activeTab)) {
+      setActiveTab('schedule');
+    }
+  }, [permissions.canViewClinical, activeTab]);
 
   // ============= HANDLERS (utilisent les hooks) =============
   const handleSelectPatient = (patientId: string) => {
@@ -407,9 +414,10 @@ export default function App() {
         onOpenReceptionCheckIn={() => modals.openReceptionCheckIn()}
       />
 
-      {/* Main Clinical Viewport */}
+      {/* Main Clinical Viewport — filtré par RBAC */}
       <main className="flex-1 p-4 sm:p-6 max-w-[1600px] w-full mx-auto pb-20 xl:pb-6">
-        {activeTab === 'portal' && (
+        {/* === Onglets cliniques — BLOQUÉS pour les réceptionnistes (RGPD) === */}
+        {permissions.canViewClinical && activeTab === 'portal' && (
           <DoctorPortalView
             currentUser={currentUser}
             allUsers={allUsers}
@@ -433,7 +441,7 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'workspace' && (
+        {permissions.canViewClinical && activeTab === 'workspace' && (
           <DoctorWorkspace
             patient={activePatient}
             patientsList={patients}
@@ -475,7 +483,7 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'patients' && (
+        {permissions.canViewClinical && activeTab === 'patients' && (
           <PatientListAndDetail
             patients={patients}
             onSelectPatient={handleSelectPatient}
@@ -496,7 +504,7 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'followups' && (
+        {permissions.canViewClinical && activeTab === 'followups' && (
           <FollowUpManager
             tasks={followUps}
             patients={patients}
@@ -522,7 +530,7 @@ export default function App() {
           <AuditTrailView auditEvents={auditEvents} />
         )}
 
-        {activeTab === 'nursing' && (
+        {permissions.canViewClinical && activeTab === 'nursing' && (
           <NursingWorkspace
             currentUser={currentUser}
             carePlans={nursingCare.carePlans}

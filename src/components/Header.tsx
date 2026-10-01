@@ -255,6 +255,8 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Center: Compact Mega-Menu with hover submenus (xl+ screens) */}
+          {/* Navigation accordéon — masquée pour les réceptionnistes (RBAC) */}
+          {currentUser.role !== 'receptionist' && (
           <nav className="hidden xl:flex items-center gap-1">
             {/* Groupe 1 : Espace Médecin */}
             <div className="relative group">
@@ -371,6 +373,7 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
           </nav>
+          )}
 
           {/* Right Tools — Compact icon bar (encore plus compact sur mobile) */}
           <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">

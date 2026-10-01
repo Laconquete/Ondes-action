@@ -73,9 +73,11 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
     .slice(0, 2)
     .toUpperCase();
 
+  // Réceptionniste : ne voit QUE l'agenda (qui contient le Reception Dashboard)
+  // Pas d'accès clinique = pas de Portail, Patients, Soins, Messages
   const visibleTabs = canViewClinical
     ? TABS
-    : TABS.filter((t) => t.id === 'portal' || t.id === 'schedule');
+    : TABS.filter((t) => t.id === 'schedule');
 
   return (
     <>
