@@ -375,7 +375,7 @@ export const Header: React.FC<HeaderProps> = ({
             {onOpenReceptionCheckIn && (
               <button
                 onClick={onOpenReceptionCheckIn}
-                className="flex items-center justify-center h-7 w-7 sm:h-9 sm:w-9 border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-all cursor-pointer"
+                className="flex items-center justify-center h-9 w-9 border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-all cursor-pointer"
                 title="Guichet Accueil"
               >
                 <UserCheck className="h-4 w-4" />
@@ -385,7 +385,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="relative">
               <button
                 onClick={() => setIsNotificationsOpen((prev) => !prev)}
-                className="relative flex items-center justify-center h-7 w-7 sm:h-9 sm:w-9 border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                className="relative flex items-center justify-center h-9 w-9 border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 title="Alertes salle d'attente"
               >
                 <Bell className="h-4 w-4" />
@@ -434,7 +434,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             <button
               onClick={onOpenSearchModal}
-              className="flex items-center justify-center h-7 w-7 sm:h-9 sm:w-9 border border-slate-200/90 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              className="flex items-center justify-center h-9 w-9 border border-slate-200/90 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
               title="Recherche patient (Ctrl+K)"
             >
               <Search className="h-4 w-4" />
@@ -444,7 +444,7 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={toggleTheme}
               title={isDark ? 'Mode clair' : 'Mode sombre'}
-              className="flex items-center justify-center h-7 w-7 sm:h-9 sm:w-9 border border-slate-200/90 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              className="flex items-center justify-center h-9 w-9 border border-slate-200/90 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
             >
               {isDark ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-indigo-600" />}
             </button>
@@ -452,7 +452,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={onToggleOnline}
               title={isOnline ? 'En ligne' : 'Hors ligne'}
-              className="flex items-center justify-center h-7 w-7 sm:h-9 sm:w-9 border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              className="flex items-center justify-center h-9 w-9 border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
             >
               <span className="relative flex h-2.5 w-2.5">
                 {isOnline && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />}
@@ -462,7 +462,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             <button
               onClick={onOpenSyncModal}
-              className="relative flex items-center justify-center h-7 w-7 sm:h-9 sm:w-9 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              className="relative flex items-center justify-center h-9 w-9 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
               title="Sync Outbox"
             >
               <Clock className="h-4 w-4" />
@@ -537,7 +537,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={() => setIsDrawerOpen(true)}
               aria-label="Ouvrir le menu"
-              className="xl:hidden flex items-center justify-center h-7 w-7 sm:h-9 sm:w-9 border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              className="xl:hidden flex items-center justify-center h-9 w-9 border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
             >
               <Menu className="h-5 w-5" />
             </button>

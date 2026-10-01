@@ -8,6 +8,7 @@ import {
   Shield,
   Download,
   X,
+  LogOut,
 } from 'lucide-react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 
@@ -17,6 +18,8 @@ interface BottomNavBarProps {
   activeTab: string;
   onTabChange: (tab: TabId) => void;
   canViewClinical: boolean;
+  currentUserDisplayName?: string;
+  onLogout?: () => void;
 }
 
 const TABS: Array<{ id: TabId; label: string; icon: React.ElementType; color: string }> = [
@@ -37,10 +40,38 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
   activeTab,
   onTabChange,
   canViewClinical,
+  currentUserDisplayName = '',
+  onLogout,
 }) => {
   const { isInstallable, isInstalled, isIOS, install } = usePWAInstall();
   const [showMore, setShowMore] = React.useState(false);
   const [showIOSHint, setShowIOSHint] = React.useState(false);
+  const [showProfile, setShowProfile] = React.useState(false);
+  const [showInstallHint, setShowInstallHint] = React.useState(false);
+
+  // Afficher l'info-bulle d'installation 3 secondes après le chargement
+  // (seulement si installable et pas déjà installé)
+  React.useEffect(() => {
+    if ((isInstallable || isIOS) && !isInstalled) {
+      const dismissed = sessionStorage.getItem('pwa_hint_dismissed');
+      if (!dismissed) {
+        const timer = setTimeout(() => setShowInstallHint(true), 3000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isInstallable, isIOS, isInstalled]);
+
+  const dismissInstallHint = () => {
+    setShowInstallHint(false);
+    sessionStorage.setItem('pwa_hint_dismissed', '1');
+  };
+
+  const initials = currentUserDisplayName
+    .split(' ')
+    .map((n: string) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   const visibleTabs = canViewClinical
     ? TABS
@@ -92,25 +123,90 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
             </button>
           )}
 
-          {/* Bouton installation PWA */}
-          {(isInstallable || isIOS) && !isInstalled && (
-            <button
-              onClick={() => {
-                if (isIOS) {
-                  setShowIOSHint(true);
-                } else {
-                  void install();
-                }
-              }}
-              className="flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 text-emerald-600 dark:text-emerald-400 animate-pulse"
-              title="Installer OneDesk sur votre téléphone"
-            >
-              <Download className="h-4.5 w-4.5" />
-              <span className="text-[9px] font-bold">Installer</span>
-            </button>
-          )}
+          {/* Bouton Profil/Déconnexion — initiales cliquables */}
+          <button
+            onClick={() => setShowProfile(true)}
+            className="flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 text-slate-500 dark:text-slate-400"
+            title="Profil & Déconnexion"
+          >
+            <div className="flex h-6 w-6 items-center justify-center bg-blue-600 text-white font-bold text-[9px]">
+              {initials || '••'}
+            </div>
+            <span className="text-[9px] font-medium">Profil</span>
+          </button>
         </div>
       </nav>
+
+      {/* Info-bulle d'installation PWA (toast non-bloquant, auto-dismiss) */}
+      {showInstallHint && (
+        <div
+          className="xl:hidden fixed bottom-16 left-2 right-2 z-50 bg-blue-600 text-white p-3 shadow-2xl animate-fadeInUp rounded-lg flex items-center gap-3"
+          onClick={() => dismissInstallHint()}
+        >
+          <Download className="h-5 w-5 shrink-0" />
+          <div className="flex-1">
+            <p className="text-xs font-bold">Installer OneDesk sur votre téléphone</p>
+            <p className="text-[10px] opacity-90">Accédez à l'app sans navigateur, comme une vraie application</p>
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isIOS) setShowIOSHint(true);
+              else void install();
+              dismissInstallHint();
+            }}
+            className="bg-white text-blue-600 px-3 py-1.5 text-xs font-bold shrink-0"
+          >
+            Installer
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); dismissInstallHint(); }} className="text-white/70 shrink-0">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Menu Profil (mobile) */}
+      {showProfile && (
+        <div
+          className="xl:hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm"
+          onClick={() => setShowProfile(false)}
+        >
+          <div
+            className="absolute bottom-14 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 rounded-t-2xl p-4 animate-fadeInUp"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                Mon profil
+              </h3>
+              <button
+                onClick={() => setShowProfile(false)}
+                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="text-center py-4">
+              <div className="flex h-12 w-12 mx-auto items-center justify-center bg-blue-600 text-white font-bold text-sm mb-2">
+                {initials || '••'}
+              </div>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                Connecté en tant que
+              </p>
+              <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mt-0.5">
+                {currentUserDisplayName || 'Utilisateur'}
+              </p>
+              <button
+                onClick={() => { onLogout?.(); setShowProfile(false); }}
+                className="mt-4 w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2.5 text-xs font-bold transition-colors"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                Déconnexion
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Menu "Plus" — overlay */}
       {showMore && (

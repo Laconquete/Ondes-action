@@ -538,6 +538,8 @@ export default function App() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         canViewClinical={permissions.canViewClinical}
+        currentUserDisplayName={currentUser.displayName}
+        onLogout={handleLogout}
       />
 
       {/* Prescription Safety Modal (lazy) */}
