@@ -31,6 +31,7 @@ import { FollowUpManager } from './components/FollowUpManager';
 import { AuditTrailView } from './components/AuditTrailView';
 import { ReceptionDashboard } from './components/ReceptionDashboard';
 import { NursingWorkspace } from './components/NursingWorkspace';
+import { BottomNavBar } from './components/BottomNavBar';
 // Modales lazy-loadées — réduisent le bundle initial
 const PrescriptionSafetyModal = lazy(() =>
   import('./components/PrescriptionSafetyModal').then((m) => ({ default: m.PrescriptionSafetyModal }))
@@ -404,7 +405,7 @@ export default function App() {
       />
 
       {/* Main Clinical Viewport */}
-      <main className="flex-1 p-4 sm:p-6 max-w-[1600px] w-full mx-auto">
+      <main className="flex-1 p-4 sm:p-6 max-w-[1600px] w-full mx-auto pb-20 xl:pb-6">
         {activeTab === 'portal' && (
           <DoctorPortalView
             currentUser={currentUser}
@@ -531,6 +532,13 @@ export default function App() {
           />
         )}
       </main>
+
+      {/* Barre de navigation inférieure (mobile/tablette uniquement) */}
+      <BottomNavBar
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        canViewClinical={permissions.canViewClinical}
+      />
 
       {/* Prescription Safety Modal (lazy) */}
       {modals.isPrescriptionOpen && (
