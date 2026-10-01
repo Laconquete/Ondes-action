@@ -32,6 +32,7 @@ import { AuditTrailView } from './components/AuditTrailView';
 import { ReceptionDashboard } from './components/ReceptionDashboard';
 import { NursingWorkspace } from './components/NursingWorkspace';
 import { BottomNavBar } from './components/BottomNavBar';
+import { UserManagementDialog } from './components/UserManagementDialog';
 // Modales lazy-loadées — réduisent le bundle initial
 const PrescriptionSafetyModal = lazy(() =>
   import('./components/PrescriptionSafetyModal').then((m) => ({ default: m.PrescriptionSafetyModal }))
@@ -84,6 +85,7 @@ export default function App() {
 
   // Modales (6 états open/close centralisés)
   const modals = useModals();
+  const [showUserManagement, setShowUserManagement] = useState(false);
 
   // Audit events (legacy UI state — le nouveau système crypto est dans auditStore)
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>(INITIAL_AUDIT_TRAIL);
@@ -392,6 +394,7 @@ export default function App() {
         allUsers={allUsers}
         onSwitchUser={handleSwitchUser}
         onLogout={handleLogout}
+        onOpenUserManagement={() => setShowUserManagement(true)}
         isOnline={isOnline}
         onToggleOnline={() => { /* Toggle is now handled by useNetworkStatus (browser events) */ }}
         outboxCount={outbox.filter((o) => o.status === 'pending').length}
@@ -541,6 +544,14 @@ export default function App() {
         currentUserDisplayName={currentUser.displayName}
         onLogout={handleLogout}
       />
+
+      {/* Gestion des utilisateurs (admin/directeur uniquement) */}
+      {showUserManagement && (
+        <UserManagementDialog
+          currentUser={currentUser}
+          onClose={() => setShowUserManagement(false)}
+        />
+      )}
 
       {/* Prescription Safety Modal (lazy) */}
       {modals.isPrescriptionOpen && (

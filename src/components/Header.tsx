@@ -37,6 +37,7 @@ interface HeaderProps {
   allUsers: AppUser[];
   onSwitchUser: (user: AppUser) => void;
   onLogout: () => void;
+  onOpenUserManagement?: () => void;
   isOnline: boolean;
   onToggleOnline: () => void;
   outboxCount: number;
@@ -57,6 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
   allUsers,
   onSwitchUser,
   onLogout,
+  onOpenUserManagement,
   isOnline,
   onToggleOnline,
   outboxCount,
@@ -504,6 +506,16 @@ export const Header: React.FC<HeaderProps> = ({
                       {roleInfo.label}
                     </span>
                   </div>
+                  {/* Gestion des utilisateurs (admin/directeur uniquement) */}
+                  {(currentUser.role === 'medical_director' || (currentUser.role as string) === 'admin') && onOpenUserManagement && (
+                    <button
+                      onClick={() => { onOpenUserManagement(); const menu = document.querySelector('.dropdown-menu'); if (menu) menu.classList.add('hidden'); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-left text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-200 border-t border-slate-100 dark:border-slate-800"
+                    >
+                      <Users className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                      Gérer les utilisateurs
+                    </button>
+                  )}
                   <div className="py-1">
                     <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400">
                       Changer de profil
