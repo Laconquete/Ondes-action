@@ -423,7 +423,7 @@ export const PatientListAndDetail: React.FC<PatientListAndDetailProps> = ({
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full min-w-[800px] text-left text-xs border-collapse">
                 {/* Modern Sortable Column Headers */}
                 <thead className="bg-slate-50/80 dark:bg-slate-850 text-slate-600 dark:text-slate-400 uppercase text-[11px] font-bold border-b border-slate-200/80 dark:border-slate-800 select-none">
                   <tr>

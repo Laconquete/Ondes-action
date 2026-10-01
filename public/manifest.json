@@ -1,19 +1,38 @@
 {
   "id": "/",
-  "name": "Clinique OneDesk",
+  "name": "OneDesk Clinique",
   "short_name": "OneDesk",
-  "description": "Poste de travail clinique PWA sécurisé pour le médecin et l'équipe de soins.",
+  "description": "Poste de travail clinique sécurisé pour médecin, infirmier et réception.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#f8fafc",
   "theme_color": "#1d4ed8",
   "icons": [
     {
-      "src": "/icon.svg",
-      "sizes": "192x192 512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "/logo-FOAVICON .png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo-FOAVICON .png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo-FOAVICON .png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/logo-FOAVICON .png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

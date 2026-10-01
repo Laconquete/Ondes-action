@@ -262,7 +262,7 @@ export const DoctorWorkspace: React.FC<DoctorWorkspaceProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-12 gap-5 h-full">
+    <div className="grid grid-cols-12 gap-3 sm:gap-5 h-auto">
       {/* ======================================================== */}
       {/* ZONE 1 : COLONNE PATIENT (Identité, Allergies, Constantes) */}
       {/* ======================================================== */}

@@ -358,7 +358,7 @@ export const DoctorPortalView: React.FC<DoctorPortalViewProps> = ({
       </div>
 
       {/* Main 2-Column Content: Left = Dynamic Patient CRM List, Right = Today's Planning & Queue */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6">
         {/* Left Column (8 cols): Interactive Patient Portfolio & Search */}
         <div className="lg:col-span-8 space-y-4">
           <div className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-clinical transition-colors">

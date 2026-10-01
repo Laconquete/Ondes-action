@@ -228,28 +228,26 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         {/* Main Top Header Bar */}
-        <div className="mx-auto flex h-16 items-center justify-between px-4 sm:px-6 max-w-[1600px] w-full gap-2 sm:gap-4">
-          {/* Brand & Logo officiel OneDesk — logo-concept-02.png contient déjà le nom */}
-          <div className="flex items-center gap-2 shrink min-w-0">
-            <div className="relative h-12 sm:h-16 shrink-0">
+        <div className="mx-auto flex h-14 sm:h-16 items-center justify-between px-2 sm:px-4 max-w-[1600px] w-full gap-1 sm:gap-4">
+          {/* Brand & Logo — favicon compact sur mobile, logo complet sur desktop */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink min-w-0">
+            <div className="relative h-8 w-8 sm:h-10 sm:w-10 shrink-0">
               <img
-                src="/logo-concept-02.png"
-                alt="OneDesk Clinique"
-                className="h-full w-auto object-contain max-w-[180px]"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
+                src="/logo-FOAVICON .png"
+                alt="OneDesk"
+                className="h-full w-full object-contain"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
-              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full border-2 border-white dark:border-slate-900 bg-emerald-500" />
+              <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full border-2 border-white dark:border-slate-900 bg-emerald-500" />
             </div>
+            {/* Nom + tenant masqués sur < lg pour gagner de l'espace */}
             <div className="hidden lg:block min-w-0">
-              <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                <Building2 className="h-3 w-3 text-slate-400 dark:text-slate-500 shrink-0" />
+              <span className="text-sm font-extrabold tracking-tight text-slate-900 dark:text-white truncate">
+                OneDesk
+              </span>
+              <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                <Building2 className="h-2.5 w-2.5 text-slate-400 dark:text-slate-500 shrink-0" />
                 <span className="truncate">{tenantName || 'Poste de Travail Clinique'}</span>
-                <span>·</span>
-                <span className="font-mono font-medium text-slate-600 dark:text-slate-300 tabular-nums shrink-0">
-                  {currentTime || '00:00:00'}
-                </span>
               </div>
             </div>
           </div>
@@ -372,12 +370,12 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </nav>
 
-          {/* Right Tools — Compact icon bar */}
-          <div className="flex items-center gap-1.5 shrink-0">
+          {/* Right Tools — Compact icon bar (encore plus compact sur mobile) */}
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             {onOpenReceptionCheckIn && (
               <button
                 onClick={onOpenReceptionCheckIn}
-                className="flex items-center justify-center h-9 w-9 border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-all cursor-pointer"
+                className="flex items-center justify-center h-7 w-7 sm:h-9 sm:w-9 border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-all cursor-pointer"
                 title="Guichet Accueil"
               >
                 <UserCheck className="h-4 w-4" />
@@ -387,7 +385,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="relative">
               <button
                 onClick={() => setIsNotificationsOpen((prev) => !prev)}
-                className="relative flex items-center justify-center h-9 w-9 border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                className="relative flex items-center justify-center h-7 w-7 sm:h-9 sm:w-9 border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 title="Alertes salle d'attente"
               >
                 <Bell className="h-4 w-4" />
@@ -436,7 +434,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             <button
               onClick={onOpenSearchModal}
-              className="flex items-center justify-center h-9 w-9 border border-slate-200/90 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              className="flex items-center justify-center h-7 w-7 sm:h-9 sm:w-9 border border-slate-200/90 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
               title="Recherche patient (Ctrl+K)"
             >
               <Search className="h-4 w-4" />
@@ -446,7 +444,7 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={toggleTheme}
               title={isDark ? 'Mode clair' : 'Mode sombre'}
-              className="flex items-center justify-center h-9 w-9 border border-slate-200/90 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              className="flex items-center justify-center h-7 w-7 sm:h-9 sm:w-9 border border-slate-200/90 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
             >
               {isDark ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-indigo-600" />}
             </button>
@@ -454,7 +452,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={onToggleOnline}
               title={isOnline ? 'En ligne' : 'Hors ligne'}
-              className="flex items-center justify-center h-9 w-9 border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              className="flex items-center justify-center h-7 w-7 sm:h-9 sm:w-9 border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer"
             >
               <span className="relative flex h-2.5 w-2.5">
                 {isOnline && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />}
@@ -464,7 +462,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             <button
               onClick={onOpenSyncModal}
-              className="relative flex items-center justify-center h-9 w-9 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              className="relative flex items-center justify-center h-7 w-7 sm:h-9 sm:w-9 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
               title="Sync Outbox"
             >
               <Clock className="h-4 w-4" />
@@ -529,7 +527,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={() => setIsDrawerOpen(true)}
               aria-label="Ouvrir le menu"
-              className="xl:hidden flex items-center justify-center h-9 w-9 border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              className="xl:hidden flex items-center justify-center h-7 w-7 sm:h-9 sm:w-9 border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
             >
               <Menu className="h-5 w-5" />
             </button>
