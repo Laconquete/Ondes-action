@@ -473,15 +473,25 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </button>
 
-            {/* User avatar with hover dropdown */}
-            <div className="relative group">
-              <button className="flex items-center gap-2 pl-1.5 pr-2 py-1 border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer">
-                <div className="flex h-7 w-7 items-center justify-center bg-blue-600 text-white font-bold text-[10px]">
-                  {currentUser.displayName.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+            {/* User avatar with click+hover dropdown (click pour mobile, hover pour desktop) */}
+            <div className="relative group" onClick={(e) => { e.currentTarget.querySelector('div.absolute')?.classList.toggle('hidden'); }}>
+              <button className="flex items-center gap-1.5 pl-1 pr-1.5 py-1 border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                <div className="relative h-7 w-7 sm:h-8 sm:w-8 shrink-0">
+                  <img
+                    src="/logo-FOAVICON .png"
+                    alt="Menu"
+                    className="h-full w-full object-contain"
+                    onError={(e) => {
+                      // Fallback : initiales si le logo ne charge pas
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      target.parentElement!.innerHTML = `<div class="flex h-full w-full items-center justify-center bg-blue-600 text-white font-bold text-[10px]">${currentUser.displayName.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</div>`;
+                    }}
+                  />
                 </div>
-                <ChevronDown className="h-3 w-3 text-slate-400 group-hover:rotate-180 transition-transform" />
+                <ChevronDown className="hidden sm:block h-3 w-3 text-slate-400 group-hover:rotate-180 transition-transform" />
               </button>
-              <div className="absolute right-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+              <div className="absolute right-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50 min-w-[240px]">
                 <div className="w-64 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl">
                   <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
                     <div className="text-xs font-bold text-slate-900 dark:text-slate-100">{currentUser.displayName}</div>

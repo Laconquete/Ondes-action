@@ -64,7 +64,7 @@ export const LicenseActivationScreen: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-amber-50/30 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4 animate-fadeIn">
         <div className="w-full max-w-md">
           <div className="text-center mb-6">
-            <img src="/logo-concept-02.png" alt="OneDesk" className="h-24 mx-auto object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src="/logo-FOAVICON .png" alt="OneDesk" className="h-16 w-16 mx-auto object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </div>
           <div className="bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-800 shadow-clinical-lg p-7">
             <div className="flex items-center justify-center mb-4">
@@ -110,7 +110,7 @@ export const LicenseActivationScreen: React.FC = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-6">
-          <img src="/logo-concept-02.png" alt="OneDesk Clinique" className="h-24 sm:h-28 mx-auto object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          <img src="/logo-FOAVICON .png" alt="OneDesk Clinique" className="h-16 w-16 sm:h-20 sm:w-20 mx-auto object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Poste de travail clinique sécurisé</p>
         </div>
 

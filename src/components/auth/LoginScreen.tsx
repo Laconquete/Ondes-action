@@ -236,19 +236,20 @@ export const LoginScreen: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4 animate-fadeIn">
       <div className="w-full max-w-md">
-        {/* Branding — logo-concept-02.png contient déjà le nom OneDesk */}
+        {/* Branding — favicon compact + nom OneDesk */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center mb-2">
             <img
-              src="/logo-concept-02.png"
+              src="/logo-FOAVICON .png"
               alt="OneDesk Clinique"
-              className="h-24 sm:h-28 w-auto object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
+              className="h-16 w-16 sm:h-20 sm:w-20 object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+          <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">
+            OneDesk
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Poste de travail clinique sécurisé
           </p>
         </div>
