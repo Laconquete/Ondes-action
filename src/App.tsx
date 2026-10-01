@@ -467,8 +467,7 @@ export default function App() {
 
         {activeTab === 'schedule' && (
           <div className="space-y-4">
-            {/* === RECEPTION DASHBOARD — affiché EN PREMIER === */}
-            {/* Visible par tous (médecins voient aussi la file d'attente) */}
+            {/* === RECEPTION DASHBOARD === */}
             <ReceptionDashboard
               queueTickets={queueTickets}
               appointments={appointments}
@@ -497,24 +496,22 @@ export default function App() {
               onCheckIn={handleReceptionCheckIn}
             />
 
-            {/* === AGENDA CLINIQUE — affiché EN DESSOUS (médecins seulement) === */}
-            {permissions.canViewClinical && (
-              <DoctorSchedule
-                appointments={appointments}
-                queueTickets={queueTickets}
-                patients={patients}
-                practitioners={allUsers.filter((u) => u.role === 'doctor')}
-                currentPractitionerId={currentUser.id}
-                onOpenConsultationForPatient={(patId) => {
-                  handleSelectPatient(patId);
-                  setActiveTab('workspace');
-                }}
-                onAddAppointment={handleAddAppointment}
-                onUpdateAppointmentStatus={handleUpdateAppointmentStatus}
-                onCallQueueTicket={handleCallQueueTicket}
-                canManageSchedule={permissions.canManageSchedule}
-              />
-            )}
+            {/* === AGENDA CLINIQUE — visible par TOUS (réception ET médecins) === */}
+            <DoctorSchedule
+              appointments={appointments}
+              queueTickets={queueTickets}
+              patients={patients}
+              practitioners={allUsers.filter((u) => u.role === 'doctor')}
+              currentPractitionerId={currentUser.id}
+              onOpenConsultationForPatient={(patId) => {
+                handleSelectPatient(patId);
+                setActiveTab('workspace');
+              }}
+              onAddAppointment={handleAddAppointment}
+              onUpdateAppointmentStatus={handleUpdateAppointmentStatus}
+              onCallQueueTicket={handleCallQueueTicket}
+              canManageSchedule={permissions.canManageSchedule}
+            />
           </div>
         )}
 
