@@ -494,6 +494,7 @@ export default function App() {
                 }
               }}
               onCheckIn={handleReceptionCheckIn}
+              onAddPatient={handleAddPatient}
             />
 
             {/* === AGENDA CLINIQUE — visible par TOUS (réception ET médecins) === */}

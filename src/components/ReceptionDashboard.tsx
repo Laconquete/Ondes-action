@@ -38,6 +38,7 @@ interface ReceptionDashboardProps {
     reason: string;
     priority: number;
   }) => void;
+  onAddPatient?: (patient: Patient) => void;
   onClose?: () => void;
 }
 
@@ -65,6 +66,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
   onCallTicket,
   onAssignDoctor,
   onCheckIn,
+  onAddPatient,
   onClose,
 }) => {
   const [showWalkIn, setShowWalkIn] = useState(false);
@@ -437,6 +439,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
           patients={patients}
           doctors={doctors.filter((d) => d.role === 'doctor' || d.role === 'medical_director')}
           onCheckIn={onCheckIn}
+          onAddPatient={onAddPatient}
           onClose={() => setShowWalkIn(false)}
         />
       )}
@@ -444,7 +447,7 @@ export const ReceptionDashboard: React.FC<ReceptionDashboardProps> = ({
   );
 };
 
-// === Dialogue Walk-in : enregistrement d'un patient sans RDV ===
+// === Dialogue Walk-in : enregistrement d'un patient (existant OU nouveau) sans RDV ===
 const WalkInDialog: React.FC<{
   patients: Patient[];
   doctors: AppUser[];
@@ -456,8 +459,10 @@ const WalkInDialog: React.FC<{
     reason: string;
     priority: number;
   }) => void;
+  onAddPatient?: (patient: Patient) => void;
   onClose: () => void;
-}> = ({ patients, doctors, onCheckIn, onClose }) => {
+}> = ({ patients, doctors, onCheckIn, onAddPatient, onClose }) => {
+  const [mode, setMode] = useState<'existing' | 'new'>('existing');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [selectedDoctor, setSelectedDoctor] = useState<AppUser | null>(null);
@@ -465,20 +470,79 @@ const WalkInDialog: React.FC<{
   const [reason, setReason] = useState('');
   const [priority, setPriority] = useState(0);
 
+  // Champs nouveau patient
+  const [newFamilyName, setNewFamilyName] = useState('');
+  const [newGivenName, setNewGivenName] = useState('');
+  const [newBirthDate, setNewBirthDate] = useState('');
+  const [newGender, setNewGender] = useState<'M' | 'F' | 'O'>('M');
+  const [newPhone, setNewPhone] = useState('');
+
   const filteredPatients = patients.filter((p) =>
     searchTerm.trim() === '' ||
     `${p.familyName} ${p.givenName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.medicalRecordNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleRegister = () => {
+    if (mode === 'existing' && selectedPatient && selectedDoctor && reason.trim()) {
+      onCheckIn({
+        patient: selectedPatient,
+        targetDoctorId: selectedDoctor.id,
+        targetDoctorName: selectedDoctor.displayName,
+        roomCode,
+        reason: reason.trim(),
+        priority,
+      });
+      onClose();
+    } else if (mode === 'new' && newFamilyName.trim() && newGivenName.trim() && selectedDoctor && reason.trim() && onAddPatient) {
+      // Créer un nouveau patient
+      const newPatient: Patient = {
+        id: `pat_new_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        medicalRecordNumber: `MRN-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`,
+        familyName: newFamilyName.trim(),
+        givenName: newGivenName.trim(),
+        birthDate: newBirthDate || '1990-01-01',
+        gender: newGender,
+        phone: newPhone.trim(),
+        email: '',
+        address: { street: '', city: '', postalCode: '' },
+        bloodGroup: '',
+        emergencyContact: { name: '', relationship: '', phone: '' },
+        insurance: { provider: '', policyNumber: '' },
+        allergies: [],
+        problems: [],
+        vitalsHistory: [],
+        medicalHistory: [],
+        riskFactors: [],
+        status: 'active',
+      };
+      onAddPatient(newPatient);
+
+      // Puis enregistrer dans la file d'attente
+      onCheckIn({
+        patient: newPatient,
+        targetDoctorId: selectedDoctor.id,
+        targetDoctorName: selectedDoctor.displayName,
+        roomCode,
+        reason: reason.trim(),
+        priority,
+      });
+      onClose();
+    }
+  };
+
+  const canRegister = mode === 'existing'
+    ? selectedPatient && selectedDoctor && reason.trim()
+    : newFamilyName.trim() && newGivenName.trim() && selectedDoctor && reason.trim() && onAddPatient;
+
   return (
     <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fadeIn">
       <div className="w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl max-h-[90vh] overflow-y-auto animate-fadeInScale">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 sticky top-0 z-10">
           <div className="flex items-center gap-2.5">
             <Plus className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-              Walk-in — Enregistrer un patient sans RDV
+              Walk-in — Enregistrer un patient
             </h2>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
@@ -487,62 +551,158 @@ const WalkInDialog: React.FC<{
         </div>
 
         <div className="p-5 space-y-4">
-          {/* Sélection patient */}
-          <div>
-            <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
-              Patient
-            </label>
-            {selectedPatient ? (
-              <div className="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
-                <div>
-                  <div className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                    {selectedPatient.familyName} {selectedPatient.givenName}
-                  </div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
-                    {selectedPatient.medicalRecordNumber}
-                  </div>
-                </div>
-                <button
-                  onClick={() => setSelectedPatient(null)}
-                  className="text-slate-400 hover:text-red-500 text-xs"
-                >
-                  Changer
-                </button>
-              </div>
-            ) : (
-              <>
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Rechercher par nom ou IPP..."
-                  className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none"
-                  autoFocus
-                />
-                {searchTerm && (
-                  <div className="mt-1.5 max-h-40 overflow-y-auto border border-slate-200 dark:border-slate-800">
-                    {filteredPatients.slice(0, 10).map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => setSelectedPatient(p)}
-                        className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0"
-                      >
-                        <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                          {p.familyName} {p.givenName}
-                        </span>
-                        <span className="text-[10px] text-slate-500 font-mono">{p.medicalRecordNumber}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
+          {/* Toggle: Patient existant OU Nouveau */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setMode('existing')}
+              className={`flex-1 py-2 text-xs font-bold border-2 transition-all ${
+                mode === 'existing'
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300'
+                  : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300'
+              }`}
+            >
+              👤 Patient existant
+            </button>
+            <button
+              onClick={() => setMode('new')}
+              className={`flex-1 py-2 text-xs font-bold border-2 transition-all ${
+                mode === 'new'
+                  ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
+                  : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300'
+              }`}
+            >
+              ✨ Nouveau patient
+            </button>
           </div>
 
-          {/* Sélection médecin */}
+          {/* === MODE: Patient existant === */}
+          {mode === 'existing' && (
+            <div>
+              <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+                Rechercher le patient
+              </label>
+              {selectedPatient ? (
+                <div className="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+                  <div>
+                    <div className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                      {selectedPatient.familyName} {selectedPatient.givenName}
+                    </div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                      {selectedPatient.medicalRecordNumber}
+                    </div>
+                  </div>
+                  <button onClick={() => setSelectedPatient(null)} className="text-slate-400 hover:text-red-500 text-xs">
+                    Changer
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Rechercher par nom ou IPP..."
+                    className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none"
+                    autoFocus
+                  />
+                  {searchTerm && (
+                    <div className="mt-1.5 max-h-40 overflow-y-auto border border-slate-200 dark:border-slate-800">
+                      {filteredPatients.length === 0 ? (
+                        <div className="p-3 text-center text-[11px] text-slate-400">
+                          Aucun patient trouvé. Utilisez l'onglet "Nouveau patient".
+                        </div>
+                      ) : (
+                        filteredPatients.slice(0, 10).map((p) => (
+                          <button
+                            key={p.id}
+                            onClick={() => setSelectedPatient(p)}
+                            className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0"
+                          >
+                            <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                              {p.familyName} {p.givenName}
+                            </span>
+                            <span className="text-[10px] text-slate-500 font-mono">{p.medicalRecordNumber}</span>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* === MODE: Nouveau patient === */}
+          {mode === 'new' && (
+            <div className="space-y-3 p-3 border border-emerald-200 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-950/10">
+              <h3 className="text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+                Créer un nouveau dossier patient
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1 uppercase">Nom *</label>
+                  <input
+                    type="text"
+                    value={newFamilyName}
+                    onChange={(e) => setNewFamilyName(e.target.value)}
+                    placeholder="ex: Mukendi"
+                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1 uppercase">Prénom *</label>
+                  <input
+                    type="text"
+                    value={newGivenName}
+                    onChange={(e) => setNewGivenName(e.target.value)}
+                    placeholder="ex: Grâce"
+                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1 uppercase">Naissance</label>
+                  <input
+                    type="date"
+                    value={newBirthDate}
+                    onChange={(e) => setNewBirthDate(e.target.value)}
+                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1 uppercase">Genre</label>
+                  <select
+                    value={newGender}
+                    onChange={(e) => setNewGender(e.target.value as 'M' | 'F' | 'O')}
+                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none"
+                  >
+                    <option value="M">M</option>
+                    <option value="F">F</option>
+                    <option value="O">Autre</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1 uppercase">Téléphone</label>
+                  <input
+                    type="text"
+                    value={newPhone}
+                    onChange={(e) => setNewPhone(e.target.value)}
+                    placeholder="+243 ..."
+                    className="w-full px-2.5 py-1.5 text-xs border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+              <p className="text-[9px] text-slate-400 dark:text-slate-500">
+                L'IPP (Identifiant Patient Permanent) sera généré automatiquement.
+              </p>
+            </div>
+          )}
+
+          {/* Sélection médecin — commun aux deux modes */}
           <div>
             <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
-              Orienter vers
+              Orienter vers le médecin
             </label>
             <div className="flex flex-wrap gap-2">
               {doctors.map((doc) => (
@@ -555,7 +715,7 @@ const WalkInDialog: React.FC<{
                       : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
                   }`}
                 >
-                  <div className="flex h-6 w-6 items-center justify-center bg-slate-100 dark:bg-slate-700 text-[9px] font-bold">
+                  <div className="flex h-6 w-6 items-center justify-center bg-slate-100 dark:bg-slate-700 text-[9px] font-bold text-slate-700 dark:text-slate-200">
                     {doc.displayName.split(' ').map((n) => n[0]).join('').slice(0, 2)}
                   </div>
                   <span className="text-[11px] font-bold text-slate-900 dark:text-slate-100">{doc.displayName}</span>
@@ -590,34 +750,22 @@ const WalkInDialog: React.FC<{
             </div>
           </div>
           <div>
-            <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 uppercase tracking-wider">Motif</label>
+            <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 uppercase tracking-wider">Motif de la visite</label>
             <input
               type="text"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="ex: Douleur thoracique, contrôle tension,..."
+              placeholder="ex: Douleur thoracique, contrôle tension, fièvre..."
               className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none"
             />
           </div>
 
           <button
-            onClick={() => {
-              if (selectedPatient && selectedDoctor && reason.trim()) {
-                onCheckIn({
-                  patient: selectedPatient,
-                  targetDoctorId: selectedDoctor.id,
-                  targetDoctorName: selectedDoctor.displayName,
-                  roomCode,
-                  reason: reason.trim(),
-                  priority,
-                });
-                onClose();
-              }
-            }}
-            disabled={!selectedPatient || !selectedDoctor || !reason.trim()}
+            onClick={handleRegister}
+            disabled={!canRegister}
             className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white py-2.5 text-xs font-bold transition-colors"
           >
-            ✓ Enregistrer le patient
+            ✓ {mode === 'new' ? 'Créer le patient + Enregistrer' : 'Enregistrer dans la file d\'attente'}
           </button>
         </div>
       </div>
