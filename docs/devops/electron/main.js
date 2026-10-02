@@ -292,7 +292,86 @@ function createWindow() {
     win.webContents.openDevTools({ mode: 'detach' });
   } else {
     // Build Vite servi en file:// — le renderer a été copié dans /renderer.
-    win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
+    // CRITIQUE (v1.2.2) : path.join(__dirname, '..', 'renderer', 'index.html')
+    // ne résout pas correctement dans Electron 44 + asar. Le chemin absolu
+    // passé à loadFile() peut être rejeté silencieusement → ERR_FILE_NOT_FOUND.
+    //
+    // Solution robuste :
+    //   1. Utiliser app.getAppPath() qui retourne TOUJOURS le dossier racine
+    //      de l'app (app.asar en prod, dossier source en dev).
+    //   2. Vérifier avec fs.existsSync() que le fichier existe AVANT loadFile.
+    //   3. Si absent, lister le contenu du dossier app pour diagnostic.
+    //   4. Fallback : essayer plusieurs chemins possibles.
+    const fs = require('fs');
+    const appPath = app.getAppPath();
+    console.log('[main] app.getAppPath() =', appPath);
+    console.log('[main] __dirname =', __dirname);
+    console.log('[main] process.resourcesPath =', process.resourcesPath);
+
+    // Liste les chemins candidats à essayer dans l'ordre
+    const candidates = [
+      path.join(appPath, 'renderer', 'index.html'),
+      path.join(appPath, 'index.html'),
+      path.join(__dirname, '..', 'renderer', 'index.html'),
+      path.join(__dirname, 'renderer', 'index.html'),
+      path.join(process.resourcesPath, 'app.asar', 'renderer', 'index.html'),
+      path.join(process.resourcesPath, 'app', 'renderer', 'index.html'),
+    ];
+
+    // Log le contenu du dossier app pour diagnostic
+    try {
+      const appContents = fs.readdirSync(appPath);
+      console.log('[main] App folder contents:', appContents);
+      if (appContents.includes('renderer')) {
+        const rendererContents = fs.readdirSync(path.join(appPath, 'renderer'));
+        console.log('[main] renderer/ contents:', rendererContents);
+      }
+    } catch (err) {
+      console.error('[main] readdir appPath failed:', err.message);
+    }
+
+    // Trouve le premier candidat qui existe
+    let rendererPath = null;
+    for (const candidate of candidates) {
+      console.log('[main] Try:', candidate, '→ exists?', fs.existsSync(candidate));
+      if (fs.existsSync(candidate)) {
+        rendererPath = candidate;
+        break;
+      }
+    }
+
+    if (!rendererPath) {
+      console.error('[main] ERREUR CRITIQUE : index.html introuvable dans tous les chemins candidats !');
+      console.error('[main] Contenu de process.resourcesPath :');
+      try {
+        console.error(fs.readdirSync(process.resourcesPath));
+      } catch (e) {
+        console.error('  (lecture impossible:', e.message, ')');
+      }
+      const { dialog } = require('electron');
+      dialog.showErrorBox(
+        'OneDesk — Renderer introuvable',
+        `index.html est introuvable.\n\n` +
+        `app.getAppPath() = ${appPath}\n` +
+        `__dirname = ${__dirname}\n` +
+        `process.resourcesPath = ${process.resourcesPath}\n\n` +
+        `Chemins essayés:\n${candidates.join('\n')}\n\n` +
+        `Le packaging est probablement défectueux.`
+      );
+      app.quit(1);
+      return;
+    }
+
+    console.log('[main] Renderer trouvé :', rendererPath);
+    win.loadFile(rendererPath)
+      .then(() => console.log('[main] loadFile OK'))
+      .catch((err) => {
+        console.error('[main] loadFile échec :', err);
+        // Fallback : loadURL avec file://
+        const fileUrl = 'file:///' + rendererPath.replace(/\\/g, '/');
+        console.log('[main] Fallback loadURL :', fileUrl);
+        win.loadURL(fileUrl).catch((e) => console.error('[main] loadURL aussi échoué :', e));
+      });
   }
 }
 
