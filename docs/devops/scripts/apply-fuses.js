@@ -4,21 +4,14 @@
  * Applique les Electron Fuses directement sur le binaire genere
  * par @electron/packager. PAS BESOIN de Forge.
  *
- * Fuses actives (rationale en commentaire) :
- *   - EnableNodeCliInspectArguments : false
- *       Bloque l'injection de code via `--inspect`, `--inspect-brk`, etc.
- *   - EnableEmbeddedAsarIntegrityValidation : true
- *       Au demarrage, Electron verifie que app.asar n'a pas ete modifie.
- *   - OnlyLoadAppFromAsar : true
- *       Interdit de charger l'app depuis un dossier (force asar integre).
- *   - LoadBrowserProcessSpecificV8Snapshot : false
- *       Desactive le chargement d'un snapshot V8 custom (anti-tampering).
- *   - GrantFileProtocolExtraPrivileges : false
- *       Retire les privileges eleves du protocol file://.
+ * Compatible @electron/fuses v2.x (API flipFuses + FuseVersion.V1)
  *
- * Fuse NON active :
- *   - RunAsNode : true (laisse par defaut)
- *       Si on le met a false, on ne pourrait plus lancer `electron .` en dev.
+ * Fuses actives :
+ *   - EnableNodeCliInspectArguments : false (anti --inspect)
+ *   - EnableEmbeddedAsarIntegrityValidation : true (verify app.asar)
+ *   - OnlyLoadAppFromAsar : true (force asar)
+ *   - LoadBrowserProcessSpecificV8Snapshot : false
+ *   - GrantFileProtocolExtraPrivileges : false
  *
  * Reference : https://www.electronjs.org/docs/latest/tutorial/fuses
  */
@@ -26,12 +19,20 @@
 const path = require('path');
 const fs = require('fs');
 
-let fuseNative;
+let fusesMod;
 try {
-  const fusesMod = require('@electron/fuses');
-  fuseNative = fusesMod.flipFuses || fusesMod.default || fusesMod;
+  fusesMod = require('@electron/fuses');
 } catch (err) {
   console.warn('[fuses] Module @electron/fuses introuvable :', err.message);
+  console.warn('[fuses] Skip — build fonctionnel mais sans hardening runtime.');
+  process.exit(0);
+}
+
+const { flipFuses, FuseVersion, FuseV1Options } = fusesMod;
+
+if (!flipFuses || !FuseVersion || !FuseV1Options) {
+  console.warn('[fuses] API @electron/fuses non reconnue. Version installee :');
+  console.warn('[fuses]', require('@electron/fuses/package.json').version);
   console.warn('[fuses] Skip — build fonctionnel mais sans hardening runtime.');
   process.exit(0);
 }
@@ -52,33 +53,27 @@ const EXE = path.join(APP_DIR, 'OneDeskClinique.exe');
   console.log('');
 
   try {
-    // IMPORTANT : le parametre `version` doit etre la VERSION ELECTRON (pas la version de l'app).
-    // @electron/fuses l'utilise pour determiner quelle wire format de fuses appliquer.
-    // On lit la version installee depuis node_modules/electron/package.json.
-    const electronPkg = require(path.join(ROOT, 'node_modules', 'electron', 'package.json'));
-    const electronVersion = electronPkg.version;
-    console.log('[fuses] Version Electron detectee :', electronVersion);
-
-    await fuseNative(EXE, {
-      version: electronVersion,
-      resetAdHocDarwinSignature: false,
-      fuseStrings: {},
-      fuseWire: {
-        EnableNodeCliInspectArguments: false,
-        EnableEmbeddedAsarIntegrityValidation: true,
-        OnlyLoadAppFromAsar: true,
-        LoadBrowserProcessSpecificV8Snapshot: false,
-        GrantFileProtocolExtraPrivileges: false,
-        RunAsNode: true,
-        EnableCookieEncryption: true,
-      },
+    // v2 API : version = FuseVersion.V1 (pas la version d'Electron)
+    // Les fuses sont directement les valeurs booléennes dans l'objet fuseConfig
+    await flipFuses(EXE, {
+      version: FuseVersion.V1,
+      [FuseV1Options.EnableNodeCliInspectArguments]: false,
+      [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
+      [FuseV1Options.OnlyLoadAppFromAsar]: true,
+      [FuseV1Options.LoadBrowserProcessSpecificV8Snapshot]: false,
+      [FuseV1Options.GrantFileProtocolExtraPrivileges]: false,
+      // RunAsNode reste true (sinon casse le mode dev)
+      [FuseV1Options.RunAsNode]: true,
+      // EnableCookieEncryption reste true (deja par defaut dans Electron)
+      [FuseV1Options.EnableCookieEncryption]: true,
     });
-    console.log('[fuses] OK — 5 fuses appliquees sur OneDeskClinique.exe.');
-    console.log('[fuses]   - EnableNodeCliInspectArguments  = false');
-    console.log('[fuses]   - EnableEmbeddedAsarIntegrity   = true');
-    console.log('[fuses]   - OnlyLoadAppFromAsar            = true');
-    console.log('[fuses]   - LoadBrowserProcessSpecificV8  = false');
-    console.log('[fuses]   - GrantFileProtocolExtraPriv    = false');
+
+    console.log('[fuses] OK — Fuses appliquees sur OneDeskClinique.exe.');
+    console.log('[fuses]   - EnableNodeCliInspectArguments      = false');
+    console.log('[fuses]   - EnableEmbeddedAsarIntegrity        = true');
+    console.log('[fuses]   - OnlyLoadAppFromAsar                = true');
+    console.log('[fuses]   - LoadBrowserProcessSpecificV8      = false');
+    console.log('[fuses]   - GrantFileProtocolExtraPrivileges   = false');
     console.log('[fuses] Build pret pour distribution.');
   } catch (err) {
     console.error('[fuses] ECHEC :', err && err.stack ? err.stack : err);

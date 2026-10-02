@@ -74,7 +74,7 @@ DiskSpanning=no
 
 ; Pas de signature Authenticode (free tier — SmartScreen affichera "Éditeur inconnu"
 ; mais l'utilisateur peut cliquer "Plus d'infos" > "Exécuter quand même")
-SignTool=
+; NOTE : ne pas mettre SignTool= vide, ça provoque une erreur de compilation Inno Setup.
 
 ; Mode silencieux supporté (utile pour déploiement entreprise)
 SilentInstallMode=normal
