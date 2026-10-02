@@ -112,7 +112,6 @@ jobs:
         shell: pwsh
         env:
           APP_VERSION: '1.2.0'
-          APP_BUILD_DIR: 'out\OneDeskClinique-win32-x64'
         run: |
           # Vérifier que iscc est disponible
           $iscc = Get-Command iscc -ErrorAction SilentlyContinue
