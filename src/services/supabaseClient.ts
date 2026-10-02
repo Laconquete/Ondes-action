@@ -1,76 +1,108 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { getAppConfig, isAppConfigured } from './appConfig';
 
 /**
  * Client Supabase — singleton initialisé paresseusement.
  *
- * Architecture Offline-First :
- *  - Si VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY ne sont PAS définies → retourne null.
- *    L'app fonctionne alors en mode 100% local (IndexedDB), sans aucune sync.
- *    C'est le mode "démo" ou "installation standalone".
- *  - Si les variables SONT définies → le client est créé à la première utilisation
- *    et réutilisé (singleton). Le syncWorker peut alors pousser l'outbox et tirer les changements.
+ * Architecture v1.2.0 (production) :
+ *  - Au 1er lancement, AppRoot affiche le <SetupWizard /> si la config
+ *    n'est pas encore saisie (appConfig.isConfigured() === false).
+ *  - L'utilisateur saisit URL + anon key + Google OAuth + tenant.
+ *  - Ces valeurs sont chiffrées (AES-GCM) en localStorage.
+ *  - Au démarrage, AppRoot appelle `await preloadSupabaseFromConfig()`
+ *    qui lit appConfig de façon async, instancie le client, et le met en cache.
+ *  - Les composants React appellent `getSupabase()` (SYNC) — ils récupèrent
+ *    le client pré-chargé ou null si non configuré.
  *
  * Sécurité :
- *  - L'anon key est publique par design (elle ne donne accès qu'aux données permises par RLS).
- *  - Les politiques RLS du schéma SQL garantissent qu'un utilisateur ne voit QUE les données
- *    de son tenant_id et selon son rôle (doctor/nurse/receptionist/auditor).
- *  - En mode offline (pas de Supabase), les données restent chiffrées en IndexedDB local.
+ *  - L'anon key est publique par design (RLS protège les données).
+ *  - Les politiques RLS du schéma SQL garantissent qu'un utilisateur ne voit
+ *    QUE les données de son tenant_id et selon son rôle.
+ *  - En mode offline (pas de config), les données restent en IndexedDB local.
  */
 
 let cachedClient: SupabaseClient | null = null;
-let initAttempted = false;
+let cachedConfigHash: string | null = null;
+let preloaded = false;
 
 /**
- * Retourne le client Supabase si configuré, sinon null.
- * Le premier appel initialise le client ; les appels suivants retournent le cache.
+ * PRÉ-CHARGEMENT (async, à appeler une fois au démarrage de AppRoot).
+ * Lit la config chiffrée, instancie le client, le met en cache.
+ * Après cet appel, getSupabase() (sync) renvoie le client.
+ *
+ * Idempotent : peut être appelée plusieurs fois sans effet de bord.
+ * Si la config a changé (reconfiguration), recrée le client.
  */
-export function getSupabase(): SupabaseClient | null {
-  if (initAttempted) return cachedClient;
-  initAttempted = true;
+export async function preloadSupabaseFromConfig(): Promise<void> {
+  if (!isAppConfigured()) {
+    console.info('[supabaseClient] Mode offline — config non saisie. Sync désactivé.');
+    cachedClient = null;
+    cachedConfigHash = null;
+    preloaded = true;
+    return;
+  }
 
-  const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+  const config = await getAppConfig();
+  if (!config || !config.supabaseUrl || !config.supabaseAnonKey) {
+    console.warn('[supabaseClient] Config présente mais invalide. Sync désactivé.');
+    cachedClient = null;
+    preloaded = true;
+    return;
+  }
 
-  if (!url || !anonKey || url === 'MY_SUPABASE_URL' || anonKey === 'MY_SUPABASE_ANON_KEY') {
-    // Mode offline — pas de sync Supabase. L'app fonctionne 100% en local.
-    console.info('[supabaseClient] Mode offline — Supabase non configuré. Sync désactivé.');
-    return null;
+  const configHash = `${config.supabaseUrl}|${config.supabaseAnonKey.substring(0, 16)}`;
+  if (cachedClient && cachedConfigHash === configHash) {
+    preloaded = true;
+    return; // déjà chargé
   }
 
   try {
-    cachedClient = createClient(url, anonKey, {
+    cachedClient = createClient(config.supabaseUrl, config.supabaseAnonKey, {
       auth: {
-        // IMPORTANT : on active la persistance de session pour permettre
-        // l'usage offline (JWT caché en localStorage, auto-refresh quand online).
-        // Supabase Auth gère le refresh automatiquement.
         persistSession: true,
         autoRefreshToken: true,
-        // On garde le storage par défaut (localStorage) pour la persistance offline.
-        // En production Electron, on utilisera un storage sécurisé (electron-store).
         detectSessionInUrl: true, // Pour le callback OAuth Google
       },
       realtime: {
-        // Désactivé pour simplifier — on utilise du polling (30s) plutôt que WebSocket.
         params: { eventsPerSecond: 1 },
       },
       global: {
         headers: {
-          'x-client-info': 'onedesk-sync/1.0.0',
+          'x-client-info': 'onedesk-sync/1.2.0',
         },
       },
     });
-
-    console.info('[supabaseClient] Client Supabase initialisé. Auth + sync activés.');
-    return cachedClient;
+    cachedConfigHash = configHash;
+    preloaded = true;
+    console.info('[supabaseClient] Client Supabase initialisé depuis appConfig chiffré.');
   } catch (err) {
     console.error('[supabaseClient] Échec d\'initialisation:', err);
-    return null;
+    cachedClient = null;
+    preloaded = true;
   }
 }
 
 /**
- * Indique si la sync Supabase est disponible (variables d'env configurées).
- * Utilisé par le syncWorker pour décider s'il doit tenter des requêtes réseau.
+ * Retourne le client Supabase si configuré, sinon null.
+ * SYNC — renvoie le client pré-chargé par preloadSupabaseFromConfig().
+ *
+ * Si preloadSupabaseFromConfig() n'a pas été appelé, retourne null et log un avertissement.
+ * Les composants doivent toujours appeler `await preloadSupabaseFromConfig()` au démarrage
+ * (AppRoot le fait).
+ */
+export function getSupabase(): SupabaseClient | null {
+  if (!preloaded) {
+    // Tentative de préchargement synchrone impossible (AES-GCM est async).
+    // AppRoot doit appeler preloadSupabaseFromConfig() avant tout rendu.
+    console.warn('[supabaseClient] getSupabase() appelé avant preload. Retourne null. Appelez preloadSupabaseFromConfig() au démarrage.');
+    return null;
+  }
+  return cachedClient;
+}
+
+/**
+ * Indique si Supabase est configuré (config chiffrée présente + pré-chargée).
+ * SYNC — utilisée par les composants React pour décider d'afficher Google OAuth, etc.
  */
 export function isSupabaseConfigured(): boolean {
   return getSupabase() !== null;
@@ -85,16 +117,13 @@ export async function pingSupabase(): Promise<boolean> {
   if (!client) return false;
 
   try {
-    // Ping minimal : SELECT 1 sur la table tenants (la plus légère).
     const { error } = await client
       .from('tenants')
       .select('id')
       .limit(1)
       .maybeSingle();
 
-    // Pas d'erreur OU erreur "PGRST116" (no rows) = connexion OK
     if (!error || error.code === 'PGRST116') return true;
-
     return false;
   } catch {
     return false;
@@ -102,9 +131,11 @@ export async function pingSupabase(): Promise<boolean> {
 }
 
 /**
- * Réinitialise le client (pour tests ou déconnexion).
+ * Réinitialise le client (pour tests, déconnexion, ou reconfiguration).
+ * Après cet appel, il faut rappeler preloadSupabaseFromConfig() pour recharger.
  */
 export function resetSupabaseClient(): void {
   cachedClient = null;
-  initAttempted = false;
+  cachedConfigHash = null;
+  preloaded = false;
 }

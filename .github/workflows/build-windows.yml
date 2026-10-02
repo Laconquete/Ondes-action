@@ -1,0 +1,189 @@
+name: Build Windows .exe
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*.*.*']
+  workflow_dispatch:
+
+jobs:
+  build-windows-exe:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Inno Setup 6
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress
+          # Vérifier que iscc est dans le PATH
+          $iscc = Get-Command iscc -ErrorAction SilentlyContinue
+          if (-not $iscc) {
+            # Inno Setup est parfois installé dans un sous-dossier
+            $innoPath = "C:\Program Files (x86)\Inno Setup 6"
+            if (Test-Path $innoPath) {
+              echo "$innoPath" | Out-File -FilePath $env:GITHUB_PATH -Append
+              Write-Host "Inno Setup ajouté au PATH: $innoPath"
+            } else {
+              Write-Host "Inno Setup non trouvé dans $innoPath"
+              Get-ChildItem "C:\Program Files*" -Recurse -Filter "iscc.exe" -ErrorAction SilentlyContinue | Select-Object -First 3
+            }
+          } else {
+            Write-Host "Inno Setup déjà dans le PATH"
+          }
+
+      - name: Install frontend deps
+        working-directory: .
+        run: npm install --legacy-peer-deps
+
+      - name: Build Vite frontend
+        working-directory: .
+        run: npm run build
+
+      - name: Verify dist/index.html
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "dist\index.html")) {
+            Write-Error "Build Vite échoué : dist\index.html introuvable"
+            exit 1
+          }
+          Write-Host "dist/index.html présent"
+          Get-Content dist\index.html | Select-String -Pattern "src=|href=" | Select-Object -First 5
+
+      - name: Prepare Electron app folder
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "docs\devops\build\app\renderer"
+          New-Item -ItemType Directory -Force -Path "docs\devops\build\app\electron"
+          Copy-Item -Recurse -Force "dist\*" "docs\devops\build\app\renderer\"
+          Copy-Item -Recurse -Force "docs\devops\electron\*" "docs\devops\build\app\electron\"
+          Copy-Item -Force "docs\devops\package.electron.json" "docs\devops\build\app\package.json"
+          Copy-Item -Force "docs\devops\icon.ico" "docs\devops\build\app\"
+
+      - name: Install Electron 44 + @electron/packager + @electron/fuses
+        working-directory: docs\devops
+        run: npm install --legacy-peer-deps
+
+      - name: Audit security (informationnel)
+        working-directory: docs\devops
+        run: npm audit --omit=dev || true
+
+      - name: Package Windows x64 with @electron/packager
+        working-directory: docs\devops
+        run: node scripts\pack-windows.js
+
+      - name: Apply Electron Fuses (runtime hardening, non-bloquant)
+        working-directory: docs\devops
+        run: node scripts\apply-fuses.js
+        continue-on-error: true
+
+      - name: Verify .exe exists
+        shell: pwsh
+        run: |
+          $exe = "docs\devops\out\OneDeskClinique-win32-x64\OneDeskClinique.exe"
+          if (-not (Test-Path $exe)) {
+            Write-Error "OneDeskClinique.exe introuvable"
+            Get-ChildItem -Recurse "docs\devops\out" -Filter "*.exe" -ErrorAction SilentlyContinue
+            exit 1
+          }
+          $size = (Get-Item $exe).Length / 1MB
+          Write-Host "✓ OneDeskClinique.exe présent : $([math]::Round($size, 1)) Mo"
+
+      - name: Copy README-INSTALLATION.txt into app folder
+        shell: pwsh
+        run: |
+          Copy-Item -Force "docs\devops\README-INSTALLATION.txt" "docs\devops\out\OneDeskClinique-win32-x64\"
+
+      - name: Create Inno Setup installer (non-bloquant)
+        working-directory: docs\devops\build
+        shell: pwsh
+        env:
+          APP_VERSION: '1.2.0'
+          APP_BUILD_DIR: '..\out\OneDeskClinique-win32-x64'
+        run: |
+          # Vérifier que iscc est disponible
+          $iscc = Get-Command iscc -ErrorAction SilentlyContinue
+          if (-not $iscc) {
+            $innoPath = "C:\Program Files (x86)\Inno Setup 6\iscc.exe"
+            if (Test-Path $innoPath) {
+              & $innoPath "installer.iss"
+            } else {
+              Write-Warning "Inno Setup (iscc.exe) introuvable — installateur non généré"
+              exit 0
+            }
+          } else {
+            iscc "installer.iss"
+          }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Inno Setup a échoué avec le code $LASTEXITCODE — le .exe portable reste disponible"
+            exit 0
+          }
+        continue-on-error: true
+
+      - name: Verify installer exists
+        shell: pwsh
+        run: |
+          $installer = "docs\devops\out\make\innosetup\OneDeskClinique-Setup-1.2.0.exe"
+          if (Test-Path $installer) {
+            $size = (Get-Item $installer).Length / 1MB
+            Write-Host "✓ Installateur Inno Setup créé : $([math]::Round($size, 1)) Mo"
+            Write-Host "  Chemin : $installer"
+          } else {
+            Write-Warning "Installateur Inno Setup introuvable — le .exe brut reste disponible"
+            Get-ChildItem -Recurse "docs\devops\out" -Filter "*.exe" -ErrorAction SilentlyContinue
+          }
+
+      - name: Zip the portable app folder
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "docs\devops\out\OneDeskClinique-win32-x64\*" `
+            -DestinationPath "OneDeskClinique-v1.2.0-win32-x64-portable.zip" -Force
+
+      - name: Upload artifact (portable zip)
+        uses: actions/upload-artifact@v4
+        with:
+          name: OneDeskClinique-v1.2.0-portable
+          path: OneDeskClinique-v1.2.0-win32-x64-portable.zip
+          retention-days: 90
+
+      - name: Upload artifact (Inno Setup installer)
+        uses: actions/upload-artifact@v4
+        with:
+          name: OneDeskClinique-Setup-1.2.0
+          path: docs/devops/out/make/innosetup/OneDeskClinique-Setup-*.exe
+          retention-days: 90
+        if: always()
+
+      - name: Upload raw .exe (for direct download)
+        uses: actions/upload-artifact@v4
+        with:
+          name: OneDeskClinique-exe-raw
+          path: docs/devops/out/OneDeskClinique-win32-x64/OneDeskClinique.exe
+          retention-days: 90
+
+      - name: Create GitHub Release on tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            OneDeskClinique-v1.2.0-win32-x64-portable.zip
+            docs/devops/out/make/innosetup/OneDeskClinique-Setup-1.2.0.exe
+            docs/devops/out/OneDeskClinique-win32-x64/OneDeskClinique.exe
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

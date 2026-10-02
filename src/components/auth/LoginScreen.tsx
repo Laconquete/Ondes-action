@@ -9,114 +9,29 @@ import {
   EyeOff,
   Building2,
   AlertTriangle,
+  Settings,
 } from 'lucide-react';
-import { useAuthStore, hashPasswordForSeed } from '../../stores/authStore';
+import { useAuthStore } from '../../stores/authStore';
 import { toast } from '../../stores/toastStore';
-import { db, LocalUser } from '../../services/localDatabase';
 import { isGoogleAuthAvailable } from '../../services/googleAuthService';
 
 /**
- * Écran de connexion sécurisé — remplace le `<select>` du Header
+ * Écran de connexion sécurisé — v1.2.0 production
  *
- * Fonctionnalités :
- *  - Saisie username + mot de passe (PBKDF2 + salt, 100k itérations)
- *  - Bouton "Afficher/Masquer le mot de passe"
- *  - Affichage des erreurs inline + toast
- *  - Indication visuelle de la sécurité (lock icon)
- *  - Pré-configuration du tenant (multi-tenant) si pas déjà faite
- *  - Démo : si aucun utilisateur n'existe en base, on crée un médecin de démo
+ * Changements v1.2.0 :
+ *  - Retrait COMPLET du mode démo (ensureDemoUserExists, boutons multi-rôles)
+ *  - L'utilisateur doit avoir un compte créé par l'admin (via Supabase Dashboard
+ *    ou via UserManagementDialog au 1er lancement admin)
+ *  - Bouton "Réinitialiser la configuration" en pied de page (pour reconfigurer
+ *    le backend Supabase si nécessaire)
  *
- * Le flux d'authentification est 100% offline-capable :
+ * Le flux d'authentification reste 100% offline-capable :
  *  - Vérification du hash en local (IndexedDB via Dexie)
  *  - Création d'une session signée en local
  *  - Pas de dépendance réseau
  */
 
-// Démo : création des comptes locaux multi-rôles (médecin, infirmière, réceptionniste)
-const DEMO_USERS_SEED: Array<{
-  id: string;
-  username: string;
-  displayName: string;
-  role: string;
-  department: string;
-  serviceCode: string;
-}> = [
-  {
-    id: 'usr_nadia_mukendi',
-    username: 'dr.mukendi',
-    displayName: 'Dr. Nadia Mukendi',
-    role: 'doctor',
-    department: 'Médecine Générale & Urgences',
-    serviceCode: 'MED-GEN',
-  },
-  {
-    id: 'usr_marc_tshibangu',
-    username: 'dr.tshibangu',
-    displayName: 'Dr. Marc Tshibangu',
-    role: 'doctor',
-    department: 'Cardiologie',
-    serviceCode: 'CARDIO',
-  },
-  {
-    id: 'usr_esther_mbuyi',
-    username: 'inf.mbuyi',
-    displayName: 'Esther Mbuyi (IDE)',
-    role: 'nurse',
-    department: 'Soins & Consultations',
-    serviceCode: 'SOINS',
-  },
-  {
-    id: 'usr_patrick_kalala',
-    username: 'acc.kalala',
-    displayName: 'Patrick Kalala',
-    role: 'receptionist',
-    department: 'Accueil & Admission',
-    serviceCode: 'ACCUEIL',
-  },
-  {
-    id: 'usr_fabrice_admin',
-    username: 'admin.fabrice',
-    displayName: 'Fabricefb (Admin)',
-    role: 'admin',
-    department: 'Direction Générale',
-    serviceCode: 'ADMIN',
-  },
-];
-
-async function ensureDemoUserExists(): Promise<void> {
-  // Configurer le tenant démo
-  useAuthStore.getState().configureTenant('demo-tenant-001', 'Clinique Démo OneDesk');
-
-  // Créer tous les users démo s'ils n'existent pas
-  for (const seed of DEMO_USERS_SEED) {
-    const existing = await db.localUsers
-      .where('username')
-      .equals(seed.username)
-      .first();
-
-    if (existing) continue;
-
-    const salt = Math.random().toString(36).substring(2, 12);
-    const passwordHash = await hashPasswordForSeed('demo', salt);
-
-    const demoUser: LocalUser = {
-      id: seed.id,
-      tenantId: 'demo-tenant-001',
-      username: seed.username,
-      displayName: seed.displayName,
-      role: seed.role,
-      department: seed.department,
-      serviceCode: seed.serviceCode,
-      isActive: true,
-      passwordHash,
-      salt,
-    };
-
-    await db.localUsers.put(demoUser);
-  }
-}
-
-export const LoginScreen: React.FC = () => {
+export const LoginScreen: React.FC<{ onResetConfig?: () => void }> = ({ onResetConfig }) => {
   const { login, loginWithSupabase, loginWithGoogle, isLoading, error, clearError, tenantId, tenantName, configureTenant } = useAuthStore();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -130,17 +45,10 @@ export const LoginScreen: React.FC = () => {
   // Détermine le mode d'authentification : Supabase (email) ou Local (username)
   const useSupabaseAuth = isGoogleAuthAvailable(); // = Supabase configuré + online
 
-  // Initialisation au premier rendu : s'assurer qu'un utilisateur de démo existe
+  // Au premier rendu : juste vérifier que la base locale est prête.
+  // AUCUN seed démo — les comptes doivent être créés par l'admin.
   useEffect(() => {
-    (async () => {
-      try {
-        await ensureDemoUserExists();
-        setIsReady(true);
-      } catch (err) {
-        setInitError('Erreur d\'initialisation de la base locale. Rechargez la page.');
-        console.error(err);
-      }
-    })();
+    setIsReady(true);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -159,41 +67,8 @@ export const LoginScreen: React.FC = () => {
     } else if (result.error) {
       if (result.error.includes('network') || result.error.includes('Réseau')) {
         toast.warning('Hors-ligne', 'Basculez sur l\'authentification locale ci-dessous.');
-      } else if (result.error.includes('invalides') || result.error.includes('incorrect')) {
-        // Si Supabase Auth échoue (pas encore d'utilisateurs créés), suggérer le mode démo
-        toast.error('Échec de connexion', 'Identifiants Supabase invalides. Utilisez le bouton "Connexion démo" ci-dessous ou créez l\'utilisateur dans Supabase Dashboard.');
       } else {
         toast.error('Échec de connexion', result.error);
-      }
-    }
-  };
-
-  const handleDemoLogin = async (username?: string) => {
-    const targetUsername = username || 'dr.mukendi';
-    // Garantir que les utilisateurs démo existent
-    await ensureDemoUserExists();
-
-    // Configurer le tenant démo
-    useAuthStore.getState().configureTenant('demo-tenant-001', 'Clinique Démo OneDesk');
-
-    // Tenter le login avec l'auth locale
-    const result = await login(targetUsername, 'demo');
-    if (result.success) {
-      const user = useAuthStore.getState().currentUser;
-      toast.success('Connexion démo', `Bienvenue, ${user?.displayName || targetUsername}`);
-    } else {
-      // Retry : supprimer et recréer le user
-      const seed = DEMO_USERS_SEED.find((s) => s.username === targetUsername);
-      if (seed) {
-        await db.localUsers.delete(seed.id);
-        await ensureDemoUserExists();
-        const retry = await login(targetUsername, 'demo');
-        if (retry.success) {
-          const user = useAuthStore.getState().currentUser;
-          toast.success('Connexion démo', `Bienvenue, ${user?.displayName || targetUsername}`);
-        } else {
-          toast.error('Erreur démo', 'Impossible de se connecter. Rechargez la page.');
-        }
       }
     }
   };
@@ -208,7 +83,6 @@ export const LoginScreen: React.FC = () => {
     } else if (!result.success && result.error && !result.error.includes('Redirection')) {
       toast.error('Google OAuth', result.error);
     }
-    // Si "Redirection vers Google en cours" — ne pas afficher d'erreur, le navigateur va rediriger
   };
 
   const handleTenantConfig = () => {
@@ -244,11 +118,11 @@ export const LoginScreen: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4 animate-fadeIn">
       <div className="w-full max-w-md">
-        {/* Branding — favicon compact + nom OneDesk */}
+        {/* Branding */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center mb-2">
             <img
-              src="/logo-FOAVICON .png"
+              src="./favicon.png"
               alt="OneDesk Clinique"
               className="h-16 w-16 sm:h-20 sm:w-20 object-contain"
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
@@ -264,7 +138,7 @@ export const LoginScreen: React.FC = () => {
 
         {/* Carte de connexion */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-clinical-lg p-7 animate-fadeInScale">
-          {/* Indicateur de tenant — masqué en mode démo (Supabase non configuré) */}
+          {/* Indicateur de tenant */}
           {useSupabaseAuth && (
             <div className="flex items-center justify-between mb-5 pb-4 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2 text-xs">
@@ -283,7 +157,7 @@ export const LoginScreen: React.FC = () => {
             </div>
           )}
 
-          {/* Configuration du tenant (multi-tenant) — masquée en démo */}
+          {/* Configuration du tenant */}
           {useSupabaseAuth && showTenantConfig && (
             <div className="mb-5 p-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 animate-fadeIn">
               <label className="block text-[11px] font-bold text-blue-900 dark:text-blue-100 mb-1.5">
@@ -311,7 +185,7 @@ export const LoginScreen: React.FC = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email ou Identifiant selon le mode d'auth */}
+            {/* Email ou Identifiant */}
             <div>
               <label htmlFor="login-identifier" className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
                 {useSupabaseAuth ? 'Email professionnel' : 'Identifiant'}
@@ -329,7 +203,7 @@ export const LoginScreen: React.FC = () => {
                   }}
                   autoComplete={useSupabaseAuth ? 'email' : 'username'}
                   className="w-full pl-10 pr-3 py-2.5 text-sm border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none transition-colors"
-                  placeholder={useSupabaseAuth ? 'dr.martin@clinique.fr' : 'prénom.nom'}
+                  placeholder={useSupabaseAuth ? 'dr.mukendi@clinique.cd' : 'prénom.nom'}
                   required
                 />
               </div>
@@ -430,60 +304,42 @@ export const LoginScreen: React.FC = () => {
             </>
           )}
 
-          {/* Démo multi-rôles — TOUJOURS visible */}
-          <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider text-center">
-              {useSupabaseAuth ? 'Essai en mode démo (multi-rôles)' : 'Mode démonstration — multi-rôles'}
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => handleDemoLogin('dr.mukendi')}
-                className="flex items-center justify-center gap-1.5 bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2.5 py-2 text-[10px] font-bold border border-blue-200 dark:border-blue-800 transition-colors"
-              >
-                🩺 Dr. Mukendi
-              </button>
-              <button
-                onClick={() => handleDemoLogin('dr.tshibangu')}
-                className="flex items-center justify-center gap-1.5 bg-indigo-50 dark:bg-indigo-950/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-2.5 py-2 text-[10px] font-bold border border-indigo-200 dark:border-indigo-800 transition-colors"
-              >
-                💓 Dr. Tshibangu
-              </button>
-              <button
-                onClick={() => handleDemoLogin('inf.mbuyi')}
-                className="flex items-center justify-center gap-1.5 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 px-2.5 py-2 text-[10px] font-bold border border-rose-200 dark:border-rose-800 transition-colors"
-              >
-                💉 Infirmière Mbuyi
-              </button>
-              <button
-                onClick={() => handleDemoLogin('acc.kalala')}
-                className="flex items-center justify-center gap-1.5 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 px-2.5 py-2 text-[10px] font-bold border border-emerald-200 dark:border-emerald-800 transition-colors"
-              >
-                🏥 Accueil Kalala
-              </button>
-              <button
-                onClick={() => handleDemoLogin('admin.fabrice')}
-                className="flex items-center justify-center gap-1.5 bg-red-50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-700 dark:text-red-300 px-2.5 py-2 text-[10px] font-bold border border-red-200 dark:border-red-800 transition-colors"
-              >
-                🛡️ Admin Fabricefb
-              </button>
-            </div>
-            <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-2 text-center">
-              Mot de passe démo : <code className="font-mono bg-slate-100 dark:bg-slate-800 px-1">demo</code> — Noms congolais
-            </p>
-            {useSupabaseAuth && (
-              <p className="text-[9px] text-amber-600 dark:text-amber-400 mt-1.5 text-center leading-relaxed">
-                ⚠ Pas d'utilisateurs Supabase ? Utilisez un bouton démo ci-dessus.
+          {/* Pas de boutons démo en production v1.2.0 */}
+          {!useSupabaseAuth && (
+            <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <p className="text-[11px] text-slate-600 dark:text-slate-400 text-center leading-relaxed">
+                <Stethoscope className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />
+                Comptes créés par l'administrateur via Supabase Dashboard.
               </p>
-            )}
-          </div>
+              <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-2 text-center leading-relaxed">
+                Aucun utilisateur local ? L'admin doit d'abord se connecter à Supabase
+                et créer les comptes dans la table <code className="font-mono">users</code>.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Pied de page sécurité */}
         <p className="text-center text-[10px] text-slate-400 dark:text-slate-600 mt-6 leading-relaxed">
           🔒 Authentification chiffrée (PBKDF2 + Web Crypto) · Session 8h · Données chiffrées en local (IndexedDB)
+          <br />
+          🧹 Isolation session : au logout, toutes les données cliniques locales sont effacées.
         </p>
 
-        {/* Contact commercial — passage en version Pro */}
+        {/* Lien pour reconfigurer le backend */}
+        {onResetConfig && (
+          <div className="mt-4 text-center">
+            <button
+              onClick={onResetConfig}
+              className="inline-flex items-center gap-1.5 text-[10px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline"
+            >
+              <Settings className="h-3 w-3" />
+              Reconfigurer le backend Supabase
+            </button>
+          </div>
+        )}
+
+        {/* Contact commercial */}
         <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
           <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-2">
             Vous voulez utiliser OneDesk dans votre établissement ?

@@ -6,3 +6,13 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Electron build outputs (mais on garde build/installer.iss et build/*.iss)
+docs/devops/build/*
+!docs/devops/build/installer.iss
+docs/devops/out/
+docs/devops/node_modules/
+docs/devops/package-lock.json
+
+# Local config (never commit — contains encrypted Supabase credentials)
+.local-config.json

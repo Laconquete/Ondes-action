@@ -1,12 +1,12 @@
 {
-  "name": "onedesk-devops",
+  "name": "onedesk-clinique",
+  "productName": "OneDesk Clinique",
   "version": "1.2.0",
-  "description": "Packaging Electron + pipelines CI/CD pour OneDesk Clinique v1.2.0 (Electron 44 + @electron/packager + @electron/fuses)",
-  "private": true,
-  "license": "UNLICENSED",
-  "author": "Fabricefb / MyEventprod",
-  "type": "commonjs",
+  "description": "Poste de travail clinique — OneDesk Clinique v1.2.0 (Electron 44)",
   "main": "electron/main.js",
+  "author": "Fabricefb / MyEventprod",
+  "license": "UNLICENSED",
+  "private": true,
   "scripts": {
     "start": "electron .",
     "pack:win": "node scripts/pack-windows.js",
@@ -21,8 +21,6 @@
   "overrides": {
     "tar": "^7.5.0",
     "extract-zip": "^2.0.1",
-    "tmp": "^0.2.4",
-    "cacache": "^19.0.1",
-    "make-fetch-happen": "^15.0.0"
+    "tmp": "^0.2.4"
   }
 }

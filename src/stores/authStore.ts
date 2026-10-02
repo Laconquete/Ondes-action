@@ -166,6 +166,40 @@ function localUserToAppUser(lu: LocalUser): AppUser {
   };
 }
 
+/**
+ * Wipe des données cliniques locales au logout.
+ *
+ * SÉCURITÉ CRITIQUE (v1.2.0 production) :
+ * Sans ce wipe, un poste médical partagé permettrait à un 2e utilisateur
+ * de voir les données cliniques (patients, prescriptions, audit) du 1er
+ * en se connectant avec son propre compte.
+ *
+ * Que wipe-t-on ?
+ *  - patients, appointments, clinicalNotes, clinicalAddenda, medicationOrders
+ *  - followUpTasks, secureConversations, secureMessages, breakGlassEvents
+ *  - auditEvents, outboxItems
+ *
+ * Que conserve-t-on ?
+ *  - localUsers (les comptes utilisateurs — sinon l'utilisateur suivant ne pourrait pas se connecter)
+ *  - localSessions (historique des sessions, pour audit)
+ *  - localLicenses (la licence du poste)
+ */
+async function wipeClinicalDataForSecurity(): Promise<void> {
+  await Promise.all([
+    db.patients.clear(),
+    db.appointments.clear(),
+    db.clinicalNotes.clear(),
+    db.clinicalAddenda.clear(),
+    db.medicationOrders.clear(),
+    db.followUpTasks.clear(),
+    db.secureConversations.clear(),
+    db.secureMessages.clear(),
+    db.breakGlassEvents.clear(),
+    db.auditEvents.clear(),
+    db.outboxItems.clear(),
+  ]);
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -401,6 +435,21 @@ export const useAuthStore = create<AuthState>()(
           await signOutSupabase();
         } catch {
           // Silencieux : Supabase non configuré ou déjà déconnecté
+        }
+
+        // CRITIQUE (v1.2.0 production) : Wipe IndexedDB au logout.
+        // Sans cela, un 2e utilisateur qui se connecte sur la même machine
+        // verrait les données cliniques du précédent (patients, prescriptions, audit).
+        // Pour un poste médical partagé, on doit garantir l'isolation par session.
+        // Les localUsers (comptes) sont préservés ; seules les données cliniques
+        // (patients, appointments, prescriptions, notes, audit, outbox, sync state)
+        // sont effacées.
+        try {
+          await wipeClinicalDataForSecurity();
+          console.info('[authStore] Données cliniques locales effacées au logout (isolation session).');
+        } catch (err) {
+          console.error('[authStore] Erreur wipe IndexedDB au logout:', err);
+          // Non bloquant — on déconnecte quand même l'utilisateur
         }
 
         set({
