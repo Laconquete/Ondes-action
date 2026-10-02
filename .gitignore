@@ -6,3 +6,12 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Electron build outputs
+docs/devops/build/
+docs/devops/out/
+docs/devops/node_modules/
+docs/devops/package-lock.json
+
+# Local config (never commit — contains encrypted Supabase credentials)
+.local-config.json
