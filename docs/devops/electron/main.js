@@ -28,6 +28,55 @@ const isDev = !app.isPackaged && process.env.NODE_ENV !== 'production';
 const PROTOCOL = 'onedesk';
 
 // ---------------------------------------------------------------------------
+// 0. DESACTIVER LE GPU SUR MACHINE VIRTUELLE (anti ecran noir)
+// ---------------------------------------------------------------------------
+// Symptome : fenetre noire apres lancement (cadre + barre de titre OK mais
+// zone principale vide). Cause : Electron/Chromium utilise le GPU pour le
+// rendu. Sur une VM (VirtualBox, VMware, Hyper-V, QEMU), le pilote GPU virtuel
+// est souvent incompatible avec Chromium → process de rendu crash silencieux.
+//
+// Solution : detecter les VMs via le fabricant BIOS et desactiver le GPU
+// hardware (force le rendu logiciel).
+//
+// Aussi utile sur de vieux pilotes graphiques (Intel HD 3000/4000) qui
+// crashent avec Chromium 132+.
+//
+// Override manuel : lancer avec ONEDESK_NO_GPU=1 pour forcer le rendu logiciel
+// meme sur un PC physique (utile pour debug).
+function isVirtualMachine() {
+  try {
+    const platform = process.platform;
+    if (platform === 'win32') {
+      const ps = 'powershell -NoProfile -NonInteractive -Command "' +
+        'Get-CimInstance Win32_ComputerSystem | Select-Object -ExpandProperty Manufacturer' +
+        '"';
+      const out = execSync(ps, { encoding: 'utf8', timeout: 5000 }).toLowerCase();
+      return ['virtualbox', 'vmware', 'xen', 'qemu', 'microsoft corporation', 'innotek'].some(
+        (vm) => out.includes(vm)
+      );
+    } else if (platform === 'linux') {
+      try {
+        const sysVendor = readFileSync('/sys/class/dmi/id/sys_vendor', 'utf8').toLowerCase();
+        return ['virtualbox', 'vmware', 'xen', 'qemu', 'microsoft'].some((vm) => sysVendor.includes(vm));
+      } catch { return false; }
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
+if (isVirtualMachine() || process.env.ONEDESK_NO_GPU === '1') {
+  app.disableHardwareAcceleration();
+  app.commandLine.appendSwitch('disable-gpu');
+  app.commandLine.appendSwitch('disable-software-rasterizer');
+  app.commandLine.appendSwitch('in-process-gpu');
+  console.log('[main] GPU accel désactivée (machine virtuelle détectée ou ONEDESK_NO_GPU=1).');
+} else {
+  console.log('[main] GPU accel activée (machine physique).');
+}
+
+// ---------------------------------------------------------------------------
 // 1. Single-instance lock
 // ---------------------------------------------------------------------------
 const gotLock = app.requestSingleInstanceLock();
@@ -203,7 +252,7 @@ function buildMenu() {
       label: 'Aide',
       submenu: [
         {
-          label: 'À propos de NetPhar+',
+          label: 'À propos de OneDesk Clinique',
           click: () => {
             const w = BrowserWindow.getFocusedWindow();
             if (w) {
@@ -243,7 +292,7 @@ function createWindow() {
     height: 900,
     minWidth: 1024,
     minHeight: 700,
-    title: 'NetPhar+ — Poste Clinique',
+    title: 'OneDesk Clinique',
     backgroundColor: '#0b0f17',
     show: false,
     autoHideMenuBar: false,
