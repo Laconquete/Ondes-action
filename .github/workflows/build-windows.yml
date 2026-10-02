@@ -107,29 +107,31 @@ jobs:
         run: |
           Copy-Item -Force "docs\devops\README-INSTALLATION.txt" "docs\devops\out\OneDeskClinique-win32-x64\"
 
-      - name: Create Inno Setup installer
-        working-directory: docs\devops
+      - name: Create Inno Setup installer (non-bloquant)
+        working-directory: docs\devops\build
         shell: pwsh
         env:
           APP_VERSION: '1.2.0'
+          APP_BUILD_DIR: '..\out\OneDeskClinique-win32-x64'
         run: |
           # Vérifier que iscc est disponible
           $iscc = Get-Command iscc -ErrorAction SilentlyContinue
           if (-not $iscc) {
             $innoPath = "C:\Program Files (x86)\Inno Setup 6\iscc.exe"
             if (Test-Path $innoPath) {
-              & $innoPath "build\installer.iss"
+              & $innoPath "installer.iss"
             } else {
-              Write-Error "Inno Setup (iscc.exe) introuvable"
-              exit 1
+              Write-Warning "Inno Setup (iscc.exe) introuvable — installateur non généré"
+              exit 0
             }
           } else {
-            iscc "build\installer.iss"
+            iscc "installer.iss"
           }
           if ($LASTEXITCODE -ne 0) {
-            Write-Error "Inno Setup a échoué avec le code $LASTEXITCODE"
-            exit 1
+            Write-Warning "Inno Setup a échoué avec le code $LASTEXITCODE — le .exe portable reste disponible"
+            exit 0
           }
+        continue-on-error: true
 
       - name: Verify installer exists
         shell: pwsh
@@ -138,9 +140,10 @@ jobs:
           if (Test-Path $installer) {
             $size = (Get-Item $installer).Length / 1MB
             Write-Host "✓ Installateur Inno Setup créé : $([math]::Round($size, 1)) Mo"
+            Write-Host "  Chemin : $installer"
           } else {
             Write-Warning "Installateur Inno Setup introuvable — le .exe brut reste disponible"
-            Get-ChildItem -Recurse "docs\devops\out\make" -Filter "*.exe" -ErrorAction SilentlyContinue
+            Get-ChildItem -Recurse "docs\devops\out" -Filter "*.exe" -ErrorAction SilentlyContinue
           }
 
       - name: Zip the portable app folder

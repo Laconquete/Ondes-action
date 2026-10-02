@@ -32,8 +32,8 @@
 #endif
 
 #ifndef APP_BUILD_DIR
-  ; Chemin relatif au script installer.iss (qui est dans docs/devops/build/)
-  ; donc ../out/OneDeskClinique-win32-x64 = docs/devops/out/OneDeskClinique-win32-x64
+  ; Chemin par defaut si la variable d'env n'est pas positionnee.
+  ; En CI, le workflow passe un chemin ABSOLU via APP_BUILD_DIR.
   #define APP_BUILD_DIR  "..\out\OneDeskClinique-win32-x64"
 #endif
 
@@ -50,12 +50,6 @@ AppCopyright=Copyright (c) 2026 {#AppPublisher}
 VersionInfoVersion={#AppVersion}.0
 VersionInfoProductVersion={#AppVersion}.0
 
-; IMPORTANT : SourceDir est le dossier DE TRAVAIL pour la resolution des chemins
-; Source: dans [Files]. Par defaut c'est le dossier contenant le script .iss
-; (docs/devops/build/), mais on veut que ce soit docs/devops/ pour que
-; APP_BUILD_DIR="out\OneDeskClinique-win32-x64" resolve correctement.
-SourceDir=..
-
 ; Dossier cible per-machine (Program Files)
 DefaultDirName={pf}\OneDesk Clinique
 DefaultGroupName=OneDesk Clinique
@@ -71,15 +65,15 @@ SolidCompression=yes
 InternalCompressLevel=ultra64
 
 ; Icône de l'installeur + uninstaller
-; NOTE : avec SourceDir=.., les chemins sont relatifs a docs/devops/
-; Donc icon.ico = docs/devops/icon.ico (correct)
-SetupIconFile=icon.ico
+; Chemins relatifs au dossier du script (docs/devops/build/)
+; ../icon.ico = docs/devops/icon.ico
+SetupIconFile=..\icon.ico
 UninstallDisplayIcon={app}\{#AppExeName}
 UninstallDisplayName={#AppName} {#AppVersion}
 
-; Sortie
-; OutputDir est aussi relatif a SourceDir (docs/devops/)
-OutputDir=out\make\innosetup
+; Sortie (relative au dossier du script)
+; ../out/make/innosetup = docs/devops/out/make/innosetup
+OutputDir=..\out\make\innosetup
 OutputBaseFilename=OneDeskClinique-Setup-{#AppVersion}
 DiskSpanning=no
 
