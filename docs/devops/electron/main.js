@@ -309,13 +309,18 @@ function createWindow() {
     console.log('[main] process.resourcesPath =', process.resourcesPath);
 
     // Liste les chemins candidats à essayer dans l'ordre
+    // v1.2.3 : avec asar: false, les fichiers sont dans resources/app/ (pas app.asar)
+    // On teste donc les 2 formats pour compatibilité
     const candidates = [
+      // Format asar: false (v1.2.3+)
+      path.join(process.resourcesPath, 'app', 'renderer', 'index.html'),
+      path.join(process.resourcesPath, 'app', 'index.html'),
+      // Format asar: true (anciennes versions)
       path.join(appPath, 'renderer', 'index.html'),
       path.join(appPath, 'index.html'),
       path.join(__dirname, '..', 'renderer', 'index.html'),
       path.join(__dirname, 'renderer', 'index.html'),
       path.join(process.resourcesPath, 'app.asar', 'renderer', 'index.html'),
-      path.join(process.resourcesPath, 'app', 'renderer', 'index.html'),
     ];
 
     // Log le contenu du dossier app pour diagnostic

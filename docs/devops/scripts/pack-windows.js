@@ -48,11 +48,18 @@ const OUT_DIR = path.join(ROOT, 'out');
     executableName: 'OneDeskClinique',
     platform: 'win32',
     arch: 'x64',
-    appVersion: '1.2.0',
+    appVersion: '1.2.3',
     appCopyright: 'Copyright (c) 2026 Fabricefb / MyEventprod',
     productName: 'OneDesk Clinique',
     icon: path.join(ROOT, 'icon.ico'),
-    asar: true,
+    // CRITIQUE (v1.2.3) : asar: false
+    // Avec asar: true, Chromium ne peut pas charger file://...app.asar/renderer/index.html
+    // → ERR_FILE_NOT_FOUND malgré fs.existsSync() = true.
+    // Node.js peut lire dans asar (Electron patche fs), mais Chromium NON.
+    // Solution : désactiver asar. Les fichiers restent en clair dans resources/app/.
+    // Inconvénient : taille légèrement plus grande (pas de compression asar).
+    // Avantage : chargement file:// fonctionne correctement.
+    asar: false,
     asarUnpack: [],
     prune: true,
     overwrite: true,
