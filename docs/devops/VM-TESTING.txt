@@ -1,0 +1,161 @@
+============================================================
+  ONEDESK CLINIQUE v1.2.0 — TEST SUR MACHINE VIRTUELLE
+  Fabricefb / MyEventprod · +243 999 071 754
+============================================================
+
+  ⚠ SI VOUS TESTEZ SUR UNE MACHINE VIRTUELLE (VM)  ⚠
+
+------------------------------------------------------------
+  PROBLÈME : ÉCRAN NOIR APRES LANCEMENT
+------------------------------------------------------------
+  CAUSE : Electron/Chromium utilise le GPU pour le rendu.
+  Sur une VM (VirtualBox, VMware, Hyper-V, QEMU), le pilote
+  GPU virtuel est souvent incompatible avec Chromium 132 →
+  process de rendu crash silencieusement → écran noir.
+
+  La fenêtre s'ouvre (cadre + barre de titre visibles) mais
+  la zone principale reste VIDE/NOIRE.
+
+  SOLUTION v1.2.0 (automatique) :
+  OneDesk Clinique v1.2.0 détecte automatiquement les VMs
+  (via Get-CimInstance Win32_ComputerSystem → Manufacturer)
+  et désactive le GPU hardware au démarrage.
+
+  Vous devez installer OneDeskClinique-Setup-1.2.0.exe
+  (113 Mo, build GitHub Actions run #14+).
+
+------------------------------------------------------------
+  SOLUTION MANUELLE (si déjà installé l'ancien build)
+------------------------------------------------------------
+  Si vous avez déjà installé un vieux build (titre
+  "NetPhar+ — Poste Clinique" dans la barre de titre),
+  vous pouvez contourner le problème GPU en lançant
+  l'application avec la variable d'environnement :
+
+  ONEDESK_NO_GPU=1
+
+  MÉTHODE 1 — Ligne de commande (cmd.exe) :
+
+    C:\> set ONEDESK_NO_GPU=1
+    C:\> "C:\Program Files\OneDesk Clinique\OneDeskClinique.exe"
+
+  MÉTHODE 2 — Raccourci modifié :
+
+    1. Clic droit sur le raccourci OneDesk Clinique → Propriétés
+    2. Onglet "Raccourci" → champ "Cible"
+    3. Ajouter en fin de ligne (après .exe) :
+       (rien — le .exe ne lit pas les args)
+    4. Au lieu, créer un .bat dans le même dossier :
+
+       @echo off
+       set ONEDESK_NO_GPU=1
+       start "" "%~dp0OneDeskClinique.exe"
+
+    5. Lancer ce .bat au lieu du .exe direct
+
+  MÉTHODE 3 — Variables d'environnement système (permanent) :
+
+    1. Win + R → "sysdm.cpl" → Entrée
+    2. Onglet "Paramètres système avancés"
+    3. Bouton "Variables d'environnement..."
+    4. Section "Variables utilisateur" → "Nouvelle..."
+    5. Nom : ONEDESK_NO_GPU
+    6. Valeur : 1
+    7. OK → redémarrer l'application
+
+------------------------------------------------------------
+  VÉRIFIER SI VOUS ÊTES SUR UNE VM
+------------------------------------------------------------
+  Dans PowerShell (admin) :
+
+    Get-CimInstance Win32_ComputerSystem | Select Manufacturer
+
+  Réponses typiques :
+    - "VirtualBox"        → VirtualBox VM
+    - "VMware, Inc."      → VMware Workstation/ESXi
+    - "Microsoft Corporation" → Hyper-V
+    - "QEMU"              → QEMU/KVM
+    - "innotek GmbH"      → VirtualBox (anciennes versions)
+    - "Dell Inc.", "HP", "ASUS" → PC physique (GPU activé)
+
+------------------------------------------------------------
+  ANCIEN VS NOUVEAU BUILD — COMMENT LES DISTINGUER ?
+------------------------------------------------------------
+  VIEUX BUILD (à désinstaller) :
+  - Titre fenêtre : "NetPhar+ — Poste Clinique"
+  - Pas de SetupWizard au 1er lancement
+  - Boutons démo "Dr. Mukendi", "Dr. Tshibangu", etc.
+  - Pas de détection GPU/VM
+
+  NOUVEAU BUILD v1.2.0 (à installer) :
+  - Titre fenêtre : "OneDesk Clinique"
+  - SetupWizard 3 étapes au 1er lancement
+  - Pas de boutons démo (production only)
+  - Détection GPU/VM automatique + logs console
+
+  PROCÉDURE DE MISE À JOUR :
+
+    1. Panneau de configuration → Programmes → Désinstaller
+       "NetPhar+ — Poste Clinique" (si présent)
+    2. Télécharger OneDeskClinique-Setup-1.2.0.exe (113 Mo)
+    3. Double-clic sur l'installateur
+    4. Suivre l'assistant (Suivant → Installer)
+    5. L'application se lance avec le SetupWizard
+
+------------------------------------------------------------
+  VÉRIFIER QUE LE GPU EST BIEN DÉSACTIVÉ
+------------------------------------------------------------
+  Lancer l'application depuis cmd.exe pour voir les logs :
+
+    C:\> "C:\Program Files\OneDesk Clinique\OneDeskClinique.exe"
+
+  Vous devriez voir dans la console :
+
+    [main] GPU accel désactivée (machine virtuelle détectée ou ONEDESK_NO_GPU=1).
+
+  Si vous voyez :
+
+    [main] GPU accel activée (machine physique).
+
+  → la détection VM a échoué. Forcez avec ONEDESK_NO_GPU=1.
+
+------------------------------------------------------------
+  PROBLÈMES COURANTS SUR VM
+------------------------------------------------------------
+
+  1. "Invalid file descriptor to ICU data"
+     → Lancez le .exe DEPUIS UN DOSSIER EXTRAIT, pas depuis
+       le zip. Utilisez l'installateur Inno Setup qui extrait
+       automatiquement.
+
+  2. "Windows a protégé votre PC" (SmartScreen)
+     → "Plus d'infos" → "Exécuter quand même"
+
+  3. Écran noir (voir ci-dessus)
+     → ONEDESK_NO_GPU=1
+
+  4. Fenêtre blanche (chemins absolus)
+     → Utilisez la v1.2.0 (base: './' dans vite.config.ts)
+
+  5. "msvcp140.dll manquante"
+     → Installez Visual C++ Redistributable 2015-2022 x64
+       https://aka.ms/vs/17/release/vc_redist.x64.exe
+
+  6. L'application freeze après login
+     → Probable que le tenant UUID est incorrect.
+       Vérifiez dans Supabase Dashboard → Table Editor →
+       tenants → colonne id. La valeur par défaut du seed
+       SQL est : 00000000-0000-0000-0000-000000000010
+
+------------------------------------------------------------
+  SUPPORT
+------------------------------------------------------------
+  WhatsApp : +243 999 071 754
+  Email    : fabricefb@myeventprod.com
+  GitHub   : https://github.com/Laconquete/Ondes-action/issues
+
+============================================================
+  OneDesk Clinique v1.2.0 · Fabricefb / MyEventprod
+  Compatible : Windows 10 1809+ / Windows 11
+  VMs supportées : VirtualBox, VMware, Hyper-V, QEMU
+============================================================
