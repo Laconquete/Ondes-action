@@ -25,6 +25,26 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Install Inno Setup 6
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress
+          # Vérifier que iscc est dans le PATH
+          $iscc = Get-Command iscc -ErrorAction SilentlyContinue
+          if (-not $iscc) {
+            # Inno Setup est parfois installé dans un sous-dossier
+            $innoPath = "C:\Program Files (x86)\Inno Setup 6"
+            if (Test-Path $innoPath) {
+              echo "$innoPath" | Out-File -FilePath $env:GITHUB_PATH -Append
+              Write-Host "Inno Setup ajouté au PATH: $innoPath"
+            } else {
+              Write-Host "Inno Setup non trouvé dans $innoPath"
+              Get-ChildItem "C:\Program Files*" -Recurse -Filter "iscc.exe" -ErrorAction SilentlyContinue | Select-Object -First 3
+            }
+          } else {
+            Write-Host "Inno Setup déjà dans le PATH"
+          }
+
       - name: Install frontend deps
         working-directory: .
         run: npm install --legacy-peer-deps
@@ -82,23 +102,73 @@ jobs:
           $size = (Get-Item $exe).Length / 1MB
           Write-Host "✓ OneDeskClinique.exe présent : $([math]::Round($size, 1)) Mo"
 
-      - name: Zip the app folder
+      - name: Copy README-INSTALLATION.txt into app folder
+        shell: pwsh
+        run: |
+          Copy-Item -Force "docs\devops\README-INSTALLATION.txt" "docs\devops\out\OneDeskClinique-win32-x64\"
+
+      - name: Create Inno Setup installer
+        working-directory: docs\devops
+        shell: pwsh
+        env:
+          APP_VERSION: '1.2.0'
+          APP_BUILD_DIR: 'out\OneDeskClinique-win32-x64'
+        run: |
+          # Vérifier que iscc est disponible
+          $iscc = Get-Command iscc -ErrorAction SilentlyContinue
+          if (-not $iscc) {
+            $innoPath = "C:\Program Files (x86)\Inno Setup 6\iscc.exe"
+            if (Test-Path $innoPath) {
+              & $innoPath "build\installer.iss"
+            } else {
+              Write-Error "Inno Setup (iscc.exe) introuvable"
+              exit 1
+            }
+          } else {
+            iscc "build\installer.iss"
+          }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Inno Setup a échoué avec le code $LASTEXITCODE"
+            exit 1
+          }
+
+      - name: Verify installer exists
+        shell: pwsh
+        run: |
+          $installer = "docs\devops\out\make\innosetup\OneDeskClinique-Setup-1.2.0.exe"
+          if (Test-Path $installer) {
+            $size = (Get-Item $installer).Length / 1MB
+            Write-Host "✓ Installateur Inno Setup créé : $([math]::Round($size, 1)) Mo"
+          } else {
+            Write-Warning "Installateur Inno Setup introuvable — le .exe brut reste disponible"
+            Get-ChildItem -Recurse "docs\devops\out\make" -Filter "*.exe" -ErrorAction SilentlyContinue
+          }
+
+      - name: Zip the portable app folder
         shell: pwsh
         run: |
           Compress-Archive -Path "docs\devops\out\OneDeskClinique-win32-x64\*" `
-            -DestinationPath "OneDeskClinique-v1.2.0-win32-x64.zip" -Force
+            -DestinationPath "OneDeskClinique-v1.2.0-win32-x64-portable.zip" -Force
 
-      - name: Upload artifact (zip)
+      - name: Upload artifact (portable zip)
         uses: actions/upload-artifact@v4
         with:
-          name: OneDeskClinique-v1.2.0-win32-x64
-          path: OneDeskClinique-v1.2.0-win32-x64.zip
+          name: OneDeskClinique-v1.2.0-portable
+          path: OneDeskClinique-v1.2.0-win32-x64-portable.zip
           retention-days: 90
 
-      - name: Upload .exe (raw, for direct download)
+      - name: Upload artifact (Inno Setup installer)
         uses: actions/upload-artifact@v4
         with:
-          name: OneDeskClinique-exe
+          name: OneDeskClinique-Setup-1.2.0
+          path: docs/devops/out/make/innosetup/OneDeskClinique-Setup-*.exe
+          retention-days: 90
+        if: always()
+
+      - name: Upload raw .exe (for direct download)
+        uses: actions/upload-artifact@v4
+        with:
+          name: OneDeskClinique-exe-raw
           path: docs/devops/out/OneDeskClinique-win32-x64/OneDeskClinique.exe
           retention-days: 90
 
@@ -107,7 +177,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            OneDeskClinique-v1.2.0-win32-x64.zip
+            OneDeskClinique-v1.2.0-win32-x64-portable.zip
+            docs/devops/out/make/innosetup/OneDeskClinique-Setup-1.2.0.exe
             docs/devops/out/OneDeskClinique-win32-x64/OneDeskClinique.exe
           draft: false
           prerelease: false
