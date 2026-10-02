@@ -86,7 +86,7 @@ DisableDirPage=yes
 
 [Languages]
 Name: "french"; MessagesFile: "compiler:Languages\French.isl"
-Name: "english"; MessagesFile: "compiler:Languages\English.isl"
+Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "Créer un raccourci sur le Bureau"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
@@ -111,29 +111,3 @@ Filename: "{app}\{#AppExeName}"; Description: "Lancer {#AppName}"; Flags: nowait
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"
-
-[Code]
-function InitializeSetup(): Boolean;
-begin
-  // Vérification : Windows 10 1809+ requis (Electron 44 ne supporte pas les versions antérieures)
-  if (GetWindowsVersion < $0A00) then begin
-    MsgBox('OneDesk Clinique nécessite Windows 10 (1809 ou ultérieur) ou Windows 11.', mbError, MB_OK);
-    Result := False;
-    exit;
-  end;
-  Result := True;
-end;
-
-procedure CurStepChanged(CurStep: TSetupStep);
-begin
-  if CurStep = ssPostInstall then begin
-    // Log d'installation (utile pour le support)
-    SaveStringToFile(ExpandConstant('{app}\installation.log'),
-      'OneDesk Clinique v' + '{#AppVersion}' + #13#10 +
-      'Installé le : ' + GetDateTimeString('dd/mm/yyyy hh:nn:ss', '-', ':') + #13#10 +
-      'Machine : ' + GetComputerNameString + #13#10 +
-      'Utilisateur : ' + GetUserNameString + #13#10 +
-      'Dossier : ' + ExpandConstant('{app}'),
-      True);
-  end;
-end;
