@@ -76,16 +76,13 @@ DiskSpanning=no
 ; mais l'utilisateur peut cliquer "Plus d'infos" > "Exécuter quand même")
 ; NOTE : ne pas mettre SignTool= vide, ça provoque une erreur de compilation Inno Setup.
 
-; Mode silencieux supporté (utile pour déploiement entreprise)
-SilentInstallMode=normal
-SilentUninstallMode=normal
-
 ; Ne pas demander le dossier de destination (utilise DefaultDirName)
 DisableDirPage=yes
 
-; Image de fond de l'installeur (optionnel — Windows uniquement)
-WizardImageFile=..\icon.ico
-WizardSmallImageFile=..\icon.ico
+; NOTE : WizardImageFile attend des .bmp en 164x314, pas des .ico.
+; Pour garder un build simple, on retire cette directive (l'icône par défaut
+; Inno Setup sera utilisée pour l'assistant, mais SetupIconFile reste pour
+; l'icône de l'installeur dans la barre des tâches).
 
 [Languages]
 Name: "french"; MessagesFile: "compiler:Languages\French.isl"
