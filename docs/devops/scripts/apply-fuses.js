@@ -52,8 +52,15 @@ const EXE = path.join(APP_DIR, 'OneDeskClinique.exe');
   console.log('');
 
   try {
+    // IMPORTANT : le parametre `version` doit etre la VERSION ELECTRON (pas la version de l'app).
+    // @electron/fuses l'utilise pour determiner quelle wire format de fuses appliquer.
+    // On lit la version installee depuis node_modules/electron/package.json.
+    const electronPkg = require(path.join(ROOT, 'node_modules', 'electron', 'package.json'));
+    const electronVersion = electronPkg.version;
+    console.log('[fuses] Version Electron detectee :', electronVersion);
+
     await fuseNative(EXE, {
-      version: '1.2.0',
+      version: electronVersion,
       resetAdHocDarwinSignature: false,
       fuseStrings: {},
       fuseWire: {

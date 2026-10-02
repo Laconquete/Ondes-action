@@ -65,9 +65,10 @@ jobs:
         working-directory: docs\devops
         run: node scripts\pack-windows.js
 
-      - name: Apply Electron Fuses (runtime hardening)
+      - name: Apply Electron Fuses (runtime hardening, non-bloquant)
         working-directory: docs\devops
         run: node scripts\apply-fuses.js
+        continue-on-error: true
 
       - name: Verify .exe exists
         shell: pwsh
