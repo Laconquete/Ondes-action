@@ -293,7 +293,7 @@ function createWindow() {
     minWidth: 1024,
     minHeight: 700,
     title: 'OneDesk Clinique',
-    backgroundColor: '#0b0f17',
+    backgroundColor: '#ffffff',
     show: false,
     autoHideMenuBar: false,
     icon: path.join(__dirname, '..', 'icon.ico'),
@@ -302,10 +302,11 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
-      devTools: isDev,
+      // DEBUG v1.2.0 : on active DevTools en production pour permettre
+      // le diagnostic (touche F12 ou Ctrl+Shift+I pour ouvrir).
+      // Une fois le debug terminé, remettre devTools: isDev.
+      devTools: true,
       spellcheck: false,
-      // On bloque toute navigation externe et toute création de popup
-      // non maîtrisée.
       webSecurity: true,
       allowRunningInsecureContent: false,
     },
@@ -316,6 +317,61 @@ function createWindow() {
     if (pendingDeepLink) {
       win.webContents.send('deep-link', pendingDeepLink);
       pendingDeepLink = null;
+    }
+
+    // DEBUG v1.2.0 : Si l'écran reste blanc pendant 4 secondes, on ouvre
+    // automatiquement DevTools pour que l'utilisateur voie les erreurs.
+    // En production normale (SetupWizard en < 2s), DevTools ne s'ouvre pas.
+    let contentLoaded = false;
+    win.webContents.once('did-finish-load', () => {
+      contentLoaded = true;
+    });
+    win.webContents.once('dom-ready', () => {
+      contentLoaded = true;
+    });
+    setTimeout(() => {
+      if (!contentLoaded && !win.isDestroyed()) {
+        console.error('[main] Écran blanc détecté — ouverture automatique de DevTools.');
+        win.webContents.openDevTools({ mode: 'detach' });
+        // Affiche aussi un message d'erreur dans la console
+        win.webContents.executeJavaScript(`
+          document.body.innerHTML = '<pre style="padding:20px;font-family:monospace;font-size:14px;color:#dc2626;background:#fef2f2;">' +
+            '⚠ ONEDESK — ÉCRAN BLANC DÉTECTÉ\\n\\n' +
+            'Le renderer n\\'a pas chargé dans les 4 secondes.\\n' +
+            'Causes possibles :\\n' +
+            '  1. Chemins absolus /assets/... au lieu de ./assets/...\\n' +
+            '  2. Erreur JavaScript dans le bundle\\n' +
+            '  3. GPU incompatible avec Chromium 132\\n\\n' +
+            'DevTools ouvert — vérifiez la console (onglet Console).\\n' +
+            'Pour forcer le rendu logiciel : relancez avec ONEDESK_NO_GPU=1' +
+            '</pre>';
+        `).catch(() => {});
+      }
+    }, 4000);
+  });
+
+  // Raccourci F12 pour toggler DevTools (utile en production)
+  win.webContents.on('before-input-event', (event, input) => {
+    if (input.type === 'keyDown') {
+      if (input.key === 'F12' ||
+          (input.control && input.shift && input.key.toLowerCase() === 'i')) {
+        if (win.webContents.isDevToolsOpened()) {
+          win.webContents.closeDevTools();
+        } else {
+          win.webContents.openDevTools({ mode: 'detach' });
+        }
+        event.preventDefault();
+      }
+      // Ctrl+R pour recharger le renderer (utile après fix)
+      if (input.control && input.key.toLowerCase() === 'r' && !input.shift) {
+        win.webContents.reload();
+        event.preventDefault();
+      }
+      // Ctrl+Shift+R pour recharger sans cache
+      if (input.control && input.shift && input.key.toLowerCase() === 'r') {
+        win.webContents.reloadIgnoringCache();
+        event.preventDefault();
+      }
     }
   });
 
@@ -341,7 +397,10 @@ function createWindow() {
     win.webContents.openDevTools({ mode: 'detach' });
   } else {
     // Build Vite servi en file:// — le renderer a été copié dans /renderer.
-    win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
+    console.log('[main] Chargement renderer :', path.join(__dirname, '..', 'renderer', 'index.html'));
+    win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'))
+      .then(() => console.log('[main] Renderer chargé OK'))
+      .catch((err) => console.error('[main] ERREUR loadFile :', err));
   }
 }
 
